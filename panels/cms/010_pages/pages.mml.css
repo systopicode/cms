@@ -1,0 +1,479 @@
+/****************************** MML (Mini Media LIBRARY) ***************************/
+.cms div.mml.mml-empty {
+	max-height: 0;
+	overflow: hidden;
+	opacity: 0;
+}
+
+.cms div.mml,
+.cms #sal {
+    position: absolute;
+    bottom: 0;
+    background: #ebebeb;
+    left: 0;
+    right: 0px;
+    user-select: none;
+    -moz-user-select: none;
+    top: 0 !important;
+}
+
+.cms div.mml,
+.cms #sal {
+    border-right: 2px solid rgb(217, 217, 217);
+
+}
+
+.cms div.resizable-handle.resizable-n {
+    position: absolute;
+    display: block;
+    cursor: ns-resize;
+    width: 100%;
+    top: 0;
+    left: 0;
+    border-top: 2px solid rgb(217, 217, 217);
+    background: transparent;
+    height: 23px;
+}
+
+.cms .mmlContent {
+    padding-left: 10px;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    overflow: hidden;
+    background: #ebebeb;
+}
+
+.cms .mmlContent > div {
+    height: calc(100% - 50px);
+}
+
+.cms .mmlContent[data-target_id] {
+    top: 100%;
+    z-index: 1;
+}
+
+
+.cms div.dz-filename {
+    display: none;
+}
+
+div.dragimage > img {
+    opacity: 0.3 !important;
+}
+
+.cms div.mmlContent ul {
+    display: inline-block;
+    width: calc(100% + 15px);
+    height: 100%;
+}
+
+.cms div.mmlContent > div > ul {
+    height: 100%;
+    overflow-y: scroll !important;
+    overflow-x: hidden;
+    width: calc(100% + 45px);
+    position: relative;
+    margin-bottom: 50px;
+}
+
+.cms div.mmlContent ul li {
+    width: calc(100% - 55px);
+}
+
+.cms div.mmlContent li h4 {
+    border-bottom: 1px solid var(--cmsMainColor);
+    clear: left;
+    display: block;
+    margin: 10px 0px 10px 0px;
+    cursor: default;
+    width: 100%;
+    font-weight: 400;
+    user-select: none;
+}
+
+
+.cms div.mmlContent > label {
+    background: rgba(217, 217, 217, 0.4);
+    margin-left: -10px;
+    padding: 3px 10px;
+    width: calc(100% + 30px);
+    display: block;
+    line-height: 0;
+    border-bottom: 2px solid rgb(217, 217, 217);
+    border-top: 2px solid rgb(217, 217, 217);
+}
+
+.cms div.mmlContent div.tree ul li a {
+    display: inline-block;
+}
+
+.cms .mmlContent label i {
+    float: right;
+    font-size: 18px;
+    padding: 3px 0;
+}
+
+/********** DROP ******************/
+.cms div.mmlContent ul li ul li {
+    float: left;
+    margin: 0 10px 10px 0;
+    width: 64px;
+    height: 64px;
+    list-style-type: none;
+    cursor: pointer;
+    position: relative;
+    border: 2px solid rgb(217, 217, 217);
+    cursor: pointer;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.cms div.mmlContent ul li ul li:not(.upload) i,
+.cms div.mmlContent ul li ul li a {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: rgb(217, 217, 217);
+	width: 25px;
+	height: 25px;
+	display: flex;
+	justify-content: center;
+	align-content: center;
+	align-items: center;
+	border-radius: 4px 0 0 0;
+}
+
+.cms div.mmlContent ul li ul li a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: none;
+}
+
+.cms div.mmlContent ul li a i {
+    position: absolute;
+    display: block;
+    background: rgb(217, 217, 217);
+    font-size: 22px;
+    padding: 4px 0 0 4px;
+    color: rgb(52, 52, 52);
+    bottom: 0;
+    right: 0;
+	padding-left: 1px;
+}
+
+.cms .mmlContent li img {
+	width: 100%;
+	height:100%;
+	overflow: hidden;
+	object-fit: cover;
+}
+
+li.upload {
+    position: relative;
+    text-align: center;
+}
+
+li.upload i {
+    vertical-align: -24px;
+    font-size: 30px;
+}
+
+div.mmlContent input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+}
+
+/********** END DROP ******************/
+
+
+.cms div.mmlContent ul li:not(.title).originalNotExists {
+    border-color: rgb(213, 20, 25);
+}
+
+.cms div.mmlContent ul li:not(.title).originalNotExists a {
+    line-height: 1em;
+}
+
+.cms div.mmlContent ul li:not(.title).originalNotExists a:before {
+    content: "ORIGINAL FILE IS MISSING";
+    color: rgb(213, 20, 25);
+    padding: 3px;
+    font-size: 11px;
+    font-family: "Rutan-Medium";
+    display: inline-block;
+}
+
+.cms div.mmlContent ul li:not(.title).originalNotExists img,
+.cms div.mmlContent ul li:not(.title).originalNotExists a:after {
+    display: none;
+}
+
+
+.cms div.mmlContent ul li.selected:not(.title) {
+    border-color: #ec6523;
+}
+
+.cms div.mml ul li.dropPlaceholder,
+.cms div.mml div.mmlContent ul li.emptyPlaceholder {
+    border: 1px dashed rgb(124, 178, 73);
+    width: 64px;
+    height: 64px;
+}
+
+.cms div.mmlContent ul li.upload.ui-droppable.drop_active,
+.cms div.mmlContent ul li.upload.ui-droppable.drop_active:before,
+.cms div.mmlContent ul li.children_images.ui-droppable.drop_active:before,
+.cms div.mmlContent ul li.ui-droppable.drop_active:not(.title),
+.cms .mll_item {
+    border-color: var(--cmsMainColor);
+    color: var(--cmsMainColor);
+}
+
+.cms div.mml div.mmlContent ul li.emptyPlaceholder {
+    border-color: transparent;
+}
+
+body.cms.dragActive div.mml li.dropPlaceholder {
+    border: none;
+}
+
+.cms div.mmlContent ul li:not(.title).locked:before {
+    left: 2px;
+    content: "\e81c";
+}
+
+.cms .ui-sortable-helper {
+    border: none;
+    overflow: visible;
+    list-style-type: none;
+}
+
+.cms .ui-sortable-helper.image {
+    width: 50%;
+    opacity: 0.8;
+}
+
+.cms div.mmlContent ul li.upload {
+    border: 2px dashed var(--cmsMainColor);
+    cursor: pointer;
+}
+
+.cms div.mmlContent ul li:not(.title) > span {
+    padding: 3px;
+    background: rgba(255, 255, 255, 0.8);
+    width: calc(100% - 6px);
+    display: block;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity .25s ease-in-out;
+	font-size: 10px;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    max-height: 60px;
+}
+
+.cms div.mmlContent ul li:not(.title):hover span {
+    visibility: visible;
+    opacity: 1;
+}
+
+.ui-draggable-helper-mml,
+.ui-draggable-helper-mml-out {
+    list-style-type: none;
+    border: 1px dashed transparent;
+    z-index: 3002 !important;
+}
+
+.ui-draggable-helper-mml img {
+    width: 60px;
+}
+
+.ui-draggable-helper-mml-out {
+    width: 240px !important;
+}
+
+.ui-draggable-helper-mml-out img {
+    width: 240px !important;
+}
+
+div.posterImageContainer img {
+    width: 100%;
+}
+
+.cms .dropdown[data-selector='#mml'].contextMenu div.dropdownContent > ul {
+    width: 100%;
+}
+
+.cms .dropdown[data-selector='#mml'].contextMenu ul {
+    margin: 0;
+}
+
+.cms div.dropdown[data-selector='#mml'].contextMenu div.dropdownContent > ul > ul.iconsonly {
+    margin: initial;
+}
+
+.cms .dropdown.contextMenu[data-selector='#mml'] div.dropdownContent ul.iconsonly li {
+    width: 66px;
+}
+
+.cms .dropdown.contextMenu div.dropdownContent ul,
+.cms .dropdown[data-selector='#mml'] div.dropdownContent ul {
+    width: 100%;
+    flex-basis: 100%;
+}
+
+.cms .dropdown[data-selector='#mml'] div.dropdownContent {
+    min-width: 264px;
+}
+
+
+/****************************** FILE EDITOR ***************************/
+.cms .imageCropAlignContainer{
+	display:flex;
+	justify-content: center;
+	align-items: center;
+	height:calc(100% - 100px)
+}
+
+.cms .imageCropAlignContainer > div{
+	max-width: 50%;
+	width:100%;
+	height:100%;
+	text-align: center;
+}
+
+.cms .imageCropAlignContainer > div img.srcToChange{
+	max-width: 100%;
+	max-height: 80%;
+	width: auto;
+	height: auto;
+}
+
+
+.cms .imageCropAlignContainer > div img{
+	width:100%;
+}
+
+.cms .srcToChange,
+div.posterImageContainer{
+    outline: 2px solid var(--cmsHighlightColor);
+    max-width: 100%;
+	position: relative;
+}
+
+div.posterImageContainer{
+	line-height: 0;
+}
+
+
+.cms form[name='changeImageFormat'] {
+    width: 100%;
+    overflow: hidden;
+    height: 38px;
+    margin-bottom: 10px;
+}
+
+.cms form[name='changeImageFormat'] div.inputGroup {
+    padding-top: 0;
+    width: calc(100% - 48px);
+    float: left;
+}
+
+.cms form[name='changeImageFormat'] a.button {
+    height: calc(100% - 2px);
+    margin-right: 0;
+}
+
+
+div.mml .spinner {
+    position: absolute;
+    top: 32px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(217, 217, 217, 0.9);
+    backdrop-filter: blur(0.8);
+    z-index: 1;
+    display: none;
+}
+
+div.mml.loading .spinner {
+    display: block;
+}
+
+div.mml .spinner:before {
+    min-width: 30px;
+    min-height: 30px;
+    margin-top: -18px;
+    margin-left: -18px;
+}
+
+/****************************** MEDIA DROP OBJECT ***************************/
+.mediaDrop{
+	border: 2px dashed var(--cmsMainColor);
+	width:100%;
+	height:100%;
+	aspect-ratio: 1.90;
+	padding:0 !important;
+	overflow: hidden;
+}
+
+
+aside .mediaDrop{
+	border-color:#fff;
+	margin-bottom: 10px;
+}
+
+aside.cms ul li .mediaDrop a:not(.icon){
+	padding:0;
+	margin:0;
+}
+
+.mediaDrop img{
+	object-fit: contain;
+	width: 100%;
+}
+
+.mediaDrop a{
+	text-align: center;
+	width: 100%;
+	height:100%;
+}
+
+.mediaDrop:empty:before,
+.mediaDrop:empty:after{
+	content:'Drop Image from Media Library';
+	text-align: center;
+	text-transform: uppercase;
+	padding:20px;
+	align-items: center;
+	justify-content: center;
+	display:flex;
+	height:100%;
+	position: absolute;
+	top:0;
+	left:0;
+	right:0;
+	font-size: 12px;
+	line-height: 1.2em;
+	opacity: .5;
+}
+
+.mediaDrop:empty:after{
+	font-size: 20px;
+	margin-top:-40px;
+	content:'\f03e';
+	font-family: "CMS Font Awesome 6 Pro";
+}

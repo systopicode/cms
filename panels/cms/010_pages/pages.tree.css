@@ -1,0 +1,119 @@
+/****************************** TREE ***************************/
+.cms div.tree {
+    min-width: 110px;
+    overflow-x: hidden;
+    overflow-y:scroll;
+    height:100%;
+    width:calc(100% + 25px);
+
+}
+.cms ul.tree{
+    width:100%;
+    height:100%;
+    padding-top:30px;
+    padding-left: 20px;
+    margin-bottom: 50px;
+}
+
+.cms ul.tree ul{
+    padding-left: 20px;
+    margin-bottom: 10px;
+}
+
+.cms ul.tree li{
+    display: block;
+    line-height: 0;
+
+}
+.cms ul.tree li label{
+    position: relative;
+    white-space: nowrap;
+}
+
+.cms ul.tree li:hover > label a.label,
+.cms ul.tree li:hover > label a.fold{
+    color:var(--cmsHighlightColor);
+    border-color: var(--cmsHighlightColor);
+}
+
+.cms ul.tree a{
+    color:var(--cmsMainColor);
+    display:inline-block;
+}
+
+.cms ul.tree .label{
+    padding:0 5px 2px;
+}
+
+.cms ul.tree li.active > label a.label{
+    background:rgba(0,0,0,0.15);
+	border-radius: 4px;
+}
+
+
+div.cms ul.tree .fold{
+    text-align: center;
+    display: inline-block;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 13px;
+    margin-right: 0px;
+}
+
+div.cms ul.tree .fold i:before{
+    background:#fff;
+    border-radius:2px;
+}
+
+div.cms ul.tree i {
+    padding: 3px 4px;
+    font-size: 16px;
+}
+/****************************** RESIZE TREE ***************************/
+div.pylon div.resizable-handle.resizable-e{
+    width: 20px !important;
+    border: none;
+    background: transparent;
+    z-index: 0 !important;
+    cursor: ew-resize;
+    right: -8px;
+    top: 0;
+    height: 100%;
+    position: absolute;
+    font-size: 0.1px;
+    display: block;
+}
+/****************************** TREE NAVI **************************/
+.cms .treeNavi{
+    margin-right: 0;
+    border-left:2px solid rgb(217,217,217);
+    border-bottom:2px solid rgb(217,217,217);
+    background: rgb(235,235,235);
+    position: absolute;
+    right:2px;
+    top: 40px;
+    z-index: 1;
+	padding:0;
+	border-radius: 0 0 0 4px;
+}
+
+.cms .treeNavi li{
+    display: inline-block;
+    list-style-type: none;
+    background: none;
+}
+
+.cms .treeNavi a{
+	cursor: pointer;
+	padding:2px 6px;
+	margin:0;
+	border-radius: 0;
+	border:none;
+}
+
+.cms #cmsSearchInput{
+	border-radius: 0;
+}
+
+
+
