@@ -168,7 +168,7 @@ class appSite {
 		$html = '';
 		$tempPage = self::selectedPage();
 		$shareImageId = $tempPage?->meta->shareImageId;
-		$shareMedia = $shareImageId ? \Systopic\Cms\Tables\Pages\Media::byNodeId(\Systopic\Db\Scope::default(), $shareImageId) : null;
+		$shareMedia = $shareImageId ? \Systopic\System\Tables\Medias\Media::byNodeId(\Systopic\Db\Scope::default(), $shareImageId) : null;
 		if ($shareMedia !== null) {
 
 			$shareImage = $shareMedia->setFormat('shareImage')->src;

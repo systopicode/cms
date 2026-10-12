@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Systopic\Cms\Tables\Pages;
 
+use Systopic\System\Tables\Medias\Media;
+
 /**
  * The media of a page, by group — successor of `medias::get($page)`.
  *

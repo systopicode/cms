@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Systopic\Cms\Tables\Pages;
 
+use Systopic\System\Tables\Medias\Media;
+
 /**
  * A named group of a page's media ('main', 'galleryLeft' …) — successor of
  * the legacy `mediaGroup`.

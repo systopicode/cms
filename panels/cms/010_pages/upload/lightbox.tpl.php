@@ -2,7 +2,7 @@
 $replacement = http::get('node_id', FALSE);
 if ($replacement) {
 	$row = $this->parent->mediaOfNode((int) $replacement);
-	$media = $row !== NULL ? (new \Systopic\Cms\Tables\Pages\Media($row))->setFormat('original') : NULL;
+	$media = $row !== NULL ? (new \Systopic\System\Tables\Medias\Media($row))->setFormat('original') : NULL;
 	$replacement = $media !== NULL ? $replacement : FALSE;
 }
 ?>

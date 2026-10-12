@@ -2,7 +2,7 @@
 /**
  * An svg: its preview and its source to edit (updateSVG).
  *
- * @var \Systopic\Cms\Tables\Pages\Media $original
+ * @var \Systopic\System\Tables\Medias\Media $original
  */
 $path = \fs::toNative($original->path);
 ?>

@@ -3,7 +3,7 @@
  * Label, file name, dates, size, mime — the aside of the file editor.
  *
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Editor\File\Panel $this
- * @var \Systopic\Cms\Tables\Pages\Media                      $original
+ * @var \Systopic\System\Tables\Medias\Media                      $original
  */
 $row = $this->mediaRow;
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);

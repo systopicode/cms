@@ -1,7 +1,7 @@
 <?php
-// the image a link is set on (Tables\Pages\Media), FALSE for a text link
+// the image a link is set on (Tables\Medias\Media), FALSE for a text link
 $imageRow = http::post('image_node_id', FALSE) ? $this->parent->parent->mediaOfNode((int) http::post('image_node_id')) : NULL;
-$media = $imageRow !== NULL ? new \Systopic\Cms\Tables\Pages\Media($imageRow) : FALSE;
+$media = $imageRow !== NULL ? new \Systopic\System\Tables\Medias\Media($imageRow) : FALSE;
 $text = http::post('text', FALSE);
 if ($text || $media || $this->action) {
 	$classNames = http::post('classNames') != 'undefined' ? http::post('classNames') : '';

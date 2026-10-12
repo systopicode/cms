@@ -446,7 +446,7 @@ switch ($this->action) {
         if ($row === null) {
             break;
         }
-        $file = new \Systopic\Cms\Tables\Pages\Media($row);
+        $file = new \Systopic\System\Tables\Medias\Media($row);
         $label = htmlspecialchars($file->label, ENT_QUOTES);
         switch ($file->type) {
             case 'image':

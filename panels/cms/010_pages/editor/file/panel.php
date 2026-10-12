@@ -5,7 +5,7 @@ namespace Systopic\Cms\Panels\Root\Cms\Pages\Editor\File;
 
 use Systopic\System\Panels\Root\Cms\Panel as CmsPanel;
 use Systopic\System\Tables\Medias\Model as MediaRow;
-use Systopic\Cms\Tables\Pages\Media;
+use Systopic\System\Tables\Medias\Media;
 
 /**
  * The file editor of a medium (lightbox over cms/pages): label, file name,
