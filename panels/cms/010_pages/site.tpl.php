@@ -37,6 +37,10 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 		</label>
 	<?php } else {
 		$nodeId = $site->relationId('node');
+		// a site that came in with a backup has its row but not its folder
+		$hasFolder = \fs::isDir((string) \fs::$projectRoot . 'sites/' . $site->name);
+		// ... and no rules in the instance files of the other machines
+		$missingRules = SiteRegistry::filesWithoutHostRules($site->name);
 		?>
 		<div data-site_id="<?= (int) $site->id ?>">
 			<h1>
@@ -51,7 +55,7 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 			<p>
 				<?= $this->sitePageCount($site) ?> Seiten direkt darunter ·
 				Ordner <code>sites/<?= $e($site->name) ?>/</code>
-				<?= \fs::isDir((string) \fs::$projectRoot . 'sites/' . $site->name) ? 'vorhanden' : '<b>fehlt</b>' ?>
+				<?= $hasFolder ? 'vorhanden' : '<b>fehlt</b>' ?>
 				<?php if ($nodeId === NULL) { ?>· die obersten Seiten im Baum gehören zu dieser Site<?php } ?>
 			</p>
 			<label class="_8_8" data-on_change="updateSiteMeta">meta (JSON: title, appName, author, description, keywords, robots, titleSeparator, shareImage)
@@ -63,13 +67,27 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 			<label class="_4_8" data-on_change="renameSite">Umbenennen (Domain mit TLD, Enter) — Datenbank, Ordner sites/&lt;domain&gt;/ und Links dieser Maschine
 				<input name="siteName" value="<?= $e($site->name) ?>" autocomplete="off">
 			</label>
-			<?php if ($nodeId !== NULL) { ?>
+			<?php if (!$hasFolder || $missingRules || $nodeId !== NULL) { ?>
 				<p>
+				<?php if (!$hasFolder) { ?>
+					<a class="button submit" data-on_click="createSiteFolder" data-site_id="<?= (int) $site->id ?>"
+					   title="sites/<?= $e($site->name) ?>/templates/{document,components,pages,layout}/ anlegen">
+						<i class="fa-regular fa-folder-plus"></i> Site-Ordner erstellen
+					</a>
+				<?php } ?>
+				<?php if ($missingRules) { ?>
+					<a class="button submit" data-on_click="addSiteHostRules" data-site_id="<?= (int) $site->id ?>"
+					   title="Keine Regel für <?= $e($site->name) ?> in <?= $e(implode(', ', $missingRules)) ?> — eintragen als Kopie der Pfad-Regel einer anderen Site">
+						<i class="fa-regular fa-route"></i> Host-Regel eintragen
+					</a>
+				<?php } ?>
+				<?php if ($nodeId !== NULL) { ?>
 					<a class="button submit" data-on_click="userConfirm" data-action="removeSite"
 					   data-site_id="<?= (int) $site->id ?>"
 					   data-confirm="Site <?= $e($site->name) ?> löschen? Nur möglich, wenn keine Seiten mehr darunter hängen. Der Ordner sites/<?= $e($site->name) ?>/ bleibt bestehen.">
 						<i class="fa-regular fa-trash"></i> Site löschen
 					</a>
+				<?php } ?>
 				</p>
 			<?php } ?>
 		</div>

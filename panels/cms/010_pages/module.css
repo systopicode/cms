@@ -125,6 +125,8 @@ main > div.content > article {
 	height: 100%;
 	right: -10px;
 	cursor: col-resize;
+	/* sticks out over div.content, which comes later and is positioned too */
+	z-index: 1;
 }
 [data-on_draginit="draginitSidebarwidth"]
 {

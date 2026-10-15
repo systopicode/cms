@@ -193,9 +193,28 @@ final class SiteRegistry
         }
 
         self::createFolders($name, $projectRoot);
-        $known = array_map(static fn(Site $s) => $s->name, self::all($scope));
-        $log = InstanceFiles::addSite(self::configDir($projectRoot), $name, array_values(array_diff($known, [$name])));
+        $log = self::addHostRules($scope, $name, $projectRoot);
         return $site;
+    }
+
+    /**
+     * The rules of the instance files for a site — a copy of another site's
+     * path rule, where a file has one. A file that already has a rule for
+     * the site is left alone, so this also mends a site that came in with a
+     * backup and never got its rules.
+     *
+     * @return list<string> what was written, or why not
+     */
+    public static function addHostRules(Scope $scope, string $name, ?string $projectRoot = null): array
+    {
+        $known = array_map(static fn(Site $s) => $s->name, self::all($scope));
+        return InstanceFiles::addSite(self::configDir($projectRoot), $name, array_values(array_diff($known, [$name])));
+    }
+
+    /** @return list<string> the instance files with rules, but none for the site */
+    public static function filesWithoutHostRules(string $name, ?string $projectRoot = null): array
+    {
+        return InstanceFiles::filesWithoutSite(self::configDir($projectRoot), $name);
     }
 
     /**

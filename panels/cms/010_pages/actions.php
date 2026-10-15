@@ -160,6 +160,39 @@ switch ($this->action) {
         }
         break;
 
+    case 'createSiteFolder':
+        // a site restored from a backup has its row but not sites/<name>/
+        if ($this->actionSite) {
+            try {
+                $name = $this->actionSite->name;
+                $created = \Systopic\Cms\Pages\Sites\SiteRegistry::createFolders($name);
+                message::confirm($created
+                    ? "Ordner sites/$name/ erstellt (" . count($created) . ' Ordner).'
+                    : "Ordner sites/$name/ gibt es schon.");
+            } catch (\RuntimeException $e) {
+                message::error($e->getMessage());
+            }
+            $this->updateView('main');
+        }
+        break;
+
+    case 'addSiteHostRules':
+        // the same rules createSite writes - missing on a site from a backup
+        if ($this->actionSite) {
+            $isDefault = $this->actionSite->isDefault;
+            $nodeId = $this->actionSite->relationId('node');
+            $log = \Systopic\Cms\Pages\Sites\SiteRegistry::addHostRules($this->scope, $this->actionSite->name);
+            foreach ($log as $line) {
+                message::confirm("config/$line");
+            }
+            if ($log === []) {
+                message::info('Keine Instanz-Datei geändert — die Regeln gibt es schon, oder keine Datei hat welche.');
+            }
+            // a fresh request: the config of this one does not know the rule yet
+            http::redirect($isDefault ? './?site=default' : './?id=' . $nodeId);
+        }
+        break;
+
     case 'removeSite':
         if ($this->actionSite) {
             try {
