@@ -55,6 +55,16 @@ final class Frontend implements \Systopic\System\Sys\Frontend
         return false;
     }
 
+    /**
+     * A site without a single page answers 404 with a word about it, instead
+     * of an empty page — a fresh project, before the first page is made in
+     * cms/pages. Any other URL nobody claims stays as it was.
+     */
+    public function notFound(): ?string
+    {
+        return PageAccess::hasNoPages() ? dirname(__DIR__) . '/nopages.php' : null;
+    }
+
     public function dispatch(): string
     {
         // The page layer payload — pagesRenderer.js reads it as

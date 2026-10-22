@@ -35,6 +35,23 @@ final class PageAccess
      * Are the page tables there? Once per request, by asking them directly —
      * `db::hasTable()` read information_schema, every call, up to four per request.
      */
+    /**
+     * Not one page yet — the tables are missing (nothing was ever written)
+     * or empty. FALSE without a connection: then nothing is known.
+     */
+    public static function hasNoPages(): bool
+    {
+        if (!Connection::isOpen()) {
+            return false;
+        }
+        if (!self::databaseReady()) {
+            return true;
+        }
+        return (int) Scope::default()->connection->value(
+            'SELECT COUNT(*) FROM ' . Schema::tableNameOf(PageModel::class)
+        ) === 0;
+    }
+
     public static function databaseReady(): bool
     {
         if (self::$databaseReady !== null) {
