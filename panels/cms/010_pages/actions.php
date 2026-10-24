@@ -481,24 +481,23 @@ switch ($this->action) {
         }
         $file = new \Systopic\System\Tables\Medias\Media($row);
         $label = htmlspecialchars($file->label, ENT_QUOTES);
+        // the stored form - a reference, no path (Cms\Refs) - and from it what
+        // the editor shows: the same as a reload of the field would
         switch ($file->type) {
             case 'image':
                 $format = (string) array_key_first(mediaFormats::get());
-                $src = $file->setFormat($format)->src;
-                $tag = "<img data-mimetype='{$file->mimetype}' data-node_id='$nodeId' data-id='$nodeId' data-format='$format' src='$src' alt='$label' />";
+                $tag = "<img src=\"media:$nodeId?format=$format\" alt=\"$label\">";
                 break;
             case 'video':
-                $src = $file->setFormat('original')->src;
-                $poster = str_replace('.mp4', '', $src) . '.webp';
-                $tag = "<video data-mimetype='{$file->mimetype}' data-node_id='$nodeId' poster='$poster' controls='true' src='$src'>";
+                $tag = "<video src=\"media:$nodeId\" poster=\"media:$nodeId\" controls></video>";
                 break;
             case 'application':
-                $src = $file->setFormat('original')->src;
-                $tag = "<iframe data-node_id='$nodeId' src='$src'></iframe>";
+                $tag = "<iframe src=\"media:$nodeId\"></iframe>";
                 break;
             default:
                 break 2;
         }
+        $tag = (new \Systopic\Cms\Refs\Resolver($this->scope, $this->params))->renderForEditor($tag);
         $field = http::dataset('field');
         client::insertHtmlAtCursor($tag, "div.editor[data-field='$field']");
         client::trigger("div.editor[data-field='$field']", 'input');

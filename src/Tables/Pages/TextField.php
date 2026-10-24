@@ -7,6 +7,7 @@ namespace Systopic\Cms\Tables\Pages;
 use Stringable;
 use Systopic\Db\Scope;
 use Systopic\Cms\Queries\Params;
+use Systopic\Cms\Refs\Resolver;
 
 /**
  * The view onto **one** text column — successor of `pageText` and `pageHtml`
@@ -96,33 +97,21 @@ final class TextField implements Stringable
     }
 
     /**
-     * The content with references resolved.
-     *
-     * An editor links with `?id=42&lang=de`; at render time that becomes the
-     * address of the page. The legacy code calls `page::get(...)->link` per
-     * match — one statement per reference. Here every id is collected first
-     * and fetched in **one** statement.
+     * The content with its references resolved - `href="page:43"`,
+     * `src="media:293?format=x"`, `{page:43.label}` (Cms\Refs\Resolver):
+     * every target of the field in one load per type.
      */
     public string $rendered {
-        get {
-            $raw = $this->value ?? '';
-            if ($raw === '' || !str_contains($raw, '?id=')) {
-                return $raw;
-            }
+        get => (new Resolver($this->scope, $this->params))->render($this->value ?? '');
+    }
 
-            $pattern = '~\?id=(\d+)(&(amp;|)lang=([a-z]{2})|)~';
-            preg_match_all($pattern, $raw, $matches, PREG_SET_ORDER);
-            $ids = array_values(array_unique(array_map(
-                static fn($match) => (int) $match[1],
-                $matches,
-            )));
-            $pages = Page::byIds($this->scope, $this->params, $ids);
-
-            return (string) preg_replace_callback($pattern, static function (array $match) use ($pages): string {
-                $page = $pages[(int) $match[1]] ?? null;
-                return $page?->rewritepaths->link ?? $match[0];
-            }, $raw);
-        }
+    /**
+     * The content as the CMS editor shows it: urls in place so the browser
+     * shows the images, the references kept beside them for the save
+     * (Resolver::normalize()).
+     */
+    public string $editorContent {
+        get => (new Resolver($this->scope, $this->params))->renderForEditor($this->value ?? '');
     }
 
     /**

@@ -347,7 +347,9 @@ class Panel extends CmsPanel {
 			return FALSE;
 		}
 		try {
-			PageOperator::assign($page->row, $field, is_string($value) ? $value : (string) $value);
+			// the editor sends urls with the reference beside them - store the reference
+			$value = \Systopic\Cms\Refs\Resolver::normalize(is_string($value) ? $value : (string) $value);
+			PageOperator::assign($page->row, $field, $value);
 		} catch (\InvalidArgumentException $e) {
 			\message::error($e->getMessage());
 			return FALSE;
