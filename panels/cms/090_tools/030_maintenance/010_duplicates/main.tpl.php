@@ -1,43 +1,114 @@
 <?php
 /** @var \Systopic\Cms\Panels\Root\Cms\Tools\Maintenance\Duplicates\Panel $this */
 
+use Systopic\Cms\Tables\Pages\Languages;
+
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
-$groups = static function (array $rows, callable $key): array {
-	$by = [];
-	foreach ($rows as $row) {
-		$by[$key($row)][] = $row;
+$langs = Languages::all();
+$default = defined('DEFAULT_LANG') && DEFAULT_LANG !== '' ? (string) DEFAULT_LANG : Languages::default();
+$langName = static function (?string $iso) use ($langs): string {
+	$iso = (string) $iso;
+	if ($iso === '' || $iso === '*') {
+		return '';
 	}
-	return $by;
+	return (string) ($langs[$iso]['label'] ?? strtoupper($iso));
 };
+
+$pages = $this->pages;
+usort($pages, static function ($a, $b) use ($default): int {
+	$by = strcasecmp(trim((string) $a->label), trim((string) $b->label));
+	if ($by !== 0) {
+		return $by;
+	}
+	$rank = static fn($page): int => $page->languageIso === $default ? 0 : 1;
+	return $rank($a) <=> $rank($b) ?: ((int) $a->id <=> (int) $b->id);
+});
+
+$crops = $this->crops;
+usort($crops, static function ($a, $b): int {
+	$by = strcasecmp(trim((string) ($a->media?->label ?? '')), trim((string) ($b->media?->label ?? '')));
+	return $by !== 0 ? $by : strcasecmp((string) $a->format, (string) $b->format);
+});
 ?>
+<h1>Duplicates</h1>
+<p class="tagsHint">Pages and images that exist twice.</p>
 <?= \message::flush() ?>
-<h2>Duplicate Pages</h2>
-<table class="keycolumn">
-	<tr><th>page</th><th>count</th><th>labels</th></tr>
-	<?php foreach ($groups($this->pages, static fn($p): string => $p->relationId('node') . ':' . ($p->languageIso ?? 'NULL')) as $key => $copies) { ?>
-		<tr>
-			<td><?= $e($key) ?></td>
-			<td><?= count($copies) ?></td>
-			<td>
-				<?php foreach ($copies as $page) { ?>
-					<?= $e($page->label) ?><a data-on_click="deletePage" data-page_id="<?= $page->id ?>" title="page:<?= $page->id ?>"> <i class="far fa-trash"></i></a>
+<section class="widget is-list">
+	<header>
+		<h2>Pages</h2>
+		<?php if ($pages !== []) { ?>
+			<input class="listSearch" type="search" placeholder="Search" data-on_input="filterList" autocomplete="off">
+		<?php } ?>
+	</header>
+	<p class="tagsHint">The same page stored twice. Delete removes that copy and leaves the other.</p>
+	<?php if ($pages === []) { ?>
+		<main><p>No duplicate pages.</p></main>
+	<?php } else { ?>
+		<table>
+			<thead>
+				<tr>
+					<th>Page</th>
+					<th>Language</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($pages as $page) {
+					$title = trim((string) $page->label) ?: 'Untitled';
+					?>
+					<tr>
+						<td><?= $e($title) ?></td>
+						<td class="muted"><?= $e($langName($page->languageIso)) ?></td>
+						<td class="icons">
+							<ul>
+								<li>
+									<a class="button icononly" title="Delete" data-on_click="userConfirm" data-action="deletePage" data-page_id="<?= (int) $page->id ?>" data-confirm="<?= $e('Delete this copy of “' . $title . '”?') ?>"><i class="fa-regular fa-trash"></i></a>
+								</li>
+							</ul>
+						</td>
+					</tr>
 				<?php } ?>
-			</td>
-		</tr>
+			</tbody>
+		</table>
 	<?php } ?>
-</table>
-<h2>Duplicate Crops</h2>
-<table class="keycolumn">
-	<tr><th>crop</th><th>count</th><th>labels</th></tr>
-	<?php foreach ($groups($this->crops, static fn($c): string => $c->relationId('media') . ':' . ($c->format ?? 'NULL')) as $key => $copies) { ?>
-		<tr>
-			<td><?= $e($key) ?></td>
-			<td><?= count($copies) ?></td>
-			<td>
-				<?php foreach ($copies as $crop) { ?>
-					<?= $e($crop->media?->label) ?><a data-on_click="deleteCrop" data-crop_id="<?= $crop->id ?>" title="crop:<?= $crop->id ?>"> <i class="far fa-trash"></i></a>
+</section>
+<section class="widget is-list">
+	<header>
+		<h2>Images</h2>
+		<?php if ($crops !== []) { ?>
+			<input class="listSearch" type="search" placeholder="Search" data-on_input="filterList" autocomplete="off">
+		<?php } ?>
+	</header>
+	<p class="tagsHint">The same image in the same format, stored twice. Delete removes that copy.</p>
+	<?php if ($crops === []) { ?>
+		<main><p>No duplicate images.</p></main>
+	<?php } else { ?>
+		<table>
+			<thead>
+				<tr>
+					<th>Image</th>
+					<th>Format</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($crops as $crop) {
+					$title = trim((string) ($crop->media?->label ?? '')) ?: 'Untitled';
+					$format = trim((string) $crop->format) ?: 'original';
+					?>
+					<tr>
+						<td><?= $e($title) ?></td>
+						<td class="muted"><?= $e($format) ?></td>
+						<td class="icons">
+							<ul>
+								<li>
+									<a class="button icononly" title="Delete" data-on_click="userConfirm" data-action="deleteCrop" data-crop_id="<?= (int) $crop->id ?>" data-confirm="<?= $e('Delete this copy of “' . $title . '”?') ?>"><i class="fa-regular fa-trash"></i></a>
+								</li>
+							</ul>
+						</td>
+					</tr>
 				<?php } ?>
-			</td>
-		</tr>
+			</tbody>
+		</table>
 	<?php } ?>
-</table>
+</section>

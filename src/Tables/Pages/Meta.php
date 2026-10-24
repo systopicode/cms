@@ -106,6 +106,61 @@ final class Meta
         }
     }
 
+    /**
+     * Why sitemap.xml and llms.txt leave this page out. Empty means it is listed.
+     *
+     * Five checks, nothing else: publishing start, publishing end, navi element,
+     * the live page count of the address, and the robots setting.
+     *
+     * @return list<string>
+     */
+    public array $listBlockers {
+        get {
+            $page = $this->page;
+            $row = $page->row;
+            if ($row === null) {
+                return ['No page record'];
+            }
+            $reasons = [];
+            $now = new DateTimeImmutable();
+            $from = $this->scope->value($row, 'startPublishing');
+            $to = $this->scope->value($row, 'endPublishing');
+            if ($from instanceof DateTimeImmutable && $from > $now) {
+                $reasons[] = 'Publishing start is still ahead';
+            }
+            if ($to instanceof DateTimeImmutable && $to < $now) {
+                $reasons[] = 'Publishing end has passed';
+            }
+            if (!$this->isNaviElement) {
+                $reasons[] = 'Navi element is off';
+            }
+            $path = $page->rewritepaths->primary;
+            // The live counter only moves on LIVE. On every other stage the
+            // visits of this installation are the test counter, otherwise the
+            // sitemap of a development site would stay empty.
+            $onLive = defined('STAGE') && STAGE === 'LIVE';
+            $count = $path === null ? 0 : ($onLive ? $path->livecount : $path->testcount);
+            if ($count === 0) {
+                $reasons[] = $onLive ? 'Live page count is 0' : 'Page count is 0';
+            }
+            $robots = trim((string) $this->robots);
+            if (str_contains($robots, 'noindex')) {
+                $reasons[] = 'Robots: ' . $robots;
+            }
+            return $reasons;
+        }
+    }
+
+    /**
+     * Should a search engine or an AI list this page?
+     *
+     * Publishing start, publishing end, navi element, live page count and
+     * robots. sitemap.xml and llms.txt both ask this, on every request.
+     */
+    public bool $listed {
+        get => $this->listBlockers === [];
+    }
+
     // ------------------------------------------------- search engines, sharing
 
     public ?string $description {

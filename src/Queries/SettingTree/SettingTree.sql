@@ -33,6 +33,7 @@ SELECT
 	setting_datatype,
 	setting_label,
 	setting_description,
+	setting_show_in_templates,
 
 	junction_node_id,
 	junction_setting_node_id,

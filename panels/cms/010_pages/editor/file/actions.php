@@ -22,6 +22,29 @@ $save = static function () use ($pages, $row): void {
 	$pages->uow()->persist($row)->commit();
 };
 
+$formatsOf = function (bool $all): array {
+	$current = (string) http::get('format', (string) ($this->state->format ?? ''));
+	if ($current === '' || $current === 'original') {
+		foreach (mediaFormats::get() as $name => $config) {
+			if (($config['cms_display'] ?? '') !== 'none' && $name !== 'original') {
+				$current = (string) $name;
+				break;
+			}
+		}
+	}
+	if (!$all) {
+		return $current !== '' && $current !== 'original' ? [$current] : [];
+	}
+	$names = [];
+	foreach (mediaFormats::get() as $name => $config) {
+		if (($config['cms_display'] ?? '') === 'none' || $name === 'original') {
+			continue;
+		}
+		$names[] = (string) $name;
+	}
+	return $names;
+};
+
 switch ($this->action) {
 	case 'updateFilename':
 		if ($row === NULL) {
@@ -53,6 +76,23 @@ switch ($this->action) {
 		}
 		break;
 
+	case 'updateMediaType':
+		if ($row !== NULL) {
+			$type = strtolower(trim((string) http::values('type')));
+			if ($type !== '' && (in_array($type, ['image', 'video', 'pdf', 'file'], true) || \Systopic\System\Tables\Medias\External::is($type))) {
+				$row->type = $type;
+				$save();
+			}
+		}
+		break;
+
+	case 'updateMediaUrl':
+		if ($row !== NULL) {
+			\Systopic\System\Tables\Medias\External::storeUrl($row, (string) http::values('url'));
+			$save();
+		}
+		break;
+
 	case 'updateSVG':
 		if ($row !== NULL) {
 			MediaFiles::writeOriginal($row, (string) http::values('svgContent'));
@@ -64,9 +104,70 @@ switch ($this->action) {
 	case 'createPoster':
 		if ($row !== NULL) {
 			$data = (string) http::post('value');
-			MediaFiles::writePoster($row, (string) base64_decode(substr($data, strpos($data, ',') + 1)));
+			$binary = (string) base64_decode(substr($data, strpos($data, ',') + 1));
+			$format = (string) http::get('format', 'original');
+			$parts = function_exists('videoFormatMediaParts') ? videoFormatMediaParts($this->media) : null;
+			if ($format !== '' && $format !== 'original' && $parts && function_exists('videoFormatRel')) {
+				$rel = preg_replace('/\.mp4$/', '.webp', videoFormatRel($format, $parts['folders'], $parts['filename']));
+				$path = \fs::toNative((string) \fs::$siteRoot . $rel);
+				$dir = dirname($path);
+				if (!is_dir($dir)) {
+					@mkdir($dir, 0775, true);
+				}
+				file_put_contents($path, $binary);
+			} else {
+				MediaFiles::writePoster($row, $binary);
+			}
 			$save();
 		}
+		break;
+
+	case 'adjustImage':
+		if ($row === NULL || $row->id === null) {
+			break;
+		}
+		$brightness = max(0, min(200, (int) http::get('brightness', 100)));
+		$contrast = max(0, min(200, (int) http::get('contrast', 100)));
+		$saturation = max(0, min(200, (int) http::get('saturation', 100)));
+		$rotate = ((int) http::get('rotate', 0) % 360 + 360) % 360;
+		$flip = (int) http::get('flip', 0) === 1;
+		if ($brightness === 100 && $contrast === 100 && $saturation === 100 && $rotate === 0 && !$flip) {
+			break;
+		}
+		$tune = ['b' => $brightness, 'c' => $contrast, 's' => $saturation, 'r' => $rotate, 'f' => $flip ? 1 : 0];
+		$names = $formatsOf((int) http::get('apply_all', 0) === 1);
+		if ($names === []) {
+			header('X-Adjust: empty');
+			http_response_code(422);
+			break;
+		}
+		foreach ($names as $name) {
+			MediaFiles::saveTune((int) $row->id, (string) $row->filename, $name, $tune);
+			MediaFiles::dropFormatFile((int) $row->id, $name, (string) $row->filename);
+		}
+		header('X-Adjust: saved');
+		break;
+
+	case 'restoreOriginal':
+		if ($row === NULL || $row->id === null) {
+			break;
+		}
+		// A backup from before the original was written over. The original is no longer edited.
+		$path = MediaFiles::originalPath($row);
+		$master = $path . '.master';
+		if (is_file($master)) {
+			copy($master, $path);
+			MediaFiles::describe($row);
+			MediaFiles::saveTune((int) $row->id, (string) $row->filename, null, null);
+			MediaFiles::removeFormats($row);
+			$save();
+		} else {
+			foreach ($formatsOf((int) http::get('apply_all', 0) === 1) as $name) {
+				MediaFiles::saveTune((int) $row->id, (string) $row->filename, $name, null);
+				MediaFiles::dropFormatFile((int) $row->id, $name, (string) $row->filename);
+			}
+		}
+		$pages->updateView('mml');
 		break;
 
 	case 'changeImageFormat':

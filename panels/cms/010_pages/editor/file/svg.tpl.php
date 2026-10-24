@@ -6,9 +6,7 @@
  */
 $path = \fs::toNative($original->path);
 ?>
-<div class='imageCropAlignContainer'>
-	<div>
-		<img id='svgPreviewImage' src="<?= $original->src ?>">
-		<textarea style='margin:20px 0' name='svgContent' class='ajax' data-on_input='updateSVG'><?= htmlspecialchars(is_file($path) ? (string) file_get_contents($path) : '') ?></textarea>
-	</div>
+<div class="fileFrame">
+	<img id="svgPreviewImage" alt="" src="<?= htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') ?>">
 </div>
+<textarea class="fileSource ajax" name="svgContent" data-on_input="updateSVG" spellcheck="off"><?= htmlspecialchars(is_file($path) ? (string) file_get_contents($path) : '') ?></textarea>

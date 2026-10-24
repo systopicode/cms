@@ -15,6 +15,8 @@ use Systopic\System\Tables\Junctions\Model as NodeJunction;
  */
 class Panel extends PanelNode {
 
+	public bool $inNavi = false;
+
 	/** Set by the action once the declaration is gone: the lightbox then offers "Ok". */
 	public bool $done = FALSE;
 

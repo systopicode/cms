@@ -5,8 +5,14 @@
 switch ($this->action) {
 	case 'restoreNode':
 		$nodeId = (int) \http::dataset('node_id');
-		if (isset($this->trashed[$nodeId])) {
-			\message::confirm("page recovered: $nodeId (" . $this->restoreBranch($nodeId) . ' nodes)');
+		$entry = $this->trashed[$nodeId] ?? null;
+		if ($entry !== null) {
+			$title = $this->pageTitle($entry['pages']);
+			$restored = $this->restoreBranch($nodeId);
+			$text = $restored > 1
+				? 'Restored “' . $title . '” and the pages under it.'
+				: 'Restored “' . $title . '”.';
+			\message::confirm(htmlspecialchars($text, ENT_QUOTES));
 		}
 		$this->updateView();
 		break;

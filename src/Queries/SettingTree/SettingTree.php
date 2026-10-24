@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Systopic\Cms\Queries\SettingTree;
 
+use Systopic\Db\Schema\Provisioner;
 use Systopic\Db\Schema\Registry;
 use Systopic\Db\Scope;
 use Systopic\System\Tables\Nodes\Model as Node;
@@ -118,7 +119,12 @@ final class SettingTree
         Registry::register(Setting::class);
         Registry::register(NodeJunction::class);
 
-        $rows = $scope->rows(__DIR__ . '/SettingTree.sql', []);
+        // A declared column that is not in cms_settings yet (1054) is added
+        // from the model and the query runs again. Same opt-in as TagGroups.
+        $rows = $scope->rows(
+            __DIR__ . '/SettingTree.sql', [],
+            provisioner: new Provisioner($scope->connection),
+        );
 
         // One pass to build, a second to hang them together. The query is
         // ordered by parent, so a parent has always been seen by the time its

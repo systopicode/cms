@@ -10,7 +10,7 @@ switch ($this->action) {
 		// rewritepath_site_node_id from the place in the tree: the node of type
 		// 'site' above the page, NULL for the default site. Never edited by hand.
 		$changed = \Systopic\Cms\Pages\Sites\NodeSite::rebuildAll();
-		\message::confirm("$changed Pfade einer anderen Site zugeordnet.");
+		\message::confirm($changed . ' paths assigned to their site.');
 		$this->updateView();
 		break;
 
@@ -30,15 +30,18 @@ switch ($this->action) {
 		break;
 
 	case 'deletePath':
-		if ($this->rewritepath) {
-			Removal::remove($this->scope, $this->rewritepath);
+		$path = $this->rewritepath;
+		if ($path) {
+			$shown = trim((string) $path->string) ?: '/';
+			Removal::remove($this->scope, $path);
+			\message::confirm(htmlspecialchars('Deleted “' . $shown . '”.', ENT_QUOTES));
 		}
 		$this->updateView('main');
 		break;
 
 	case 'deleteTrashedPaths':
 		$removed = Removal::remove($this->scope, ...RewritepathIndex::trashed($this->scope));
-		\message::confirm('found ' . $removed . ' trashed URLS');
+		\message::confirm($removed . ' addresses of trashed pages deleted.');
 		$this->updateView();
 		break;
 }

@@ -23,7 +23,7 @@ $siteOf = static function (?int $siteNodeId) use ($sites): string {
 	if ($siteNodeId === null) {
 		return $sites->default()->name;
 	}
-	return $sites->byRoot($siteNodeId)?->name ?? "Knoten $siteNodeId (keine Site)";
+		return $sites->byRoot($siteNodeId)?->name ?? 'Unknown site';
 };
 
 $form = static function (Rewritepath $path) use ($siteOf): string {
@@ -38,25 +38,32 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 	} else {
 		$html .= "<input type='text' name='rewritePath' data-on_input='sidebar/rewritePath_update' value='$string'/>";
 	}
-	$html .= "<i data-on_click='sidebar/rewritePath_delete' class='fal fa-trash right' ></i>";
+	$html .= "<i data-on_click='sidebar/rewritePath_delete' class='fa-regular fa-trash' title='Remove address'></i>";
 	$html .= '</div>';
-	$when = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d H:i:s') ?? '';
+	$when = static fn(?DateTimeImmutable $d): string => $d?->format('d.m.Y H:i') ?? '—';
 	$site = $siteOf($path->siteNodeId);
-	$html .= "<div class='group'><div>";
+	$html .= "<p class='pathMeta'>";
 	if ($site !== '') {
-		$html .= 'Site: <b>' . htmlspecialchars($site) . '</b><br>';
+		$html .= htmlspecialchars($site) . ' · ';
 	}
-	$html .= "Test: <b>{$path->testcount}</b> " . $when($path->testcountDatetime);
-	$html .= "<br>Live: <b>{$path->livecount}</b> " . $when($path->livecountDatetime) . '</div></div>';
+	$html .= "Test {$path->testcount}";
+	if ($path->testcountDatetime) {
+		$html .= ' · ' . $when($path->testcountDatetime);
+	}
+	$html .= " · Live {$path->livecount}";
+	if ($path->livecountDatetime) {
+		$html .= ' · ' . $when($path->livecountDatetime);
+	}
+	$html .= '</p>';
 	return $html;
 };
 ?>
-<h3>URL's</h3>
+<h3>Addresses</h3>
 <ul class="rewrite">
-    <li class="seperator">Auto
-		<i class="fal fa-undo right"
+    <li class="seperator">Automatic
+		<i class="fa-regular fa-arrow-rotate-left"
 		   data-on_click="sidebar/rewritePath_updateAutoPath"
-		   title='Rebuild Auto URL'
+		   title="Rebuild from the page name"
 		   data-page_id="<?= $page->row->id ?>">
 		</i>
     </li>
@@ -65,22 +72,22 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 	foreach ($paths->auto as $rewritePath) {
 		echo $form($rewritePath);
 		if (empty($rewritePath->barrierId)) {
-			$barrierLink = ' - ideal URL';
+			$barrierLink = ' · full path';
 		} else {
 			$owner = RewritepathLookup::pageOf($this->parent->scope, (int) $rewritePath->barrierId);
 			$barrierLink = $owner === null
-				? '</label><br/><label>Problem Page removed.'
-				: "</label><br/><label><a class='ajax' href='./?id=" . (int) $owner->relationId('node') . '&lang=' . $owner->languageIso . "'>Problem Page: "
+				? ' · blocked by a removed page'
+				: " · blocked by <a class='ajax' href='./?id=" . (int) $owner->relationId('node') . '&lang=' . $owner->languageIso . "'>"
 					. htmlspecialchars((string) $owner->label) . '</a>';
 		}
 		?>
-		<div class="group">creation Level: <?= $rewritePath->autoIndex . $barrierLink ?></div>
+		<p class="pathMeta">Level <?= (int) $rewritePath->autoIndex . $barrierLink ?></p>
 	<?php } ?>
 	</li>
 <li  class="seperator">Custom
-	<i class="fa-regular fa-plus right"
+	<i class="fa-regular fa-plus"
 	   data-on_click="sidebar/rewritePath_new"
-	   title='Create New'
+	   title="Add an address"
 	   data-page_id="<?= $page->row->id ?>">
 	</i>
 </li>

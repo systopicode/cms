@@ -56,4 +56,12 @@ final class Model extends TableRow
         get => $this->__get__(__PROPERTY__);
         set => $this->__set__(__PROPERTY__, $value);
     }
+
+    /**
+     * Semicolon-separated template names. Empty means every template.
+     */
+    public ?string $showInTemplates {
+        get => $this->__get__(__PROPERTY__);
+        set => $this->__set__(__PROPERTY__, $value);
+    }
 }

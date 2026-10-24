@@ -13,19 +13,14 @@ $stamp = static fn(?DateTimeImmutable $d): string => $d?->format('d.m.Y H:i:s') 
 <ul>
 	<?php if ($page->node->isTrashed) { ?>
 		<li>
-			<div class='group'>
-				<a target="_blank" class='previewLink' href="<?= http::$siteRoot ?>?id=<?= $page->id ?>&lang=<?= $page->language ?>&preview&showtrashed"><i style='margin-right: 10px' class="fal fa-eyes"></i>Page Preview</a>
-			</div>
+			<a target="_blank" class="sideAction" href="<?= http::$siteRoot ?>?id=<?= $page->id ?>&lang=<?= $page->language ?>&preview&showtrashed"><i class="fa-regular fa-eye"></i>Preview</a>
 		</li>
 	<?php } else { ?>
 		<li>
-			<div class='group'>
-				<a target="_blank" class='previewLink' href="<?= http::$siteRoot ?>?id=<?= $page->id ?>&lang=<?= $page->language ?>&preview"><i style='margin-right: 10px' class="fal fa-eyes"></i>Page Preview</a>
-			</div>
+			<a target="_blank" class="sideAction" href="<?= http::$siteRoot ?>?id=<?= $page->id ?>&lang=<?= $page->language ?>&preview"><i class="fa-regular fa-eye"></i>Preview</a>
 		</li>
 	<?php } ?>
 
-	<li class="seperator"></li>
 	<li>
 		<div class="inputGroup">
 			<input autocomplete="off" type="text" data-on_change="sidebar/updateParam" name="label" value="<?= $e($row->label) ?>">
@@ -33,20 +28,17 @@ $stamp = static fn(?DateTimeImmutable $d): string => $d?->format('d.m.Y H:i:s') 
 			<label>Label</label>
 		</div>
 	</li>
-	<li class="seperator"></li>
 	<li>
-		<div class='group'>
-			<span>
-				<b>Created&nbsp;at&nbsp;</b><br><?= $stamp($row->createdDate) ?>
-				<br><b>by&nbsp;</b><?= $e($row->createdUser?->fullname) ?>
-			</span>
-		</div>
-		<div class='group'>
-			<span>
-				<b>Modified&nbsp;at&nbsp;</b><br><?= $stamp($row->modifiedDate) ?>
-				<br><b>by&nbsp;</b><?= $e($row->modifiedUser?->fullname) ?>
-			</span>
-		</div>
+		<dl class="cmsFacts">
+			<div>
+				<dt>Created</dt>
+				<dd><?= $stamp($row->createdDate) ?><?php if ($row->createdUser?->fullname) { ?> · <?= $e($row->createdUser->fullname) ?><?php } ?></dd>
+			</div>
+			<div>
+				<dt>Modified</dt>
+				<dd><?= $stamp($row->modifiedDate) ?><?php if ($row->modifiedUser?->fullname) { ?> · <?= $e($row->modifiedUser->fullname) ?><?php } ?></dd>
+			</div>
+		</dl>
 	</li>
 </ul>
 

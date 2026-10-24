@@ -21,9 +21,8 @@ $siteRoot = (string) http::$siteRoot;
 	<li class='title notselectable' <?= html::arrayToDataAttr(['media_group' => $groupName, 'drop_accept' => 'media', 'on_drop' => 'mml/updateMediaGroup']) ?>>
 		<h4><?= $e($label) ?></h4>
 		<ul>
-			<li class=upload>
+			<li class="upload" data-upload-many>
 				<i class='fa-regular fa-plus'></i>
-				<input type=file data-on_change=upload/open>
 			</li>
 			<?php foreach ($entries as $entry) {
 				$media = $entry['media'];
@@ -42,7 +41,9 @@ $siteRoot = (string) http::$siteRoot;
 					'media_id' => $media?->id, 'type' => $media?->type, 'value' => $media?->label,
 					'on_contextmenu' => 'mml/getMmlContextmenu',
 				]) ?>>
+					<?php if ($entry['alias']) { ?>
 					<input type=file data-on_change='upload/open'>
+					<?php } ?>
 					<?php if ($entry['alias']) {
 						$ext = in_array($mime, ['image/png', 'image/jpeg'], true) ? '' : '.png';
 						?>
@@ -54,12 +55,21 @@ $siteRoot = (string) http::$siteRoot;
 						$ext = in_array($mime, ['image/svg+xml', 'image/webp', 'image/png', 'image/jpeg'], true) ? '' : '.webp';
 						$src = "{$siteRoot}var/formats/mmlThumb/$folders$filename$ext";
 						$icon = $type;
-						if ($type === 'application') {
+						if ($type === 'application' || $type === 'pdf') {
 							$icon = 'file-pdf';
+						} elseif ($mime === 'image/gif') {
+							$icon = 'gif';
+						} elseif (\Systopic\System\Tables\Medias\External::is($type)) {
+							$icon = 'circle-play';
 						} elseif ($type === 'video') {
-							$poster = "var/original/$folders$filename.webp";
-							if (fs::fileExists(fs::$root . $poster)) {
-								$src = $siteRoot . $poster;
+							$stem = preg_replace('/\.(mp4|webm|mov|m4v)$/i', '', $filename);
+							$mediaRoot = (string) fs::$siteRoot;
+							foreach (["var/original/$folders$stem.webp", "var/original/$folders$filename.webp"] as $poster) {
+								$abs = $mediaRoot . $poster;
+								if (is_file($abs) && filesize($abs) > 0) {
+									$src = $siteRoot . $poster . '?v=' . filemtime($abs);
+									break;
+								}
 							}
 						} elseif ($mime === 'image/svg+xml') {
 							$icon = 'vector-polygon';
@@ -67,7 +77,17 @@ $siteRoot = (string) http::$siteRoot;
 						}
 						?>
 						<img src='<?= $e($src) ?>'>
-						<i class='fa-regular fa-<?= $e($icon) ?>'><a class='ajax' href='editor/file/?target_id=<?= $id ?>'></a></i>
+						<i class='fa-regular fa-<?= $e($icon) ?> thumbType'></i>
+						<div class='thumbActions'>
+							<span class='thumbGrip' title='Drag'><span></span><span></span><span></span><span></span><span></span><span></span></span>
+							<div class='thumbButtons'>
+								<a class='ajax' href='editor/file/?target_id=<?= $id ?>' title='Edit' onmousedown='event.stopPropagation()'><i class='fa-regular fa-pen'></i></a>
+								<label title='Replace' onmousedown='event.stopPropagation()'>
+									<i class='fa-regular fa-arrows-rotate'></i>
+									<input type=file data-on_change='upload/open'>
+								</label>
+							</div>
+						</div>
 					<?php } ?>
 					<div class='sort h insertBefore' data-drop_accept='media' data-on_drop='mml/insertMediaBefore'></div>
 					<div class='sort h insertAfter' data-drop_accept='media' data-on_drop='mml/insertMediaAfter'></div>

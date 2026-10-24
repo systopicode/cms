@@ -30,7 +30,7 @@ use Systopic\Cms\Queries\Params;
  */
 class Panel extends CmsPanel {
 
-	public $icon = 'fa-regular fa-table-layout';
+	public $icon = 'fa-duotone fa-regular fa-files';
 
 	public function buildGranted() {
 		return \Systopic\System\Auth\Session::hasOneRole('editor', 'textEditor');
@@ -311,6 +311,7 @@ class Panel extends CmsPanel {
 	function pageChanged() {
 		$this->updateView('main');
 		$this->updateView('controls');
+		$this->updateView('status');
 		$this->updateView('pylon'); // Pylon mit neuem, damit MML-Wrapper die Klasse mml-empty verliert und sichtbar wird
 		$this->updateView('mml');
 		$this->updateView('tree');

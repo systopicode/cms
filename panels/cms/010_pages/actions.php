@@ -310,7 +310,10 @@ switch ($this->action) {
         if ($page?->row === null) {
             break;
         }
-        PageOperator::assign($page->row, 'label', strip_tags((string) http::put('html')));
+        $label = strip_tags((string) http::put('html'));
+        $label = html_entity_decode($label, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $label = html_entity_decode($label, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        PageOperator::assign($page->row, 'label', $label);
         $savePage($page->row);
         $entry = $this->tree->getNode($page->id);
         if ($entry !== null) {
@@ -318,6 +321,7 @@ switch ($this->action) {
         }
         // The tree draws from the same row: no reload.
         $this->updateView('tree');
+        $this->child('sidebar')?->refreshSeoPreview();
         break;
 
     case 'cmsPageSearch':

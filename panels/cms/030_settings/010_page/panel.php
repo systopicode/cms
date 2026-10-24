@@ -16,14 +16,24 @@ use Systopic\Cms\Queries\SettingTree\SettingTree;
  */
 class Panel extends SettingsPanel {
 
+	public $icon = 'fa-regular fa-sliders';
+
 	public function __construct($name, $parent = NULL) {
 		parent::__construct($name, $parent);
-		$this->label = 'Page Settings';
+		$this->label = 'Template Settings';
 	}
 
 	/** The declaration on screen — NULL at the root. */
 	public ?Definition $selected {
-		get => ($id = (int) \http::get('id', 1)) > 1 ? SettingTree::byNodeId($this->scope, $id) : NULL;
+		get {
+			// The edit and delete lightboxes share ?id= with this list. The
+			// list keeps showing the parent of the row that was opened.
+			if (in_array($this->childSelected?->name, ['edit', 'delete'], true)) {
+				$edited = SettingTree::byNodeId($this->scope, (int) \http::get('id'));
+				return $edited?->parent;
+			}
+			return ($id = (int) \http::get('id', 1)) > 1 ? SettingTree::byNodeId($this->scope, $id) : NULL;
+		}
 	}
 
 	/** @var list<Definition> the rows below the selected one, or the topmost level */

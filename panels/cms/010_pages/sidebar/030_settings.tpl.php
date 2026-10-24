@@ -41,7 +41,13 @@ $values = SettingValues::of($this->parent->scope, $pageNodeId);
 ?>
 <h3>Settings</h3>
 <?php
+$page = $this->parent->page ?? null;
+$pageTemplate = $page ? (string) $page->templateName : '';
 foreach ($definitions as $definition) {
+	$only = array_values(array_filter(array_map('trim', explode(';', (string) ($definition->setting->showInTemplates ?? ''))), static fn(string $name): bool => $name !== ''));
+	if ($only !== [] && !in_array($pageTemplate, $only, true)) {
+		continue;
+	}
 	if ($definition->name === null) {
 		// Eine Einstellung, die jemand angelegt und nie ausgefuellt hat. Der
 		// Bestand lief hier in eine Deprecation (NULL als Array-Schluessel);
@@ -97,8 +103,9 @@ foreach ($definitions as $definition) {
 			break;
 
 		case 'group':
-			// Mehrere Optionen gleichzeitig, jede mit eigenem Wert. Das ist
-			// der Fall, an dem ein reines Paar-Modell scheitern wuerde.
+			// Mehrere Felder, die zusammengehören. Der Rahmen macht die
+			// Gruppe von einem einzelnen Feld unterscheidbar.
+			echo "<section class='settingGroup'>";
 			echo "<h4>{$definition->label}</h4>";
 			echo "<div data-on_input='sidebar/updateValue' data-node_id=$pageNodeId>";
 			foreach ($definition->options as $option) {
@@ -113,7 +120,7 @@ foreach ($definitions as $definition) {
 				echo "<input name={$option->name} value=$itemValue>";
 				echo "</label>";
 			}
-			echo '</div>';
+			echo '</div></section>';
 			break;
 
 		default:

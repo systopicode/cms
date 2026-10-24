@@ -2,8 +2,10 @@
 
 /** @var \Systopic\Cms\Panels\Root\Cms\Settings\Page\Panel $this */
 
+use Systopic\Cms\Queries\SettingTree\Definition;
 use Systopic\Cms\Queries\SettingTree\SettingTree;
 use Systopic\Cms\Tables\Settings\Operator as SettingOperator;
+use Systopic\System\Tables\Nodes\Operator as NodeOperator;
 
 $definition = $this->definition;
 
@@ -32,6 +34,32 @@ switch ($this->action) {
 		if ($definition) {
 			$this->scope->save(...SettingTree::move($this->scope, $definition, $this->action === 'up' ? -1 : +1));
 		}
+		$this->updateView();
+		break;
+
+	case 'insertBefore':
+	case 'insertAfter':
+		$drag = SettingTree::byNodeId($this->scope, (int) \http::dragdata('id'));
+		$drop = SettingTree::byNodeId($this->scope, (int) \http::dataset('id'));
+		if ($drag === null || $drop === null || $drag->nodeId === $drop->nodeId) {
+			break;
+		}
+		if (($drag->parent?->nodeId ?? 0) !== ($drop->parent?->nodeId ?? 0)) {
+			break;
+		}
+		$siblings = $drag->parent === null
+			? SettingTree::load($this->scope)
+			: $drag->parent->options;
+		$nodes = array_map(static fn(Definition $row) => $row->node, $siblings);
+		$others = array_values(array_filter($nodes, static fn($node) => $node !== $drag->node));
+		$at = count($others);
+		foreach ($others as $index => $node) {
+			if ($node === $drop->node) {
+				$at = $index + ($this->action === 'insertAfter' ? 1 : 0);
+				break;
+			}
+		}
+		$this->scope->save(...NodeOperator::place($nodes, $drag->node, $at));
 		$this->updateView();
 		break;
 }

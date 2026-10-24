@@ -55,8 +55,35 @@ switch ($this->action) {
 		}
 		$uow->commit();
 		MediaFiles::store($media, $tmpFileNative, $fileName);   // type, mime, image size from the file
+		$chosen = strtolower(trim((string) http::put('type')));
+		if ($chosen !== '' && (in_array($chosen, ['image', 'video', 'pdf', 'file'], true) || \Systopic\System\Tables\Medias\External::is($chosen))) {
+			$media->type = $chosen;
+		}
+		if (\Systopic\System\Tables\Medias\External::is((string) $media->type) || trim((string) http::put('url')) !== '') {
+			\Systopic\System\Tables\Medias\External::storeUrl($media, (string) http::put('url'));
+		}
 		$pages->uow()->persist($media)->commit();
-		$pages->pageChanged();
-		http::redirect('../');
+		// The library tile is this format. Make it now, so replace does not
+		// leave the grey "file missing" card until something else asks for it.
+		if (str_starts_with((string) $media->mimetype, 'image/') && $media->mimetype !== 'image/svg+xml' && class_exists('mediaImage')) {
+			$original = MediaFiles::originalPath($media);
+			try {
+				$thumb = mediaImage::createImageFormat((int) $media->id, 'mmlThumb', $original, (string) $media->filename, is_file($original), '');
+				MediaFiles::writeFormat($thumb, (int) $media->id, 'mmlThumb', (string) $media->filename);
+				$thumb->clear();
+			} catch (Throwable $e) {
+				// the tile asks again on the next view
+			}
+		}
+		if (function_exists('videoFormatsAfterUpload')) {
+			videoFormatsAfterUpload($media);
+		}
+		// Several files stay on the page that is open. '../' from here is the
+		// CMS root, which is the blank screen. The lightbox is the one case
+		// that lives under upload/ and has to step back up.
+		if (!http::put('queue')) {
+			$pages->pageChanged();
+			http::redirect('../');
+		}
 		break;
 }

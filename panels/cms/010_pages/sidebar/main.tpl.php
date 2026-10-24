@@ -1,38 +1,58 @@
 <?php
 /**
- * The sidebar next to the preview: one column per active item.
- *
- * Every item template reads the page from `$this->parent->page` — the
- * page panel's page, the same object the tree draws from.
+ * Sidebar: eine Tab-Reihe (Inhalt, SEO, Veröffentlichung), darunter Accordions.
  *
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Sidebar\Panel $this
  */
-if (empty($this->state->activeSidebarTemplates)) {
+$page = $this->parent->page ?? null;
+if ($page === null || $page->row === null || $this->groups === []) {
 	return;
 }
-$items = count($this->state->activeSidebarTemplates);
-$cols = min($items, floor($this->state->sidebarWidth / 250));
+$activeGroup = $this->activeGroup();
+$collapsed = !empty($this->state->sidebarCollapsed);
+$width = $collapsed ? 0 : (int) $this->state->sidebarWidth;
 ?>
-<aside class=cms style='flex: 0 0 <?= $this->state->sidebarWidth ?>px' data-cols='<?= $cols ?>' data-items='<?= $items ?>'>
-	<div class='flexContainer'>
-		<div class="scrollContainer">
-			<div class='scrollContainerContent' data-Xon_click='sidebar/update' data-node_id="<?= $this->parent->page?->id ?? '' ?>">
-				<?php
-				if ($this->parent->page?->row !== null) {
-					foreach ($this->state->activeSidebarTemplates as $templateName) {
+<aside class="cms<?= $collapsed ? ' collapsed' : '' ?>" style="flex: 0 0 <?= $width ?>px" data-cols="1" data-items="1">
+	<a class="sidebarFlag put ajax" href="sidebar/toggleSidebar" title="<?= $collapsed ? 'Show sidebar' : 'Hide sidebar' ?>">
+		<i class="fa-regular fa-chevron-<?= $collapsed ? 'left' : 'right' ?>"></i>
+	</a>
+	<?php if (!$collapsed) { ?>
+		<nav class="sidebarTabs">
+			<button type="button" class="tabScroll prev" data-tab-scroll="-1" title="Back" hidden><i class="fa-regular fa-chevron-left"></i></button>
+			<button type="button" class="tabScroll next" data-tab-scroll="1" title="Forward" hidden><i class="fa-regular fa-chevron-right"></i></button>
+			<ul>
+				<?php foreach ($this->groups as $groupName => $group) { ?>
+					<li><a class="put ajax<?= $groupName === $activeGroup ? ' selected' : '' ?>" href="sidebar/showGroup" data-group="<?= htmlspecialchars((string) $groupName, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) $group->label, ENT_QUOTES, 'UTF-8') ?></a></li>
+				<?php } ?>
+			</ul>
+		</nav>
+		<div class="flexContainer">
+			<div class="scrollContainer">
+				<div class="scrollContainerContent" data-node_id="<?= (int) $page->id ?>">
+					<?php
+					$sectionIndex = 0;
+					foreach ($this->groups[$activeGroup]->templates as $templateName) {
 						$sideBarItem = $this->templates[$templateName] ?? null;
 						if ($sideBarItem === null) {
 							continue;
 						}
-						echo '<div class="sidebarItem">';
-						$this->withView($sideBarItem->view, fn ($p) => $p->render($sideBarItem->filename));
-						echo "</div>";
-					}
-				}
-				?>
+						$sectionIndex++;
+						?>
+						<details class="sidebarSection" data-section="<?= htmlspecialchars((string) $templateName, ENT_QUOTES, 'UTF-8') ?>" open>
+							<summary>
+								<?= htmlspecialchars((string) $sideBarItem->label, ENT_QUOTES, 'UTF-8') ?>
+								<?php if ($templateName === 'meta') { ?>
+									<a class="ajax sidebarInfo" href="sidebar/defaultMeta/" title="Default values"><i class="fa-regular fa-circle-info"></i></a>
+								<?php } ?>
+							</summary>
+							<div class="sidebarItem">
+								<?php $this->withView($sideBarItem->view, fn ($panel) => $panel->render($sideBarItem->filename)); ?>
+							</div>
+						</details>
+					<?php } ?>
+				</div>
 			</div>
 		</div>
-	</div>
-	<a class='clearSidebar icon' data-on_click='sidebar/clearSidebar' title='Clear Sidebar'><i class="fa-light fa-xmark-large"></i></a>
-	<div data-drag_type='none' data-on_draginit='draginitSidebarwidth'></div>
+		<div data-drag_type="none" data-on_draginit="draginitSidebarwidth"></div>
+	<?php } ?>
 </aside>

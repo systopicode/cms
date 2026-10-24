@@ -1,19 +1,25 @@
 <?php /** @var \Systopic\Cms\Panels\Root\Cms\Settings\Page\Delete\Panel $this */ ?>
-<div class='cmslightbox cms' data-size="2">
-	<section data-doc=box>
+<div class="cmslightbox cms pageSettingDialog">
+	<section data-doc="box">
 		<header>
-			<h1>Delete Setting</h1>
-			<?= \menu::create('barmenu')->link('../')->icon('far fa-times') ?>
+			<h1>Delete setting</h1>
+			<?php
+			$back = '../';
+			if ($this->definition?->parent) {
+				$back = '../?id=' . (int) $this->definition->parent->nodeId;
+			}
+			echo \menu::create('barmenu')->link($back)->icon('fa-light fa-xmark-large');
+			?>
 		</header>
 		<main>
 			<div class="layout">
-				<p>This will remove The Setting item and all related page values, are you sure?</p>
+				<p>This removes the setting and the values stored on pages. A setting that still has children cannot be deleted.</p>
 				<?= \message::flush() ?>
 			</div>
 		</main>
 		<footer>
 			<?php if ($this->done) { ?>
-				<a class='button' href='../'>Ok</a>
+				<a class="ajax button" href="<?= htmlspecialchars($back, ENT_QUOTES) ?>">Ok</a>
 			<?php } else { ?>
 				<a class='button submit' data-on_click='delete'>Delete Setting</a>
 			<?php } ?>

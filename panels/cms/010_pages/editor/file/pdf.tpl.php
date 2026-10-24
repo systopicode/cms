@@ -1,1 +1,3 @@
-		<iframe style="width: 100%; height:99%;" src="<?= $original->src ?>"></iframe>
+<div class="fileFrame">
+	<iframe title="PDF" src="<?= htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') ?>"></iframe>
+</div>

@@ -323,14 +323,19 @@ final class PageTree implements Stringable
         // sites move like pages; their paths follow (NodeSite::rebuildBranch)
         $dataAttrs = $entry->edit ? '' : " data-drag_type='page'";
 
+        $grip = $entry->edit ? '' : "<i class='treeGrip fa-regular fa-grip-dots-vertical'></i>";
+        $menu = ($entry->edit || $entry->isSite) ? ''
+            : "<button type='button' class='treeMenu' data-on_click='getTreeContextmenu' onmousedown='event.stopPropagation()' title='Menu'><i class='fa-regular fa-ellipsis'></i></button>";
         $html = "<li data-node_id='$id' data-node_parent_node_id='$parentId'"
               . " class='{$this->classNames($entry)}'>";
         $html .= "<label$dataAttrs>";
         $html .= self::sortHelpers();
+        $html .= $grip;
         $html .= $this->foldIcon($id, $hasChildren, $open);
         $html .= $this->aliasIcon($entry);
         $html .= $this->label($entry);
         $html .= $this->referenceIcons($entry);
+        $html .= $menu;
         $html .= '</label>';
         $html .= "$below</li>";
         return $html;
@@ -374,10 +379,11 @@ final class PageTree implements Stringable
     private function foldIcon(int $id, bool $hasChildren, bool $open): string
     {
         if (!$hasChildren) {
-            return "<a class=fold><i class='fa-light fa-square'></i></a>";
+            return "<a class='fold leaf'></a>";
         }
-        $icon = $open ? 'fa-square-minus' : 'fa-square-plus';
-        return "<a data-on_click=fold  data-id=$id class=fold><i class='fa-light $icon'></i></a>";
+        $icon = $open ? 'fa-chevron-down' : 'fa-chevron-right';
+        $openClass = $open ? ' open' : '';
+        return "<a data-on_click=fold data-id=$id class='fold$openClass'><i class='fa-regular $icon'></i></a>";
     }
 
     private const ALIAS_ICON = '<i class="fal fa-file-import"></i>';
@@ -393,18 +399,23 @@ final class PageTree implements Stringable
 
     private function label(PageTreeNode $entry): string
     {
-        $text = $entry->label;
+        $text = html_entity_decode((string) $entry->label, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         if ($entry->isSite) {
             // a site opens its editor in main (site.tpl.php); no context menu
             return "<a class='label site ajax' href='./?id={$entry->id}' title='Site " . htmlentities($text) . "'>"
                 . "<i class='fa-regular fa-globe'></i> " . htmlentities($text) . '</a>';
         }
+        $typeIcon = $entry->hasChildren ? 'fa-folder' : 'fa-file';
+        $icon = "<i class='type fa-regular $typeIcon'></i>";
         if ($entry->edit) {
-            return "<span class='label' data-on_blur='updateLabel' data-on_keypress='checkKey' contenteditable='true'>"
+            return $icon
+                . "<span class='label' data-on_blur='updateLabel' data-on_keypress='checkKey' contenteditable='true'>"
                 . htmlentities($text) . '</span>';
         }
         $title = ' title="' . $entry->ordering . '"';
         return "<a class='label ajax' href='./?id={$entry->id}' data-on_contextmenu='getTreeContextmenu'$title>"
+            . $icon
             . ($text === '' ? '- - - -' : htmlentities($text))
             . '</a>';
     }

@@ -1,122 +1,146 @@
-<h1>Edit Page Settings</h1>
 <?php
 
 /**
- * The declarations of page settings: the selected one with its fields, then
- * its children (at the root: the topmost level), each with its fields and
- * the buttons to move, open and delete it.
+ * One level of page settings. The path sits in the controls header, the same
+ * way a page title does. This list is one card.
  *
  * @var \Systopic\Cms\Panels\Root\Cms\Settings\Page\Panel $this
  */
 
 use Systopic\Cms\Queries\SettingTree\Definition;
 
-$settingFieldnames = [
-	'name' => '2',
-	'label' => '2',
-	'description' => '4',
-	'type' => '1',
-	'datatype' => '1',
-];
-
-$defaultFieldnames = [
-	'varchar' => '2',
-	'int' => '1',
-	'decimal' => '1',
-];
+$e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 
 $selected = $this->selected;
+$parentType = (string) ($selected->type ?? '');
 
-/** Die fünf Spalten der Deklaration, als Zeichenkette fürs Formular. */
-$feld = static function (?Definition $d, string $name): string {
-	if ($d === null) {
-		return '';
-	}
-	return match ($name) {
-		'name' => (string) $d->setting->name,
-		'label' => (string) $d->setting->label,
-		// `description` ist ein `Text`, also ein Objekt — der Bestand hat an
-		// dieser Stelle den Rohwert des Records und damit dasselbe Ergebnis.
-		'description' => (string) ($d->setting->description ?? ''),
-		'type' => (string) $d->setting->type,
-		'datatype' => (string) $d->setting->datatype,
-		default => '',
-	};
+$card = match ($parentType) {
+	'select' => 'Choices',
+	'group' => 'Fields',
+	'checkbox' => 'Value',
+	default => 'Shown in the sidebar',
 };
-
-/** Die drei Wertspalten der Vorgabe — der Junction an der Vorlagenzeile. */
-$vorgabe = static function (?Definition $d, string $name): string {
-	$j = $d?->defaultJunction;
-	if ($j === null) {
-		return '';
-	}
-	return match ($name) {
-		'varchar' => (string) ($j->varchar ?? ''),
-		'int' => $j->int === null ? '' : (string) $j->int,
-		'decimal' => $j->decimal === null ? '' : (string) $j->decimal,
-		default => '',
-	};
+$note = match ($parentType) {
+	'select' => 'Each row is one choice. The pen changes it. Drag the handle to change the order.',
+	'group' => 'Each row is one field in this block. The pen changes it. Drag the handle to change the order.',
+	'checkbox' => 'This is the value the switch stores. The pen changes it.',
+	default => 'Open a row to see what belongs to it. The pen changes the row. Drag the handle to change the order.',
 };
-
-/** Der Text hinter dem Info-Symbol — dieselben fünf Zeilen wie im Bestand. */
-$info = static function (Definition $d): string {
-	$j = $d->defaultJunction;
-	// `relationId()`: the loaded id, or the id of an object assigned since.
-	$refId = static fn(?object $row, string $property): string => (string) ($row?->relationId($property) ?? '');
-	return implode("\n", [
-		'node_id:' . $d->nodeId,
-		'node_parent_node_id:' . $refId($d->node, 'parentNode'),
-		'setting_id:' . ($d->setting->id ?? ''),
-		'junction_node_id:' . $refId($j, 'node') . '(1=default)',
-		'junction_setting_node_id:' . $refId($j, 'settingNode'),
-	]);
+$columns = match ($parentType) {
+	'select' => ['label', 'value'],
+	'group', 'checkbox' => ['label', 'name', 'type'],
+	default => ['label', 'about'],
 };
-
-/** Die acht Eingabefelder einer Zeile. */
-$felder = static function (Definition $d) use ($settingFieldnames, $defaultFieldnames, $feld, $vorgabe): void {
-	foreach ($settingFieldnames as $fieldname => $size) {
-		echo "<label class=_{$size}_8  data-on_input=updateSetting>$fieldname";
-		echo "<input name=$fieldname value='" . $feld($d, $fieldname) . "'>";
-		echo "</label>";
-	}
-	foreach ($defaultFieldnames as $fieldname => $size) {
-		echo "<label class=_{$size}_8 data-on_input=updateDefault>$fieldname";
-		echo "<input name=$fieldname value='" . $vorgabe($d, $fieldname) . "'>";
-		echo "</label>";
-	}
+$heads = [
+	'label' => 'Label',
+	'value' => 'Value',
+	'name' => 'Name',
+	'type' => 'Type',
+	'about' => 'In the sidebar',
+];
+$heading = $selected !== null
+	? ($selected->label !== '' ? $selected->label : 'Untitled')
+	: 'Template Settings';
+$addId = $selected ? (int) $selected->nodeId : 1;
+$addLabel = match ($parentType) {
+	'select' => 'Add option',
+	'group' => 'Add field',
+	'checkbox' => 'Add value',
+	default => 'Add setting',
 };
-
-if ($selected !== null) {
-	echo "<div class=layout data-id={$selected->nodeId}>";
-	$felder($selected);
-	echo "	<label class=_2_8><br/>";
-	echo "		<a class='submit' href='delete/?id={$selected->nodeId}'><i class='fa-light fa-trash'></i></a>";
-	echo "		<i title='" . $info($selected) . "' class='fas button transparent fa-info-circle'></i>";
-	echo "	</label>";
-	echo "</div>";
-	echo "<hr/>";
-	echo "<hr/>";
-	echo "<h2>Children</h2>";
-}
-
-$children = $this->rows;
-
-foreach ($children as $child) {
-	echo "<div class=layout data-id={$child->nodeId}>";
-	$felder($child);
-	echo "	<label class=_2_8><br/>";
-	echo "		<a class='submit' target='' href='?id={$child->nodeId}'><i class='fa-light fa-pen'></i></a>";
-	echo "		<a class='submit' data-on_click=up><i class='fa-light fa-chevron-up'></i></a>";
-	echo "		<a class='submit' data-on_click=down><i class='fa-light fa-chevron-down'></i></a>";
-	echo "		<a class='submit' href='delete/?id={$child->nodeId}'><i class='fa-light fa-trash'></i></a>";
-	echo "		<i title='" . $info($child) . "' class='fas button transparent fa-info-circle'></i>";
-	echo "	</label>";
-	echo "</div>";
-	echo "<hr/>";
-}
-
-if ($selected === null) {
-	echo "<a class='button submit' data-on_click=add data-id=1>add Page Setting</a>";
-} else {
-	echo "<a class='button submit' data-on_click=add data-id={$selected->nodeId}>add Child</a>";
-}
+?>
+<h1><?= $e($heading) ?></h1>
+<p class="tagsHint"><?= $e($note) ?></p>
+<section class="widget pageSettings">
+	<header>
+		<h2><?= $e($card) ?></h2>
+		<a class="button submit" data-on_click="add" data-id="<?= $addId ?>">
+			<i class="fa-regular fa-plus"></i><span><?= $e($addLabel) ?></span>
+		</a>
+	</header>
+	<?php if ($this->rows === []) { ?>
+		<main><p>Nothing here yet.</p></main>
+	<?php } else { ?>
+		<table>
+			<thead>
+				<tr>
+					<th></th>
+					<?php foreach ($columns as $column) { ?>
+						<th><?= $e($heads[$column]) ?></th>
+					<?php } ?>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ($this->rows as $row) {
+					/** @var Definition $row */
+					$id = (int) $row->nodeId;
+					$kind = (string) $row->type;
+					if ($parentType === 'select') {
+						$kind = 'option';
+					} elseif ($parentType === 'group' || $parentType === 'checkbox') {
+						$kind = 'input';
+					}
+					$opens = $parentType === '' && in_array($kind, ['group', 'select', 'checkbox'], true);
+					$label = $row->label !== '' ? $row->label : 'Untitled';
+					$name = (string) $row->name;
+					$typeLabel = match ($row->datatype) {
+						'int' => 'Number',
+						'decimal' => 'Decimal',
+						default => 'Text',
+					};
+					$about = match ($kind) {
+						'group' => 'A block of fields',
+						'select' => 'One choice',
+						'checkbox' => 'On or off',
+						default => match ($row->datatype) {
+							'int' => 'A number',
+							'decimal' => 'A decimal',
+							default => 'A text',
+						},
+					};
+					?>
+					<tr>
+						<td class="pageSettingDrag">
+							<i class="fa-regular fa-grip-vertical" title="Drag to reorder"
+								data-drag_type="setting" data-id="<?= $id ?>"></i>
+							<div class="sort v insertBefore" data-drop_accept="setting" data-on_drop="insertBefore" data-id="<?= $id ?>"></div>
+							<div class="sort v insertAfter" data-drop_accept="setting" data-on_drop="insertAfter" data-id="<?= $id ?>"></div>
+						</td>
+						<?php foreach ($columns as $column) { ?>
+							<td><?php
+								if ($column === 'label') {
+									echo '<span class="settingLabel">';
+									if ($opens) {
+										echo '<a class="ajax" href="?id=' . $id . '">' . $e($label) . '</a>';
+									} else {
+										echo $e($label);
+									}
+									if ($parentType === '' && $name !== '') {
+										echo '<small>' . $e($name) . '</small>';
+									}
+									echo '</span>';
+								} elseif ($column === 'value' || $column === 'name') {
+									echo $e($name);
+								} elseif ($column === 'type') {
+									echo $e($typeLabel);
+								} else {
+									echo '<span class="settingAbout">' . $e($about) . '</span>';
+								}
+							?></td>
+						<?php } ?>
+						<td class="icons">
+							<ul>
+								<?php if ($opens) { ?>
+									<li><a class="ajax button icononly" title="Open" href="?id=<?= $id ?>"><i class="fa-regular fa-folder-open"></i></a></li>
+								<?php } ?>
+								<li><a class="ajax button icononly" title="Edit" href="edit/?id=<?= $id ?>"><i class="fa-regular fa-pen"></i></a></li>
+								<li><a class="ajax button icononly" title="Delete" href="delete/?id=<?= $id ?>"><i class="fa-regular fa-trash"></i></a></li>
+							</ul>
+						</td>
+					</tr>
+				<?php } ?>
+			</tbody>
+		</table>
+	<?php } ?>
+</section>

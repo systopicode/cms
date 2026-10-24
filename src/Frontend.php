@@ -27,9 +27,14 @@ final class Frontend implements \Systopic\System\Sys\Frontend
     {
         // rawpath keeps its leading slash ('/sitemap'), and the rewrite hands
         // sitemap.xml over with its extension - accept both spellings.
-        return in_array(trim(\app::request()->rawpath, '/'), ['sitemap', 'sitemap.xml'], true)
-            ? dirname(__DIR__) . '/sitemap.php'
-            : null;
+        $path = trim(\app::request()->rawpath, '/');
+        if (in_array($path, ['sitemap', 'sitemap.xml'], true)) {
+            return dirname(__DIR__) . '/sitemap.php';
+        }
+        if ($path === 'llms.txt') {
+            return dirname(__DIR__) . '/llms.php';
+        }
+        return null;
     }
 
     public function boot(): ?string

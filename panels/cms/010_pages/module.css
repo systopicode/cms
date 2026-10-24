@@ -1,82 +1,4 @@
-/****************************** LANGUAGE DROPDOWN ***************************/
-.cms div.languageSwitch > ul{
-    display:inline-block;
-
-    vertical-align: middle;
-}
-.cms div.languageSwitch > ul li{
-    margin-left: -5px;
-    display:inline-block;
-    vertical-align: middle;
-    line-height: 37px;
-    padding:0 10px 0 9px !important;
-}
-
-.cms div.languageSwitch > ul li:first-child{
-    margin-left: 0;
-}
-
-.cms div.languageSwitch > ul li:hover,
-.cms div.languageSwitch > ul li.selected{
-    background: #000;
-}
-
-.cms div.languageSwitch > ul li a{
-    line-height: 34px;
-}
-
-.cms div.languageSwitch > ul li img{
-    height:20px;
-    margin-top: 8px;
-}
-
-.cms  li.languageSwitchDropdown{
-    margin-left: 0;
-}
-
-.cms div.dropdown > ul > li.languageSwitchDropdown > span{
-    padding-left: 9px !important;
-    padding-right: 12px !important;
-}
-
-.cms li.languageSwitchDropdown table tbody tr:nth-child(2n){
-    background:none;
-}
-
-.cms li.languageSwitchDropdown table tbody td{
-    padding:10px 0 0 0;
-}
-
-.cms li.languageSwitchDropdown table tbody td:first-child{
-    padding-left: 10px;
-}
-
-.cms li.languageSwitchDropdown table tbody td:last-child{
-    padding-right: 10px;
-}
-
-.cms li.languageSwitchDropdown table tbody tr:last-child td{
-    padding-bottom: 10px;
-}
-
-.cms  li.languageSwitchDropdown div.dropdownContent{
-    width:225px !important;
-}
-
-.cms  li.languageSwitchDropdown div.dropdownContent a{
-    padding:6px 15px;
-    display:inline-block;
-}
-
-.cms  li.languageSwitchDropdown div.dropdownContent a:hover{
-    background:rgb(52,52,52);  
-}
-
-.cms  div.languageSwitch div.dropdown{
-    margin-left: -5px;
-}
-
-/****************************** REWRITE DROPWDONW ***************************/
+/****************************** REWRITE DROPDOWN ***************************/
 
 .cms div.dropdown li.rewrite .floatWrapper{
     position: relative;
@@ -87,7 +9,7 @@
     left:30px;
     top:0;
     right:61px;
-    background:#262626;
+    background: var(--cmsCanvas);
     width:calc(100% - 61px);
     transition: left 0.2s ease-in-out, width  0.2s ease-in-out;
     z-index: 1;
@@ -109,7 +31,7 @@
 
 .cms div.dropdown li.rewrite .floatWrapper input[type='text'] + a i{
     font-size: 24px;
-    color:rgb(130,130,130);
+    color:var(--cmsMuted);
 }
 
 main > div.content > article {
@@ -124,9 +46,8 @@ main > div.content > article {
 	position: absolute;
 	height: 100%;
 	right: -10px;
+	z-index: 3;
 	cursor: col-resize;
-	/* sticks out over div.content, which comes later and is positioned too */
-	z-index: 1;
 }
 [data-on_draginit="draginitSidebarwidth"]
 {
@@ -141,43 +62,70 @@ main > div.content > article {
 {
 	cursor: row-resize;
 }
-/****************************** ADD MENU (pylon header) ***************************/
-/* "+" opens a list: Seite, Site — later Layout. Pure CSS, no menu script. */
-.cms .pylon header div.dropdown.addMenu > ul > li{
-    position: relative;
-}
-.cms .pylon header div.dropdown.addMenu ul.addMenuItems{
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    z-index: 1900;
-    height: auto;
-    margin: 0;
-    padding: 6px;
-    background: var(--cmsMainColor);
-    border-radius: 4px;
-    box-shadow: 0 0 3px 3px rgba(0,0,0,0.2);
-}
-.cms .pylon header div.dropdown.addMenu > ul > li:hover > ul.addMenuItems{
-    display: block;
-}
-.cms .pylon header div.dropdown.addMenu ul.addMenuItems li{
-    display: block;
-    height: auto;
-    margin: 0;
-}
-.cms .pylon header div.dropdown.addMenu ul.addMenuItems li a{
-    display: block;
-    text-align: left;
-    white-space: nowrap;
-}
-.cms .pylon header div.dropdown.addMenu ul.addMenuItems li a i{
-    width: 20px;
-    margin-right: 8px;
+
+.cmslightbox.metaDefaults > section{
+	width: min(32rem, 100%);
+	min-width: 0;
+	max-width: 32rem;
 }
 
-/****************************** SITE NODES IN THE TREE ***************************/
-.cms ul.tree li.site > label a.label i.fa-globe{
-    margin-right: 4px;
+.cmslightbox.metaDefaults .metaDefault + .metaDefault{
+	margin-top: 0.75rem;
+	padding-top: 0.75rem;
+	border-top: 1px solid var(--cmsLine);
+}
+
+.cmslightbox.metaDefaults h2{
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 0.75rem;
+	margin: 0 0 0.25rem;
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	line-height: 1.2;
+	text-transform: uppercase;
+	color: var(--cmsSubText);
+}
+
+.cmslightbox.metaDefaults h2 span{
+	font-weight: 600;
+	letter-spacing: 0;
+	text-transform: none;
+	color: var(--cmsMuted);
+}
+
+.cmslightbox.metaDefaults .hint{
+	margin: 0 0 0.35rem;
+	font-weight: 400;
+}
+
+.cmslightbox.metaDefaults p{
+	margin: 0;
+	font-weight: 500;
+}
+
+.cmslightbox.metaDefaults .metaSample{
+	font-weight: 600;
+}
+
+.cmslightbox.metaDefaults figure{
+	margin: 0.55rem 0 0;
+}
+
+.cmslightbox.metaDefaults img{
+	display: block;
+	width: 100%;
+	aspect-ratio: 1.91 / 1;
+	object-fit: cover;
+	border: 1px solid var(--cmsLine);
+	border-radius: var(--cmsRadius);
+	background: var(--cmsBgColor);
+}
+
+.cmslightbox.metaDefaults figcaption{
+	margin-top: 0.35rem;
+	font-size: 0.75rem;
+	color: var(--cmsMuted);
 }

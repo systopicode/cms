@@ -13,7 +13,7 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 <ul>
 	<li>
 		<label class="checkbox">
-			<span>Navi Element</span>
+			<span>Navi element</span>
 			<input type=checkbox class=switch data-on_change='sidebar/updateParam'
 				   name=is_navi_element <?php if ($row->isNaviElement) { ?> checked='checked' <?php } ?> />
 			<div>
@@ -27,11 +27,9 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 				<div></div>
 			</div>
 		</label>
-		<div class="group">
-			<a class="ajax put" href="../pages/publishAll"><i style="margin-right:10px" class="fa-light fa-eye"></i>Self + Children</a>
-		</div><br>
-		<div class="group">
-			<a class="ajax put" href="../pages/unPublishAll"><i  style="margin-right:10px" class="fa-light fa-eye-slash"></i>Self + Children</a>
+		<div class="sideActions">
+			<a class="ajax put sideAction" href="../pages/publishAll"><i class="fa-regular fa-eye"></i>Publish with children</a>
+			<a class="ajax put sideAction" href="../pages/unPublishAll"><i class="fa-regular fa-eye-slash"></i>Unpublish with children</a>
 		</div>
 	</li>
 	<li>
@@ -55,35 +53,36 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 	</li>
 	<?php if ($page->isAlias && !$page->hasChildren) { ?>
 		<li title="Delete Alias" >
-			<a data-confirm="Do you really want to delete this Alias Page?"
-			   class='alias'
-			   data-on_click='userConfirm'
+			<a data-confirm="Remove this alias?"
+			   class="alias sideAction danger"
+			   data-on_click="userConfirm"
 			   data-action="deleteAlias&node_id=<?= $page->id ?>&node_original_node_id=<?= $page->contentNodeId ?>">
-				<i style="margin-right:10px"  class="fa-regular fa-trash"></i>
-				Remove Alias Page
+				<i class="fa-regular fa-trash"></i>
+				Remove alias
 			</a>
 		</li>
 	<?php } ?>
 	<?php if (!$page->isAlias && !$page->node->isTrashed) { ?>
 		<li title="Delete Page" >
-			<a data-confirm="All langauges, children and versions will be removed!"
-			   data-on_click='userConfirm'
+			<a data-confirm="Remove this page in every language, including children?"
+			   class="sideAction danger"
+			   data-on_click="userConfirm"
 			   data-action="deletePage"
 			   data-node_id="<?= $page->id ?>">
-				<i style="margin-right:10px"  class="fa-regular fa-trash"></i>
-				Remove Page
+				<i class="fa-regular fa-trash"></i>
+				Remove page
 			</a>
 		</li>
 	<?php } else { ?>
 		<li title="Recover Page" >
-			<a data-confirm="All langauges, children and versions will be recoverd!"
-			   data-on_click='userConfirm'
+			<a data-confirm="Restore this page in every language, including children?"
+			   class="sideAction"
+			   data-on_click="userConfirm"
 			   data-action="recoverPage"
 			   data-node_id="<?= $page->id ?>">
-				<i style="margin-right:10px"  class="fa-regular fa-arrow-rotate-left"></i>
-				Recover Page
+				<i class="fa-regular fa-arrow-rotate-left"></i>
+				Restore page
 			</a>
 		</li>
 	<?php } ?>
 </ul>
-<h3>Perimissions</h3>

@@ -22,7 +22,7 @@ Packages::addPanels('systopic/cms', 'Systopic\Cms\Panels');
 // the sites from cms_sites, right after the database connection (loader.php)
 Hooks::on('afterConnect', static fn() => \Systopic\Cms\Pages\Sites\SiteRegistry::boot());
 
-// sitemap.xml, the page route, site.php
+// sitemap.xml, llms.txt, the page route, site.php
 Packages::addFrontend(new \Systopic\Cms\Frontend());
 
 // the tables of the CMS — scanned by the ORM on the first Scope

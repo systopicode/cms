@@ -38,14 +38,16 @@ class Panel extends PanelNode {
 	}
 
 	/** Remove a row; a row other rows still point at says so instead. */
-	public function drop(?\Systopic\Db\TableRow $row): void {
+	public function drop(?\Systopic\Db\TableRow $row): bool {
 		if ($row === NULL) {
-			return;
+			return false;
 		}
 		try {
 			$this->scope->remove($row);
+			return true;
 		} catch (\PDOException $e) {
 			\message::error('Could not delete: ' . $e->getMessage());
+			return false;
 		}
 	}
 }

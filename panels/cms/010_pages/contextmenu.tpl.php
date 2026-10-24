@@ -35,7 +35,7 @@
 		<li>
 			<a href='<?= http::$siteRoot ?>?id=<?= $node->id ?>&lang=<?= $node->language ?>&showtrashed'
 			   target='_blank'>
-				<i class='fal fa-eyes'></i>
+				<i class="fa-regular fa-eye"></i>
 				<span>Preview</span>
 			</a>
 		</li>
@@ -58,7 +58,7 @@
 							<i class="fa-regular fa-eye-slash"></i>
 						</a>
 					</li>
-					<li title="Hide Self + Children" class="iconOnly">
+					<li title="Hide with children" class="iconOnly">
 						<a  data-on_click="unPublishAll?id=<?= $node->id ?>">
 							<i style='font-size: 14px;  transform: translateY(-3px);' class="fa-regular fa-eye-slash"></i>
 							<i style='font-size: 12px; transform: translateX(-10px) translateY(2px);' class="fa-regular fa-eye-slash"></i>
@@ -70,7 +70,7 @@
 							<i class="fa-regular fa-eye"></i>
 						</a>
 					</li>
-					<li title="Publish Self + Children" class="iconOnly">
+					<li title="Publish with children" class="iconOnly">
 						<a  data-on_click="publishAll?id=<?= $node->id ?>">
 							<i style='font-size: 14px;  transform: translateY(-3px);' class="fa-regular fa-eye"></i>
 							<i style='font-size: 12px; transform: translateX(-10px) translateY(2px);' class="fa-regular fa-eye"></i>
@@ -119,22 +119,22 @@
 				<li>
 					<a class=" redirect" data-on_click="redirectHere?node_id=<?= $node->id ?>&node_redirect_node_id=0">
 						<i class="fa-regular fa-arrow-turn-down-right"></i>
-						<span>remove Redirection</span>
+						<span>Remove redirect</span>
 					</a>
 				</li>
 			<?php } ?>
 			<li>
 				<a class=" alias"
 				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_parent_node_id=<?= $node->parent?->id ?>&node_original_node_id=<?= $active->contentId ?>">
-					<i class='fal fa-file-import'></i>
-					<span>Create Alias of "<?= $active->label ?>" after</span>
+					<i class="fa-regular fa-file-import"></i>
+					<span>Alias of "<?= $active->label ?>" after this</span>
 				</a>
 			</li>
 			<li>
 				<a class=" alias"
 				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_parent_node_id=<?= $node->id ?>&node_original_node_id=<?= $active->contentId ?>">
-					<i class='fal fa-file-import'></i>
-					<span>Create Alias as child</span>
+					<i class="fa-regular fa-file-import"></i>
+					<span>Alias as child</span>
 				</a>
 			</li>
 		<?php } ?>
@@ -143,8 +143,8 @@
 
 			<li>
 				<a onclick="navigator.clipboard.writeText('?id=<?= $node->id ?>&lang=<?= $node->language ?>')">
-					<i class='fal fa-link'></i>
-					<span>Copy ID Link</span>
+					<i class="fa-regular fa-link"></i>
+					<span>Copy ID link</span>
 				</a>
 			</li>
 		<?php } ?>
@@ -152,7 +152,7 @@
 		<li>
 			<a href='<?= http::$siteRoot ?>?id=<?= $node->id ?>&lang=<?= $node->language ?>&preview'
 			   target='_blank'>
-				<i class='fal fa-eyes'></i>
+				<i class="fa-regular fa-eye"></i>
 				<span>Preview</span>
 			</a>
 		</li>

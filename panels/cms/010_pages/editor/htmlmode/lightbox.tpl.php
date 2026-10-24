@@ -24,10 +24,10 @@ $value = $value instanceof Text ? $value->value : (string) $value;
     <div class="cmslightbox cms" data-size='3'>
         <section>
             <header>
-                <h1>HTML-Editor</h1>
+                <h1>HTML</h1>
                 <ul class="barmenu">
                     <li>
-                        <a class="ajax" href="../../"><i class="fa-light fa-xmark-large"></i></a>
+                        <a class="ajax" href="../../" title="Close"><i class="fa-regular fa-xmark"></i></a>
                     </li>
                 </ul>
             </header>

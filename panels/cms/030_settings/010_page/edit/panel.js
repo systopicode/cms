@@ -1,0 +1,1 @@
+/* Saving a template tick is a server action on the checkbox. */

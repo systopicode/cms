@@ -30,6 +30,17 @@ $save = static function (array $rows) use ($pages): void {
 };
 
 switch ($this->action) {
+	case 'showGroup':
+		$this->state->sidebarGroup = http::dataset('group');
+		$this->state->sidebarCollapsed = false;
+		$this->updateView('main');
+		break;
+
+	case 'toggleSidebar':
+		$this->state->sidebarCollapsed = empty($this->state->sidebarCollapsed);
+		$this->updateView('main');
+		break;
+
 	case 'clearSidebar':
 	case 'closeSidebar':
 		$this->state->activeSidebarTemplates = [];
@@ -75,6 +86,7 @@ switch ($this->action) {
 		// Label and published are drawn by the tree — from this very row.
 		$this->parent->updateView('tree');
 		$this->parent->updateView('main');
+		$this->refreshSeoPreview();
 		break;
 
 	case 'updateTemplate':
@@ -94,6 +106,7 @@ switch ($this->action) {
 			$row->metaShareImage = $mediaNodeId;
 			$save([$row]);
 			client::replaceInner('aside div.mediaDrop.shareImage', app::site()->shareImage);
+			$this->refreshSeoPreview();
 		}
 		break;
 
@@ -102,6 +115,7 @@ switch ($this->action) {
 			$row->metaShareImage = null;
 			$save([$row]);
 			client::replaceInner('aside div.mediaDrop.shareImage', app::site()->shareImage);
+			$this->refreshSeoPreview();
 		}
 		break;
 
@@ -111,6 +125,7 @@ switch ($this->action) {
 		if ($row !== null) {
 			$save($page->rewritepaths->rebuildAuto());
 			$this->updateView('010_urls');   // the url list is its own view, 'main' alone keeps it
+			$this->refreshSeoPreview();
 		}
 		break;
 
@@ -118,6 +133,7 @@ switch ($this->action) {
 		if ($row !== null) {
 			$save([$page->rewritepaths->newCustom()]);
 			$this->updateView('010_urls');   // the url list is its own view, 'main' alone keeps it
+			$this->refreshSeoPreview();
 		}
 		break;
 
@@ -127,6 +143,7 @@ switch ($this->action) {
 			$page->rewritepaths->detach($path);
 			Removal::remove($pages->scope, $path); // detaches the request log first
 			$this->updateView('010_urls');   // the url list is its own view, 'main' alone keeps it
+			$this->refreshSeoPreview();
 		}
 		break;
 
@@ -144,7 +161,7 @@ switch ($this->action) {
 		if ($blocker === null) {
 			$path->string = $value;
 			$save([$path]);
-			// no redraw: the input keeps its focus
+			$this->refreshSeoPreview();
 		} else {
 			$owner = RewritepathLookup::pageOf($pages->scope, (int) $blocker->id);
 			$label = htmlspecialchars((string) ($owner?->label ?? '?'));
@@ -158,6 +175,7 @@ switch ($this->action) {
 		if ($path !== null) {
 			$save($page->rewritepaths->makePrimary($path));
 			$this->updateView('010_urls');   // the url list is its own view, 'main' alone keeps it
+			$this->refreshSeoPreview();
 		}
 		break;
 }

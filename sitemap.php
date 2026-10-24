@@ -18,25 +18,13 @@ if (defined('DEFAULT_LANG')) {
 }
 
 /**
- * One page and, below it, its children — the pages a search engine should
- * know: published, in the navigation, not redirecting, no alias, not
- * `noindex`, and visited on LIVE at least once (`livecount`). Children are
- * walked whether the page itself is listed or not.
+ * One page and, below it, its children. A page is listed when publishing
+ * start and end allow it, it is a navi element, its page count for this
+ * stage is above zero and robots does not say noindex. Children are walked
+ * either way.
  */
 function printXML(Page $page, float $prio = 1.0): void {
-	$path = $page->rewritepaths->primary;
-	$use = $page->row !== null
-		&& $page->node->type === 'page'
-		&& $page->node->relationId('redirectNode') === null
-		&& !$page->isAlias
-		&& !str_contains((string) $page->meta->robots, 'noindex')
-		&& $page->meta->published
-		&& $page->meta->isNaviElement
-		&& $path?->livecount !== 0;
-
-	//PERMISSOIONS ABFRAGEN
-
-	if ($use) {
+	if ($page->meta->listed) {
 		$modified = $page->row->modifiedDate;
 		$w3c_date = date(DATE_W3C, $modified === null ? 0 : $modified->getTimestamp());
 		$xml = '<url>';

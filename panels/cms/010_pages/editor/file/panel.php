@@ -45,15 +45,17 @@ class Panel extends CmsPanel {
 		get => ($row = $this->mediaRow) === NULL ? NULL : new Media($row);
 	}
 
-	/** 'Image', 'SVG', 'PDF', 'Video' … for the header. */
+	/** Header of the lightbox. */
 	public string $lightboxTitle {
-		get => match ((string) $this->mediaRow?->mimetype) {
-			'image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/tiff', 'image/webp' => 'Image',
-			'image/svg+xml', 'image/svg' => 'SVG',
-			'application/pdf' => 'PDF',
-			'application/zip' => 'ZIP',
-			'video/mp4' => 'Video',
-			default => 'File',
+		get => \Systopic\System\Tables\Medias\External::is((string) $this->mediaRow?->type)
+			? 'Edit ' . \Systopic\System\Tables\Medias\External::label((string) $this->mediaRow?->type)
+			: match ((string) $this->mediaRow?->mimetype) {
+			'image/png', 'image/jpg', 'image/jpeg', 'image/gif', 'image/tiff', 'image/webp' => 'Edit image',
+			'image/svg+xml', 'image/svg' => 'Edit SVG',
+			'application/pdf' => 'Edit PDF',
+			'application/zip' => 'Edit ZIP',
+			'video/mp4' => 'Edit video',
+			default => 'Edit file',
 		};
 	}
 

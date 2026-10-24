@@ -23,7 +23,7 @@ if ($text || $media || $this->action) {
 			<?php } ?>
 			<ul class="barmenu">
 				<li>
-					<a class="ajax button transparent" onclick='closeLinkLightbox()' href="../../"><i class="fa-light fa-xmark-large"></i></a>
+					<a class="ajax button transparent" onclick='closeLinkLightbox()' href="../../"><i class="fa-regular fa-xmark"></i></a>
 				</li>
 			</ul>
 		</header>

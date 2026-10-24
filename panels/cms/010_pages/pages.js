@@ -1,4 +1,4 @@
-﻿sys.onDocumentReady(function () {
+sys.onDocumentReady(function () {
 	scrollTree();
 });
 
@@ -6,22 +6,38 @@ function onAfterHisotryPush(url) {
 
 }
 
+/**
+ * Bring a tree row into the pylon scroller.
+ *
+ * magick: only if it is outside the visible area, and then only as far as
+ * needed. Without it the row is aligned to the top — that is the crosshairs
+ * button. scrollIntoView is not used: it would also scroll the page.
+ */
 function scrollTree(running = 'instant', id = false, magick = true) {
-	if (id) {
-		var activeElement = document.querySelectorAll('.cms ul.tree li[data-node_id="' + id + '"]')[0];
-	} else {
-		var activeElement = document.querySelectorAll('.cms ul.tree li.active')[0];
+	var activeElement = id
+		? document.querySelector('.cms ul.tree li[data-node_id="' + id + '"]')
+		: document.querySelector('.cms ul.tree li.active');
+	if (!activeElement) {
+		return;
 	}
-
-	if (typeof activeElement !== 'undefined') {
-		if (magick) {
-			var tree = document.querySelectorAll('.cms ul.tree')[0];
-			if (activeElement.offsetTop > tree.offsetHeight) {
-				activeElement.scrollIntoView({behavior: running, block: "start", inline: "end"});
-			}
-		} else {
-			activeElement.scrollIntoView({behavior: running, block: "start", inline: "end"});
-		}
-
-}
+	var scroller = activeElement.closest('div.tree');
+	if (!scroller) {
+		return;
+	}
+	var itemRect = activeElement.getBoundingClientRect();
+	var box = scroller.getBoundingClientRect();
+	var above = itemRect.top < box.top;
+	var below = itemRect.bottom > box.bottom;
+	if (magick && !above && !below) {
+		return;
+	}
+	var delta = magick
+		? (above ? itemRect.top - box.top : itemRect.bottom - box.bottom)
+		: itemRect.top - box.top - 4;
+	var top = scroller.scrollTop + delta;
+	if (running === 'smooth' && scroller.scrollTo) {
+		scroller.scrollTo({top: top, behavior: 'smooth'});
+	} else {
+		scroller.scrollTop = top;
+	}
 }

@@ -19,7 +19,7 @@ use Systopic\System\Tables\Nodes\Model as Node;
 final class Operator
 {
     /** The declaration columns the settings panel edits. */
-    public const EDITABLE = ['name', 'label', 'description', 'type', 'datatype'];
+    public const EDITABLE = ['name', 'label', 'description', 'type', 'datatype', 'showInTemplates'];
 
     /** The value columns of a default. */
     public const DEFAULT_COLUMNS = ['varchar', 'int', 'decimal'];
@@ -41,7 +41,12 @@ final class Operator
 
         $setting = new Model();
         $setting->node = $node;
-        $setting->type = $parent?->type;
+        // A select only holds options. A group or a checkbox only holds fields.
+        $setting->type = match ($parent?->type) {
+            'select' => 'option',
+            'group', 'checkbox' => 'input',
+            default => null,
+        };
         return $setting;
     }
 
@@ -59,6 +64,7 @@ final class Operator
                 'type'        => $setting->type = (string) $value,
                 'datatype'    => $setting->datatype = (string) $value,
                 'description' => $setting->description = new Text((string) $value),
+                'showInTemplates' => $setting->showInTemplates = (string) $value,
                 default       => throw new \InvalidArgumentException("setting field $field is not editable"),
             };
         }
