@@ -8,13 +8,22 @@ you change a panel, a stylesheet or a script.
 
 | Package | Role |
 |---|---|
-| `systopic/system` | The core: boot, database, auth, users, media, panels engine, assets. For now it also carries most of the admin GUI (header, menu, users, settings, tools, shared CSS/JS). |
-| `systopic/cms` | Pages and websites: page tree, page editor, preview, sites, frontend rendering. |
+| `systopic/system` | The framework of every project: boot, database, auth, users, media, panels engine, assets — and the generic admin GUI (frame, menu, login, users, settings, backup, tools, tree, WYSIWYG, context menu, image editor, all shared CSS/JS). |
+| `systopic/cms` | The website: page tree, page editor, preview, sites, frontend rendering — plus the CSS/JS that only pages need. |
+
+The line was drawn when the monolith was split (5 Oct 2026): **framework
+for every app** vs. **website feature** — not "core vs. GUI". Apps without
+pages (spaceticker, pwk) get the whole admin GUI from `systopic/system`.
 
 The rule: **a system runs without the cms, never the other way round.**
 `systopic/cms` may use everything in `systopic/system`; `systopic/system`
 must not need `systopic/cms`. Some places still break that rule (see
 section 11). Do not add new ones.
+
+**Generic in system, cms only adds or overrides what differs for pages.**
+Example: `system/public/css/system/27_tree.css` defines the tree,
+`cms/panels/cms/010_pages/pages.tree.css` only what the page tree does
+differently. Same for `cms/public/css/pages.css` (page header, preview).
 
 Projects that use only `systopic/system` (and so the GUI in it):
 `pwk.systopic.net` (loads `system/public/css/` and `system/public/js/cms/`
@@ -144,13 +153,14 @@ Rules:
   `.is-wide`), `.widgets` (grid of widgets), `label.field > span + input`,
   `td.icons > ul > li > a.button.icononly`, `.barmenu`, `.cmslightbox[data-size]`,
   `.tree`, `.dropdown`/`.contextmenu`, chips/tags (`tags.css`).
-- Icons: Font Awesome 6 (`fa-regular`, `fa-duotone fa-regular`).
+- Icons: Font Awesome 7 Pro (`fa-regular`, `fa-duotone fa-regular`).
 - Flags: `<img src="https://flagcdn.com/{code}.svg">` (see
   `cms/panels/cms/010_pages/controls.tpl.php`).
 
 Fonts in use (`system/public/fonts/`): `InterVariable.woff2` (GUI),
-`fontawesome/fa-regular-400.woff2`, `fontawesome/fa-duotone-regular-400.woff2`,
-`Lato-Regular.ttf` (text drawn into images server-side). Nothing else.
+`fontawesome/fa-regular-400.woff2`, `fontawesome/fa-duotone-regular-400.woff2`.
+Nothing else — placeholder images drawn by `mediaImage.php` use the Imagick
+default font.
 
 ## 6. JavaScript
 
@@ -183,7 +193,11 @@ same package, under their original path, and are no longer loaded:
 
 - `system/_legacy/public/css/dead-rules.css` — CSS rules whose classes no
   template or script uses anymore (grouped by source file).
-- `system/_legacy/public/fonts/`, `_legacy/public/js/cms/`, `_legacy/lib/…`.
+- `system/_legacy/public/js/cms/`, `_legacy/lib/…`.
+
+Outdated assets are deleted, not kept: old fonts, old icon sets. Only
+`fa-regular` and `fa-duotone fa-regular` have a font — `fa-light`,
+`fa-solid` etc. fall back to the regular glyphs, so do not use them.
 
 Before you call a class dead, search **all** packages and projects
 (`system`, `cms`, `db`, `relay`, `pwk`, `spaceticker`, the project) and look
@@ -230,11 +244,8 @@ Known places where the core still knows the cms (fix step by step):
 - `panels/cms/head.tpl.php` — inline `<style>` for `article.cmsContent
   [contenteditable]` (unlayered on purpose) belongs to the cms.
 
-Decided, not done yet: **the remaining GUI moves to `systopic/cms`**
-(`system/public/css`, `public/js/cms`, `public/img/system`, fonts, and
-`system/panels/cms` with a namespace change to `Systopic\Cms\Panels\…`).
-Before that, pwk and spaceticker must require `systopic/cms` and be adapted
-(paths in pwk's `panels/head.tpl.php`, base class in spaceticker's panels,
-stale copies in spaceticker's `public/assets`). Note that `cms/autoload.php`
-then also boots sites and the frontend for those projects — split the
-GUI part from the pages part first, or make the page parts optional.
+Tried and dropped (24 Oct 2026): moving the GUI assets into `systopic/cms`.
+Apps without pages lost their styling (spaceticker's login), and giving them
+the cms would also bring pages, sites and the frontend. A separate
+`systopic/gui` package only pays off once a project runs the system without
+any backend — none does. The GUI stays in `systopic/system`.

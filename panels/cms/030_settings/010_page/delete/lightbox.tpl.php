@@ -8,7 +8,7 @@
 			if ($this->definition?->parent) {
 				$back = '../?id=' . (int) $this->definition->parent->nodeId;
 			}
-			echo \menu::create('barmenu')->link($back)->icon('fa-light fa-xmark-large');
+			echo \menu::create('barmenu')->link($back)->icon('fa-regular fa-xmark-large');
 			?>
 		</header>
 		<main>

@@ -70,7 +70,7 @@ $choice = static function (string $name, string $label, string $value, array $op
 			if ($d?->parent) {
 				$back = '../?id=' . (int) $d->parent->nodeId;
 			}
-			echo \menu::create('barmenu')->link($back)->icon('fa-light fa-xmark-large');
+			echo \menu::create('barmenu')->link($back)->icon('fa-regular fa-xmark-large');
 			?>
 		</header>
 		<?php if ($d) { ?>

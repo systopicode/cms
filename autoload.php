@@ -19,7 +19,7 @@ Packages::addLib('systopic/cms', __DIR__);
 // panels/cms/… — merged into the system's /cms/ (pages, page settings, path maintenance)
 Packages::addPanels('systopic/cms', 'Systopic\Cms\Panels');
 
-// public/css/ — page header and page preview, in every panel head
+// public/css/ — page-only additions to the system GUI (page header, preview), in every panel head
 Packages::addPanelAssets(__DIR__ . '/public/');
 
 // the sites from cms_sites, right after the database connection (loader.php)

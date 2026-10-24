@@ -442,7 +442,7 @@ final class PageTree implements Stringable
             $html .= "<a  data-action='recoverPage' data-on_click='userConfirm'"
                 . " data-confirm='All langauges, children and versions will be recoverd!'"
                 . " title='Recover Page' class='ajax'  data-node_id='{$entry->id}'>"
-                . "<i class='fa-light fa-arrow-rotate-left'></i></a>";
+                . "<i class='fa-regular fa-arrow-rotate-left'></i></a>";
         }
         return $html;
     }
