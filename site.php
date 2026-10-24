@@ -237,7 +237,7 @@ if (http::$method === 'PUT') {
 	// pagesRenderer.js, triggered by the onLibReady hook in
 	// PagesRenderer::clientData_export().
 	echo '<body class="' . htmlspecialchars(strtolower(implode(' ', $bodyClasses)), ENT_QUOTES) . '" id="top">';
-	echo '<div id="systemPagesBodyPlaceholder"></div>';
+	echo '<template id="systemPagesBodyPlaceholder"></template>';
 	echo "</body>\n</html>";
 }
 
