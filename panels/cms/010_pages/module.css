@@ -1,39 +1,5 @@
 /****************************** REWRITE DROPDOWN ***************************/
 
-.cms div.dropdown li.rewrite .floatWrapper{
-    position: relative;
-}
-
-.cms div.dropdown li.rewrite .floatWrapper input[type='text']{
-    position: absolute;
-    left:30px;
-    top:0;
-    right:61px;
-    background: var(--cmsCanvas);
-    width:calc(100% - 61px);
-    transition: left 0.2s ease-in-out, width  0.2s ease-in-out;
-    z-index: 1;
-}
-
-.cms div.dropdown li.rewrite .floatWrapper input[type='text'][readonly]{
-    right:30px;  
-    width:calc(100% - 30px);
-}
-.cms li.rewrite .floatWrapper input[type="radio"].custom + label{
-    margin: 9px 0 15px;
-}
-.cms div.dropdown li.rewrite .floatWrapper input[type='text'] + a{
-    position: absolute;
-    right: -9px;
-    top: 0px;
-    padding: 6px 6px;
-}
-
-.cms div.dropdown li.rewrite .floatWrapper input[type='text'] + a i{
-    font-size: 24px;
-    color:var(--cmsMuted);
-}
-
 main > div.content > article {
     flex: 1 1 auto;
     overflow: auto;

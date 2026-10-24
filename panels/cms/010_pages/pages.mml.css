@@ -22,18 +22,6 @@
     border-right: none;
 }
 
-.cms div.resizable-handle.resizable-n {
-    position: absolute;
-    display: block;
-    cursor: ns-resize;
-    width: 100%;
-    top: 0;
-    left: 0;
-    border-top: 1px solid var(--cmsLineStrong);
-    background: transparent;
-    height: 12px;
-}
-
 .cms .mmlContent {
     padding-left: 0.75rem;
     height: 100%;
@@ -51,11 +39,6 @@
 .cms .mmlContent[data-target_id] {
     top: 100%;
     z-index: 1;
-}
-
-
-.cms div.dz-filename {
-    display: none;
 }
 
 div.dragimage > img {
@@ -396,73 +379,14 @@ div.mmlContent input {
 
 /********** END DROP ******************/
 
-
-.cms div.mmlContent ul li:not(.title).originalNotExists {
-    border-color: var(--cmsError);
-}
-
-.cms div.mmlContent ul li:not(.title).originalNotExists a {
-    line-height: 1em;
-}
-
-.cms div.mmlContent ul li:not(.title).originalNotExists a:before {
-    content: "ORIGINAL FILE IS MISSING";
-    color: var(--cmsError);
-    padding: 3px;
-    font-size: 11px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.cms div.mmlContent ul li:not(.title).originalNotExists img,
-.cms div.mmlContent ul li:not(.title).originalNotExists a:after {
-    display: none;
-}
-
-
 .cms div.mmlContent ul li.selected:not(.title) {
     border-color: var(--cmsHighlightColor);
     box-shadow: 0 0 0 2px var(--cmsSelected);
 }
 
-.cms div.mml ul li.dropPlaceholder,
-.cms div.mml div.mmlContent ul li.emptyPlaceholder {
-    border: 1px dashed var(--cmsSuccess);
-    width: 64px;
-    height: 64px;
-}
-
-.cms div.mmlContent ul li.upload.ui-droppable.drop_active,
-.cms div.mmlContent ul li.upload.ui-droppable.drop_active:before,
-.cms div.mmlContent ul li.children_images.ui-droppable.drop_active:before,
-.cms div.mmlContent ul li.ui-droppable.drop_active:not(.title),
-.cms .mll_item {
-    border-color: var(--cmsMainColor);
-    color: var(--cmsMainColor);
-}
-
-.cms div.mml div.mmlContent ul li.emptyPlaceholder {
-    border-color: transparent;
-}
-
-body.cms.dragActive div.mml li.dropPlaceholder {
-    border: none;
-}
-
 .cms div.mmlContent ul li:not(.title).locked:before {
     left: 2px;
     content: "\e81c";
-}
-
-.cms .ui-sortable-helper {
-    border: none;
-    overflow: visible;
-    list-style-type: none;
-}
-
-.cms .ui-sortable-helper.image {
-    width: 50%;
-    opacity: 0.8;
 }
 
 .cms div.mmlContent ul li.upload {
@@ -541,29 +465,6 @@ body.cms.dragActive div.mml li.dropPlaceholder {
     opacity: 1;
 }
 
-.ui-draggable-helper-mml,
-.ui-draggable-helper-mml-out {
-    list-style-type: none;
-    border: 1px dashed transparent;
-    z-index: 3002 !important;
-}
-
-.ui-draggable-helper-mml img {
-    width: 60px;
-}
-
-.ui-draggable-helper-mml-out {
-    width: 240px !important;
-}
-
-.ui-draggable-helper-mml-out img {
-    width: 240px !important;
-}
-
-div.posterImageContainer img {
-    width: 100%;
-}
-
 .cms .dropdown[data-selector='#mml'].contextMenu div.dropdownContent > ul {
     width: 100%;
 }
@@ -590,7 +491,6 @@ div.posterImageContainer img {
     min-width: 264px;
 }
 
-
 /****************************** FILE EDITOR ***************************/
 .cms .imageCropAlignContainer{
 	display:flex;
@@ -616,13 +516,11 @@ div.posterImageContainer img {
 	height: auto;
 }
 
-
 .cms .imageCropAlignContainer > div img{
 	width:100%;
 }
 
-.cms .srcToChange,
-div.posterImageContainer{
+.cms .srcToChange{
     outline: 2px solid var(--cmsHighlightColor);
     max-width: 100%;
 	position: relative;
@@ -631,11 +529,6 @@ div.posterImageContainer{
 .cmslightbox .srcToChange{
 	outline: none;
 }
-
-div.posterImageContainer{
-	line-height: 0;
-}
-
 
 .cms form[name='changeImageFormat'] {
     width: 100%;
@@ -654,7 +547,6 @@ div.posterImageContainer{
     height: calc(100% - 2px);
     margin-right: 0;
 }
-
 
 div.mml .spinner {
     position: absolute;
@@ -689,7 +581,6 @@ div.mml .spinner:before {
 	padding:0 !important;
 	overflow: hidden;
 }
-
 
 aside .mediaDrop{
 	margin-bottom: 10px;

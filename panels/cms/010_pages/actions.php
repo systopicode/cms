@@ -462,10 +462,6 @@ switch ($this->action) {
         $this->state->pylonWidth = http::put('width');
         break;
 
-    case 'setMetaHeight':
-        \Systopic\System\Auth\Session::current()->state[$this->path[1]]['metaHeight'] = http::params('height');
-        break;
-
     case 'createDefaultTemplate':
         $templateDir = fs::$siteRoot . template::$dir;
         if (!fs::isDir($templateDir)) {

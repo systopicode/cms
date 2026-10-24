@@ -92,11 +92,8 @@ $settings['js']['naviPath'] = $route->getIds();
 /* * **************************** DEFINE BODY CLASSES ************************** */
 
 $bodyClasses = $route->getBodyClasses();
-if (\Systopic\System\Auth\Session::known()) {
-	$bodyClasses[] = 'onPageEditing';
-	if ($showeditableareas) {
-		$bodyClasses[] = 'showeditableareas';
-	}
+if (\Systopic\System\Auth\Session::known() && $showeditableareas) {
+	$bodyClasses[] = 'showeditableareas';
 }
 hooks::emit('setBodyClasses');
 if (is_callable('onSetBodyClasses')) {
@@ -221,6 +218,7 @@ if (http::$method === 'PUT') {
 	if ($headLoader !== null) {
 		fs::includeFile($headLoader);
 	}
+	echo fsLoader::includeScriptFiles(fs::toInternal(__DIR__ . '/public/site/pagesRenderer.js'));
 	echo '<template id="systemPagesHeadPlaceholder"></template>' . "\n";
 	if (!defined('JSOFF')) {
 		$clientData = json_encode(clientInterfaces::clientData_export());
