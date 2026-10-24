@@ -84,14 +84,14 @@ final class EnvironmentForm
     {
         $e = static fn($value): string => htmlspecialchars((string) $value, ENT_QUOTES);
         echo '<div class="projectBar"><h3>' . $e($title) . '</h3></div>';
-        echo '<table class="scalars"><tbody>';
+        echo '<div class="tableScroll"><table class="scalars"><tbody>';
         foreach ($schema as $key => $kind) {
             $value = $values[$key] ?? ($kind === 'bool' ? false : '');
             echo '<tr><td><span>' . $e(self::label($key)) . '<small>' . $e($key) . '</small></span></td><td>';
             self::control($file, $group, $key, $kind, $value);
             echo '</td></tr>';
         }
-        echo '</tbody></table>';
+        echo '</tbody></table></div>';
     }
 
     /** @param array<string, mixed> $data */
@@ -99,13 +99,13 @@ final class EnvironmentForm
     {
         $e = static fn($value): string => htmlspecialchars((string) $value, ENT_QUOTES);
         echo '<div class="projectBar"><h3>Version</h3></div>';
-        echo '<table class="scalars"><tbody>';
+        echo '<div class="tableScroll"><table class="scalars"><tbody>';
         foreach (EnvironmentFile::SCALARS as $key) {
             echo '<tr><td><span>' . $e(self::label($key)) . '<small>' . $e($key) . '</small></span></td><td>';
             self::control($file, '', $key, 'string', (string) ($data[$key] ?? ''));
             echo '</td></tr>';
         }
-        echo '</tbody></table>';
+        echo '</tbody></table></div>';
     }
 
     /** @param list<mixed> $rules */
@@ -114,7 +114,7 @@ final class EnvironmentForm
         $e = static fn($value): string => htmlspecialchars((string) $value, ENT_QUOTES);
         echo '<div class="projectBar"><h3>Where this config applies</h3>';
         echo '<button type="button" class="button" data-on_click="addMatch" data-file="' . $e($file) . '"><i class="fa-regular fa-plus"></i>Add</button></div>';
-        echo '<table class="projectRows"><thead><tr>';
+        echo '<div class="tableScroll"><table class="projectRows"><thead><tr>';
         foreach (EnvironmentFile::MATCH as $field) {
             echo '<th>' . $e(self::label($field)) . '</th>';
         }
@@ -134,7 +134,7 @@ final class EnvironmentForm
             echo '<td class="projectRemove"><button type="button" class="button transparent" title="Remove" data-on_click="userConfirm" data-action="removeMatch" data-confirm="Remove this address?" data-file="' . $e($file) . '" data-index="' . (int) $index . '"><i class="fa-regular fa-trash"></i></button></td>';
             echo '</tr>';
         }
-        echo '</tbody></table>';
+        echo '</tbody></table></div>';
     }
 
     private static function control(string $file, string $group, string $key, string $kind, mixed $value): void

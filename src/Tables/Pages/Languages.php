@@ -30,9 +30,12 @@ final class Languages
         return array_filter(self::all(), static fn(array $l): bool => !empty($l['activated']));
     }
 
-    /** The first activated language — the one a fresh panel state starts in. */
+    /** `DEFAULT_LANG` from the settings while it is activated, else the first activated language. */
     public static function default(): string
     {
+        if (defined('DEFAULT_LANG') && isset(self::activated()[DEFAULT_LANG])) {
+            return (string) DEFAULT_LANG;
+        }
         $first = array_key_first(self::activated()) ?? array_key_first(self::all());
         return (string) ($first ?? 'en');
     }

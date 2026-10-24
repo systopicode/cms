@@ -36,9 +36,7 @@ main > div.content > article {
 }
 
 .cmslightbox.metaDefaults .metaDefault + .metaDefault{
-	margin-top: 0.75rem;
-	padding-top: 0.75rem;
-	border-top: 1px solid var(--cmsLine);
+	margin-top: 1.5rem;
 }
 
 .cmslightbox.metaDefaults h2{
@@ -46,13 +44,6 @@ main > div.content > article {
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 0.75rem;
-	margin: 0 0 0.25rem;
-	font-size: 0.6875rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	line-height: 1.2;
-	text-transform: uppercase;
-	color: var(--cmsSubText);
 }
 
 .cmslightbox.metaDefaults h2 span{
@@ -62,7 +53,7 @@ main > div.content > article {
 	color: var(--cmsMuted);
 }
 
-.cmslightbox.metaDefaults .hint{
+.cmslightbox.metaDefaults .tagsHint{
 	margin: 0 0 0.35rem;
 	font-weight: 400;
 }
@@ -94,4 +85,189 @@ main > div.content > article {
 	margin-top: 0.35rem;
 	font-size: 0.75rem;
 	color: var(--cmsMuted);
+}
+.cmslightbox:has(main.linkDialog) > section{
+	width: min(46rem, 100%);
+	min-width: 0;
+	max-width: 46rem;
+}
+
+.cmslightbox main.linkDialog{
+	display: grid;
+	grid-template-columns: minmax(0, 2fr) minmax(12rem, 1fr);
+	gap: 1.25rem 1.5rem;
+	align-items: start;
+
+	textarea{
+		min-height: 0;
+		resize: none;
+		field-sizing: content;
+		max-height: 8.5rem;
+	}
+
+	.linkTo{
+		display: flex;
+		align-items: stretch;
+		gap: 0.5rem;
+
+		select{
+			flex: 0 0 auto;
+			width: auto;
+			margin: 0;
+		}
+
+		textarea{
+			flex: 1 1 auto;
+			margin: 0;
+			word-break: break-all;
+		}
+	}
+
+	label.checkbox{
+		justify-content: space-between;
+		margin: 0.25rem 0 0;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--cmsMuted);
+	}
+
+	.linkTabs{
+		display: flex;
+		gap: 1rem;
+		margin-bottom: 0.6rem;
+		border-bottom: 1px solid var(--cmsLine);
+
+		a{
+			margin-bottom: -1px;
+			padding: 0.35rem 0;
+			border-bottom: 2px solid transparent;
+			font-size: 0.8125rem;
+			font-weight: 500;
+			color: var(--cmsMuted);
+			cursor: pointer;
+		}
+
+		a:hover{
+			color: var(--cmsTextColor);
+		}
+
+		a[aria-selected=true]{
+			border-bottom-color: var(--cmsHighlightColor);
+			font-weight: 600;
+			color: var(--cmsTextColor);
+		}
+	}
+
+	.linkPane[hidden]{
+		display: none;
+	}
+
+	.linkPane input[type=search]{
+		margin: 0 0 0.5rem;
+	}
+
+	.linkHint{
+		margin: 0.25rem 0;
+		font-size: 0.8125rem;
+		color: var(--cmsMuted);
+	}
+
+	:is(.linkPages, .linkFiles){
+		max-height: 16rem;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+	}
+
+	:is(.linkPages, .linkFiles) button{
+		margin: 0;
+		border: 1px solid transparent;
+		background: none;
+		box-shadow: none;
+		color: var(--cmsTextColor);
+		cursor: pointer;
+	}
+
+	:is(.linkPages, .linkFiles) button:hover{
+		background: var(--cmsHover);
+	}
+
+	:is(.linkPages, .linkFiles) button.selected{
+		border-color: var(--cmsHighlightColor);
+		background: var(--cmsSelected);
+	}
+
+	.linkPages button{
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.1rem;
+		width: 100%;
+		min-height: 0;
+		padding: 0.45rem 0.6rem;
+		border-radius: var(--cmsRadius);
+		text-align: left;
+
+		b{
+			font-size: 0.8125rem;
+			font-weight: 600;
+		}
+
+		small{
+			font-size: 0.75rem;
+			color: var(--cmsMuted);
+			word-break: break-all;
+		}
+	}
+
+	.linkFiles{
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+		gap: 0.5rem;
+
+		button{
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			gap: 0.3rem;
+			width: 100%;
+			min-height: 0;
+			padding: 0.3rem;
+			border-radius: var(--cmsRadius);
+		}
+
+		button > i,
+		button > img{
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 100%;
+			aspect-ratio: 1;
+			border-radius: calc(var(--cmsRadius) - 2px);
+			background: var(--cmsBgColor);
+			font-size: 1.5rem;
+			color: var(--cmsMuted);
+		}
+
+		button > img{
+			position: absolute;
+			top: 0.3rem;
+			left: 0.3rem;
+			width: calc(100% - 0.6rem);
+			object-fit: cover;
+		}
+
+		span{
+			width: 100%;
+			overflow: hidden;
+			font-size: 0.6875rem;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+}
+
+@media (max-width: 40rem){
+	.cmslightbox main.linkDialog{
+		grid-template-columns: 1fr;
+	}
 }

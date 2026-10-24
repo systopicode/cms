@@ -26,56 +26,58 @@ uasort($entries, function (array $a, array $b): int {
 	<?php if ($entries === []) { ?>
 		<main><p>The trash is empty.</p></main>
 	<?php } else { ?>
-		<table>
-			<thead>
-				<tr>
-					<th>Page</th>
-					<th>Language</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach ($entries as $nodeId => $entry) {
-					$pages = $entry['pages'];
-					usort($pages, static function ($a, $b) use ($default): int {
-						$rank = static fn($page): int => $page->languageIso === $default ? 0 : 1;
-						return $rank($a) <=> $rank($b)
-							?: strcasecmp((string) $a->languageIso, (string) $b->languageIso);
-					});
-					$title = $this->pageTitle($pages);
-					$primary = $pages[0] ?? null;
-					$preview = $primary === null
-						? ''
-						: \http::$siteRoot . '?id=' . (int) $nodeId . '&lang=' . rawurlencode((string) $primary->languageIso) . '&showtrashed';
-					?>
+		<div class="tableScroll">
+			<table>
+				<thead>
 					<tr>
-						<td><?= $e($title) ?></td>
-						<td class="muted">
-							<?php foreach ($pages as $page) {
-								$iso = (string) $page->languageIso;
-								$langName = (string) ($langs[$iso]['label'] ?? ($iso === '*' ? '' : strtoupper($iso)));
-								if ($langName === '') {
-									continue;
-								}
-								?>
-								<span><?= $e($langName) ?></span>
-							<?php } ?>
-						</td>
-						<td class="icons">
-							<ul>
-								<?php if ($preview !== '') { ?>
-									<li>
-										<a class="button icononly" target="_blank" rel="noopener" href="<?= $e($preview) ?>" title="Preview"><i class="fa-regular fa-eye"></i></a>
-									</li>
-								<?php } ?>
-								<li>
-									<a class="button icononly" title="Restore" data-on_click="userConfirm" data-action="restoreNode" data-node_id="<?= (int) $nodeId ?>" data-confirm="<?= $e('Restore “' . $title . '”?') ?>"><i class="fa-regular fa-trash-undo"></i></a>
-								</li>
-							</ul>
-						</td>
+						<th>Page</th>
+						<th>Language</th>
+						<th></th>
 					</tr>
-				<?php } ?>
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					<?php foreach ($entries as $nodeId => $entry) {
+						$pages = $entry['pages'];
+						usort($pages, static function ($a, $b) use ($default): int {
+							$rank = static fn($page): int => $page->languageIso === $default ? 0 : 1;
+							return $rank($a) <=> $rank($b)
+								?: strcasecmp((string) $a->languageIso, (string) $b->languageIso);
+						});
+						$title = $this->pageTitle($pages);
+						$primary = $pages[0] ?? null;
+						$preview = $primary === null
+							? ''
+							: \http::$siteRoot . '?id=' . (int) $nodeId . '&lang=' . rawurlencode((string) $primary->languageIso) . '&showtrashed';
+						?>
+						<tr>
+							<td><?= $e($title) ?></td>
+							<td class="muted">
+								<?php foreach ($pages as $page) {
+									$iso = (string) $page->languageIso;
+									$langName = (string) ($langs[$iso]['label'] ?? ($iso === '*' ? '' : strtoupper($iso)));
+									if ($langName === '') {
+										continue;
+									}
+									?>
+									<span><?= $e($langName) ?></span>
+								<?php } ?>
+							</td>
+							<td class="icons">
+								<ul>
+									<?php if ($preview !== '') { ?>
+										<li>
+											<a class="button icononly" target="_blank" rel="noopener" href="<?= $e($preview) ?>" title="Preview"><i class="fa-regular fa-eye"></i></a>
+										</li>
+									<?php } ?>
+									<li>
+										<a class="button icononly" title="Restore" data-on_click="userConfirm" data-action="restoreNode" data-node_id="<?= (int) $nodeId ?>" data-confirm="<?= $e('Restore “' . $title . '”?') ?>"><i class="fa-regular fa-trash-undo"></i></a>
+									</li>
+								</ul>
+							</td>
+						</tr>
+					<?php } ?>
+				</tbody>
+			</table>
+		</div>
 	<?php } ?>
 </section>

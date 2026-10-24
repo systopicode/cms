@@ -28,9 +28,6 @@ class Panel extends PanelNode {
 	/** The language a page is written in unless it says otherwise. */
 	public function siteLanguage(): string
 	{
-		if (defined('DEFAULT_LANG') && DEFAULT_LANG !== '') {
-			return (string) DEFAULT_LANG;
-		}
 		return Languages::default();
 	}
 

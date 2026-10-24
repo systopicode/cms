@@ -10,7 +10,7 @@ if ($page === null || $page->row === null || $this->groups === []) {
 }
 $activeGroup = $this->activeGroup();
 $collapsed = !empty($this->state->sidebarCollapsed);
-$width = $collapsed ? 0 : (int) $this->state->sidebarWidth;
+$width = $collapsed ? 0 : ((int) $this->state->sidebarWidth ?: 280);
 ?>
 <aside class="cms<?= $collapsed ? ' collapsed' : '' ?>" style="flex: 0 0 <?= $width ?>px" data-cols="1" data-items="1">
 	<a class="sidebarFlag put ajax" href="sidebar/toggleSidebar" title="<?= $collapsed ? 'Show sidebar' : 'Hide sidebar' ?>">

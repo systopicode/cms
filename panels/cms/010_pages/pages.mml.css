@@ -23,7 +23,6 @@
 }
 
 .cms .mmlContent {
-    padding-left: 0.75rem;
     height: 100%;
     width: 100%;
     position: absolute;
@@ -58,7 +57,7 @@ div.dragimage > img {
     width: 100%;
     position: relative;
     margin: 0;
-    padding: 0 0.85rem 3rem 0;
+    padding: 0 0 3rem;
     box-sizing: border-box;
     scrollbar-width: none;
 }
@@ -82,8 +81,8 @@ div.dragimage > img {
     display: block;
     box-sizing: border-box;
     width: 100%;
-    margin: 1.1rem 0 0.45rem;
-    padding: 0 1rem 0.4rem;
+    margin: 1rem 0 0.6rem;
+    padding: 0 0.75rem 0.4rem;
     border-bottom: 1px solid color-mix(in srgb, var(--cmsMainColor) 34%, var(--cmsLine));
     font-size: 0.6875rem;
     font-weight: 700;
@@ -95,13 +94,20 @@ div.dragimage > img {
     user-select: none;
 }
 
+/* As many columns as tiles of --mmlTile fit, never fewer than 3 or more
+   than 6 - the tiles fill the row up to the right edge */
+.cms div.mmlContent {
+    --mmlGap: 0.55rem;
+    --mmlTile: 3.5rem;
+}
+
 .cms div.mmlContent li.title > ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.55rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(max(var(--mmlTile), (100% - 5 * var(--mmlGap)) / 6), (100% - 2 * var(--mmlGap)) / 3), 1fr));
+    gap: var(--mmlGap);
     width: 100%;
     height: auto;
-    padding: 0 0 0.85rem 1rem;
+    padding: 0 0.75rem 0.75rem;
     overflow: visible;
 }
 
@@ -111,7 +117,7 @@ div.dragimage > img {
     gap: 0.5rem;
     width: 100%;
     margin: 0;
-    padding: 0.7rem 1rem;
+    padding: 0.7rem 0.75rem;
     background: var(--cmsPanelAlt);
     border-bottom: 1px solid var(--cmsLine);
     cursor: ns-resize;
@@ -151,8 +157,9 @@ div.dragimage > img {
 .cms div.mmlContent ul li ul li {
     float: none;
     margin: 0;
-    width: 4rem;
-    height: 4rem;
+    width: auto;
+    height: auto;
+    aspect-ratio: 1;
     list-style-type: none;
     cursor: grab;
     position: relative;
@@ -187,6 +194,27 @@ div.dragimage > img {
 .cms div.mmlContent ul li ul li:not(.upload):hover > i.thumbType,
 .cms div.mmlContent ul li ul li:not(.upload):focus-within > i.thumbType {
     opacity: 0;
+}
+
+/* The file is gone (panel.js): the type icon stands in for the image */
+.cms div.mmlContent ul li ul li.thumbMissing {
+    background: var(--cmsBgColor);
+    border-style: dashed;
+}
+
+.cms div.mmlContent ul li ul li.thumbMissing img {
+    visibility: hidden;
+}
+
+.cms div.mmlContent ul li ul li.thumbMissing > i.thumbType,
+.cms div.mmlContent ul li ul li.thumbMissing > a > i {
+    inset: 0;
+    width: auto;
+    height: auto;
+    background: none;
+    box-shadow: none;
+    font-size: 1.25rem;
+    color: var(--cmsMuted);
 }
 
 .cms div.mmlContent ul li ul li:not(.upload) .thumbActions {
@@ -248,7 +276,7 @@ body.fileDrag div.mmlContent li.fileOver {
 }
 
 .cms div.mmlContent div.sort.h.insertBefore {
-    left: calc(-0.55rem / 2);
+    left: calc(var(--mmlGap) / -2);
     right: auto;
     margin-left: -0.85rem;
     padding-left: 0.85rem;
@@ -256,7 +284,7 @@ body.fileDrag div.mmlContent li.fileOver {
 
 .cms div.mmlContent div.sort.h.insertAfter {
     left: auto;
-    right: calc(-0.55rem / 2);
+    right: calc(var(--mmlGap) / -2);
     margin-right: -0.85rem;
     padding-left: 0.85rem;
     padding-right: 0.85rem;
@@ -272,6 +300,26 @@ body.fileDrag div.mmlContent li.fileOver {
 .cms div.mmlContent ul li ul li:not(.upload):hover .thumbActions,
 .cms div.mmlContent ul li ul li:not(.upload):focus-within .thumbActions {
     opacity: 1;
+}
+
+/* Touch has no hover: the first tap opens the overlay (panel.js), its
+   buttons only take taps once it is open. A long press drags the tile. */
+:root[data-pointer="touch"] .cms div.mmlContent ul li ul li:not(.upload):hover .thumbActions {
+    opacity: 0;
+}
+
+:root[data-pointer="touch"] .cms div.mmlContent ul li ul li:not(.upload) .thumbActions,
+:root[data-pointer="touch"] .cms div.mmlContent ul li ul li:not(.upload) .thumbActions * {
+    pointer-events: none;
+}
+
+:root[data-pointer="touch"] .cms div.mmlContent ul li ul li.touchOpen:not(.upload) .thumbActions {
+    opacity: 1;
+}
+
+:root[data-pointer="touch"] .cms div.mmlContent ul li ul li.touchOpen:not(.upload) .thumbActions a,
+:root[data-pointer="touch"] .cms div.mmlContent ul li ul li.touchOpen:not(.upload) .thumbActions label {
+    pointer-events: auto;
 }
 
 body.dragging .cms div.mmlContent .thumbActions,
@@ -348,7 +396,11 @@ body.fileDrag .cms div.mmlContent .thumbActions *,
     opacity: 0;
 }
 
+/* absolute: a tile sized by aspect-ratio gives no height to a percentage (Safari) */
 .cms .mmlContent li img {
+	position: absolute;
+	inset: 0;
+	display: block;
 	width: 100%;
 	height:100%;
 	overflow: hidden;
@@ -500,6 +552,7 @@ div.mmlContent input {
 	min-height: 0;
 	width: 100%;
 	height: auto;
+	touch-action: pan-x pan-y; /* the pinch zooms the view (image.tpl.php) */
 }
 
 .cms .imageCropAlignContainer > div{
@@ -555,6 +608,7 @@ div.mml .spinner {
     right: 0;
     bottom: 0;
     background: color-mix(in srgb, var(--cmsBgColor) 90%, transparent);
+    -webkit-backdrop-filter: blur(2px);
     backdrop-filter: blur(2px);
     z-index: 1;
     display: none;
@@ -626,4 +680,26 @@ aside.cms ul li .mediaDrop a:not(.icon){
 	margin-top:-40px;
 	content:'\f03e';
 	font-family: "CMS Font Awesome 7 Pro";
+}
+
+/* Finger sized: bigger tiles, buttons far enough apart to hit the right one */
+@media (any-pointer: coarse) {
+    .cms div.mmlContent {
+        --mmlGap: 0.75rem;
+        --mmlTile: 5rem;
+    }
+
+    .cms div.mmlContent ul li ul li:not(.upload) .thumbButtons {
+        gap: 0.8rem;
+    }
+
+    .cms div.mmlContent ul li ul li:not(.upload) .thumbActions a,
+    .cms div.mmlContent ul li ul li:not(.upload) .thumbActions label {
+        width: 1.9rem;
+        height: 1.9rem;
+    }
+
+    .cms div.mmlContent ul li ul li:not(.upload) .thumbActions i:not(.thumbGrip) {
+        font-size: 0.9rem;
+    }
 }

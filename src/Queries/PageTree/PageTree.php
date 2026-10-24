@@ -323,7 +323,7 @@ final class PageTree implements Stringable
         // sites move like pages; their paths follow (NodeSite::rebuildBranch)
         $dataAttrs = $entry->edit ? '' : " data-drag_type='page'";
 
-        $grip = $entry->edit ? '' : "<i class='treeGrip fa-regular fa-grip-dots-vertical'></i>";
+        $grip = $entry->edit ? '' : "<i class='treeGrip fa-regular fa-grip-dots-vertical' title='Hold and drag to move'></i>";
         $menu = ($entry->edit || $entry->isSite) ? ''
             : "<button type='button' class='treeMenu' data-on_click='getTreeContextmenu' onmousedown='event.stopPropagation()' title='Menu'><i class='fa-regular fa-ellipsis'></i></button>";
         $html = "<li data-node_id='$id' data-node_parent_node_id='$parentId'"
@@ -410,7 +410,7 @@ final class PageTree implements Stringable
         $icon = "<i class='type fa-regular $typeIcon'></i>";
         if ($entry->edit) {
             return $icon
-                . "<span class='label' data-on_blur='updateLabel' data-on_keypress='checkKey' contenteditable='true'>"
+                . "<span class='label' data-on_blur='updateLabel' data-on_keypress='checkKey' contenteditable='plaintext-only'>"
                 . htmlentities($text) . '</span>';
         }
         $title = ' title="' . $entry->ordering . '"';
@@ -436,7 +436,8 @@ final class PageTree implements Stringable
             }
         }
         if (!$entry->isPublished) {
-            $html .= "<i class='fa-regular fa-eye-slash'></i>";
+            $html .= "<a class='unpublished' title='Hidden - click to publish' data-on_click='publish?id={$entry->id}'>"
+                . "<i class='fa-regular fa-eye-slash'></i></a>";
         }
         if ($entry->isTrashed) {
             $html .= "<a  data-action='recoverPage' data-on_click='userConfirm'"

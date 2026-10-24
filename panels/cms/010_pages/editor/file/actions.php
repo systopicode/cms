@@ -12,6 +12,7 @@
 
 use Systopic\System\Tables\Medias\Files as MediaFiles;
 use Systopic\System\Tables\Medias\Operator as MediaOperator;
+use Systopic\System\Tables\Medias\Removal as MediaRemoval;
 
 $pages = $this->pages();
 $row = $this->mediaRow;
@@ -46,6 +47,15 @@ $formatsOf = function (bool $all): array {
 };
 
 switch ($this->action) {
+	case 'deleteMedia':
+		if ($row !== NULL) {
+			MediaRemoval::remove($pages->scope, $row);
+		}
+		$pages->updateView('mml');
+		$pages->updateView('main');
+		http::redirect($pages->href);
+		break;
+
 	case 'updateFilename':
 		if ($row === NULL) {
 			break;
@@ -97,7 +107,7 @@ switch ($this->action) {
 		if ($row !== NULL) {
 			MediaFiles::writeOriginal($row, (string) http::values('svgContent'));
 			$save();
-			client::replace('img#svgPreviewImage', "<img id='svgPreviewImage' src='{$this->media->setFormat('original')->src}?v=" . time() . "' />");
+			client::replace('img#svgPreviewImage', "<img id='svgPreviewImage' src='{$this->media->setFormat('original')->url}?v=" . time() . "' />");
 		}
 		break;
 

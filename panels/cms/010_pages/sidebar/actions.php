@@ -64,7 +64,10 @@ switch ($this->action) {
 		break;
 
 	case 'updateWidth':
-		$this->state->sidebarWidth = http::put('width');
+		$width = (int) http::put('width');
+		if ($width >= 200) {
+			$this->state->sidebarWidth = min($width, 900);
+		}
 		break;
 
 	// -------------------------------------------------------- page fields

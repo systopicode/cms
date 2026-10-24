@@ -20,7 +20,23 @@ switch ($this->action) {
 		http::redirect('../../');
 		break;
 
-	case 'selectImageFormat':
-		client::setValue("input[name='linkUrl']",  http::values('imageFormat'));
+	case 'searchLinkPages':
+		$e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
+		$term = trim((string) http::values('search'));
+		$html = '';
+		foreach (\Systopic\Cms\Queries\PageSearch\PageSearch::byLabel($pages->scope, $term, $pages->params->lang) as $row) {
+			$page = $pages->pageFor((int) $row->relationId('node'));
+			if ($page === NULL) {
+				continue;
+			}
+			$path = $page->rewritepaths->path . $page->rewritepaths->appendix;
+			$link = http::$root . $path;
+			$html .= '<li><button type="button" data-href="' . $e($link) . '" data-label="' . $e($row->label) . '" onclick="linkPicked(this)">'
+				. '<b>' . $e($row->label) . '</b><small>/' . $e($path) . '</small></button></li>';
+		}
+		if ($html === '') {
+			$html = '<li class="linkHint">' . ($term === '' ? 'Type a few letters of the page title.' : 'No page with “' . $e($term) . '” in its title.') . '</li>';
+		}
+		client::replaceInner('.linkDialog ul.linkPages', $html);
 		break;
 }

@@ -49,11 +49,10 @@ $siteRoot = (string) http::$siteRoot;
 						?>
 						<a class='ajax' href='./?id=<?= (int) $entry['originalParentId'] ?>'>
 							<img src='<?= $e("{$siteRoot}var/formats/mmlThumb/$folders$filename$ext") ?>'>
-							<i class='fal fa-file-import'></i>
+							<i class='fa-regular fa-file-import'></i>
 						</a>
 					<?php } else {
-						$ext = in_array($mime, ['image/svg+xml', 'image/webp', 'image/png', 'image/jpeg'], true) ? '' : '.webp';
-						$src = "{$siteRoot}var/formats/mmlThumb/$folders$filename$ext";
+						$src = $media === NULL ? '' : $this->thumbOf($media);
 						$icon = $type;
 						if ($type === 'application' || $type === 'pdf') {
 							$icon = 'file-pdf';
@@ -61,19 +60,8 @@ $siteRoot = (string) http::$siteRoot;
 							$icon = 'gif';
 						} elseif (\Systopic\System\Tables\Medias\External::is($type)) {
 							$icon = 'circle-play';
-						} elseif ($type === 'video') {
-							$stem = preg_replace('/\.(mp4|webm|mov|m4v)$/i', '', $filename);
-							$mediaRoot = (string) fs::$siteRoot;
-							foreach (["var/original/$folders$stem.webp", "var/original/$folders$filename.webp"] as $poster) {
-								$abs = $mediaRoot . $poster;
-								if (is_file($abs) && filesize($abs) > 0) {
-									$src = $siteRoot . $poster . '?v=' . filemtime($abs);
-									break;
-								}
-							}
 						} elseif ($mime === 'image/svg+xml') {
 							$icon = 'vector-polygon';
-							$src = "{$siteRoot}var/original/$folders$filename";
 						}
 						?>
 						<img src='<?= $e($src) ?>'>
@@ -81,8 +69,8 @@ $siteRoot = (string) http::$siteRoot;
 						<div class='thumbActions'>
 							<span class='thumbGrip' title='Drag'><span></span><span></span><span></span><span></span><span></span><span></span></span>
 							<div class='thumbButtons'>
-								<a class='ajax' href='editor/file/?target_id=<?= $id ?>' title='Edit' onmousedown='event.stopPropagation()'><i class='fa-regular fa-pen'></i></a>
-								<label title='Replace' onmousedown='event.stopPropagation()'>
+								<a class='ajax' href='editor/file/?target_id=<?= $id ?>' title='Edit' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='fa-regular fa-pen'></i></a>
+								<label title='Replace' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'>
 									<i class='fa-regular fa-arrows-rotate'></i>
 									<input type=file data-on_change='upload/open'>
 								</label>

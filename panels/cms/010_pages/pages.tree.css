@@ -11,3 +11,39 @@ body.pages > main > div.pylon > .pylon{
 .cms .pylonTitle .button.icononly{
 	flex-shrink: 0;
 }
+
+/* The search sits in the title row: the pane starts level with the content window */
+body.pages > main > div.pylon > header{
+	display: none;
+}
+
+body.pages > main > div.pylon{
+	margin-top: 0.5rem;
+}
+
+/* One window with the content, like settings: round only at the outer corners, the lines level */
+body.pages > main > div.pylon nav{
+	border-radius: var(--cmsRadiusLg) 0 0 0;
+}
+
+body.pages > main > div.content,
+body.pages > main > div.content > header{
+	border-radius: 0 var(--cmsRadiusLg) 0 0;
+}
+
+body.pages .pylonTitle{
+	box-sizing: border-box;
+	min-height: 4.25rem;
+	margin: 0 0 0.5rem;
+	padding: 0 0.75rem 0 1rem;
+	border-bottom-color: var(--cmsLine);
+}
+
+/* The results take the width of the whole title row, not only the field */
+.cms .pylonTitle{
+	position: relative;
+}
+
+.cms .pylonTitle div.searchInput{
+	position: static;
+}

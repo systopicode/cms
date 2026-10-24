@@ -21,6 +21,7 @@ use Systopic\Cms\Tables\Pages\Model as PageRow;
 use Systopic\Cms\Tables\Pages\Operator as PageOperator;
 use Systopic\Cms\Tables\Pages\Page;
 use Systopic\Cms\Queries\PageSearch\PageSearch;
+use Systopic\Cms\Pages\Fields\HtmlSource;
 
 /** The node id an action is about: the dataset of the clicked element, else the address. */
 $nodeIdOf = static function (): ?int {
@@ -348,7 +349,7 @@ switch ($this->action) {
         if ($this->action === 'updateHTML') {
             $nodeId = (int) http::post('node_id');
             $field = (string) http::post('field');
-            $value = http::post('html');
+            $value = HtmlSource::compact((string) http::post('html'));
             $lang = null;
         } else {
             $nodeId = (int) $nodeIdOf();
@@ -459,7 +460,10 @@ switch ($this->action) {
     // ------------------------------------------------------ panel layout
 
     case 'updatePylonWidth':
-        $this->state->pylonWidth = http::put('width');
+        $width = (int) http::put('width');
+        if ($width >= 200) {
+            $this->state->pylonWidth = min($width, 900);
+        }
         break;
 
     case 'createDefaultTemplate':
@@ -489,7 +493,7 @@ switch ($this->action) {
                 break;
             case 'video':
                 $src = $file->setFormat('original')->src;
-                $poster = str_replace('.mp4', '', $src) . '.webp';
+                $poster = str_replace('.mp4', '', $file->setFormat('original')->url) . '.webp';
                 $tag = "<video data-mimetype='{$file->mimetype}' data-node_id='$nodeId' poster='$poster' controls='true' src='$src'>";
                 break;
             case 'application':

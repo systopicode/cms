@@ -131,7 +131,7 @@ final class ProjectForm
     private static function scalarTable(string $which, array $scalars, ?Group $languages = null): void
     {
         $e = static fn($value): string => htmlspecialchars((string) $value, ENT_QUOTES);
-        echo '<table class="scalars"><thead><tr><th>Setting</th><th>Value</th></tr></thead><tbody>';
+        echo '<div class="tableScroll"><table class="scalars"><thead><tr><th>Setting</th><th>Value</th></tr></thead><tbody>';
         foreach ($scalars as $group) {
             echo '<tr><td><span>' . $e(self::human($group->label)) . '<small>' . $e(ltrim($group->label, '$')) . '</small></span></td><td>';
             if ($group->id === 'define:DEFAULT_LANG' && $languages !== null) {
@@ -142,7 +142,7 @@ final class ProjectForm
             }
             echo '</td></tr>';
         }
-        echo '</tbody></table>';
+        echo '</tbody></table></div>';
     }
 
     private static function languageSelect(string $which, Group $setting, Group $languages): void
@@ -173,7 +173,7 @@ final class ProjectForm
     {
         $e = static fn($value): string => htmlspecialchars((string) $value, ENT_QUOTES);
         $columns = ProjectFile::columns($group);
-        echo '<table class="projectRows"><thead><tr><th></th><th>Key</th>';
+        echo '<div class="tableScroll"><table class="projectRows"><thead><tr><th></th><th>Key</th>';
         foreach ($columns as $column) {
             echo '<th>' . $e(self::human($column)) . '</th>';
         }
@@ -212,13 +212,13 @@ final class ProjectForm
             self::removeButton($data);
             echo '</td></tr>';
         }
-        echo '</tbody></table>';
+        echo '</tbody></table></div>';
     }
 
     private static function listTable(string $which, Group $group): void
     {
         $e = static fn($value): string => htmlspecialchars((string) $value, ENT_QUOTES);
-        echo '<table class="projectRows"><thead><tr><th></th><th>Value</th><th></th></tr></thead><tbody>';
+        echo '<div class="tableScroll"><table class="projectRows"><thead><tr><th></th><th>Value</th><th></th></tr></thead><tbody>';
         if ($group->items === []) {
             echo '<tr><td colspan="3">Nothing here yet.</td></tr>';
         }
@@ -230,7 +230,7 @@ final class ProjectForm
             self::removeButton($data);
             echo '</td></tr>';
         }
-        echo '</tbody></table>';
+        echo '</tbody></table></div>';
     }
 
     private static function control(string $which, Leaf $leaf, string $action): void

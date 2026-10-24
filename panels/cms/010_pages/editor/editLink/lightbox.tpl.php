@@ -1,100 +1,147 @@
 <?php
-// the image a link is set on (Tables\Medias\Media), FALSE for a text link
-$imageRow = http::post('image_node_id', FALSE) ? $this->parent->parent->mediaOfNode((int) http::post('image_node_id')) : NULL;
-$media = $imageRow !== NULL ? new \Systopic\System\Tables\Medias\Media($imageRow) : FALSE;
-$text = http::post('text', FALSE);
-if ($text || $media || $this->action) {
-	$classNames = http::post('classNames') != 'undefined' ? http::post('classNames') : '';
-	$href = http::post('href', '');
-	$target = http::post('target', '') === '_blank' ? 'checked' : '';
-	$download = http::post('download') != 'undefined' ? 'checked' : '';
-} else {
+/**
+ * The link dialog of the WYSIWYG fields: a new or an existing link on text or
+ * on an image. The target comes from one of three tabs - an address typed in,
+ * a page found by its title, a file of the page's media library. The field
+ * itself is changed in the browser (applyHTMLeditorLink).
+ *
+ * @var \Systopic\System\Panels\PanelNode $this  cms/pages/editor/editLink
+ */
+if (http::$method !== 'POST' && !$this->action) {
 	http::redirect('../../');
 }
+/** @var \Systopic\Cms\Panels\Root\Cms\Pages\Panel $pages */
+$pages = $this->parent->parent;
+$e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
+// the image a link is set on (Tables\Medias\Media), FALSE for a text link
+$imageRow = http::post('image_node_id', FALSE) ? $pages->mediaOfNode((int) http::post('image_node_id')) : NULL;
+$media = $imageRow !== NULL ? new \Systopic\System\Tables\Medias\Media($imageRow) : FALSE;
+$text = (string) http::post('text', '');
+$href = (string) http::post('href', '');
+$classNames = (string) http::post('classNames', '');
+$newTab = http::post('target', '') === '_blank';
+$download = http::post('download') ? 'checked' : '';
+$types = [
+	'url' => ['Web', 'https://example.com or /page/'],
+	'mailto' => ['Email', 'name@example.com'],
+	'tel' => ['Phone', '+49 30 1234567'],
+	'sms' => ['SMS', '+49 170 1234567'],
+];
+$type = preg_match('/^(mailto|tel|sms):/i', $href, $m) ? strtolower($m[1]) : 'url';
+$address = $type === 'url' ? $href : rawurldecode(substr($href, strlen($type) + 1));
+$title = ($href === '' ? 'Insert ' : 'Edit ') . ($media ? 'Image Link' : 'Link');
+
+// the files of the page: the originals, as the media library lists them
+$files = $thumbs = [];
+foreach ($pages->library as $entries) {
+	foreach ($entries as $entry) {
+		if ($entry['media'] === NULL || $entry['alias'] || \Systopic\System\Tables\Medias\External::is((string) $entry['media']->type)) {
+			continue;
+		}
+		$files[] = new \Systopic\System\Tables\Medias\Media($entry['media']);
+		$thumbs[] = $pages->thumbOf($entry['media']);
+	}
+}
+$fileHrefs = array_map(static fn($file) => $file->setFormat('original')->url, $files);
+$tab = in_array($href, $fileHrefs, TRUE) ? 'file' : 'address';
+$tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 ?>
 <div class="cmslightbox cms" data-size="1">
-    <textarea class="olink"><?= http::values('olink') ?></textarea>
-    <section>
+	<section>
 		<header>
-			<?php if ($media) { ?>
-				<h1>Edit Image Link</h1>
-			<?php } else { ?>
-				<h1>Edit Page Link</h1>
-			<?php } ?>
+			<h1><?= $title ?></h1>
 			<ul class="barmenu">
 				<li>
-					<a class="ajax button transparent" onclick='closeLinkLightbox()' href="../../"><i class="fa-regular fa-xmark"></i></a>
+					<a class="ajax" onclick="wysiwyg.cancelLink()" href="../../" title="Close"><i class="fa-regular fa-xmark"></i></a>
 				</li>
 			</ul>
 		</header>
-		<main class="layout">
-			<div class="halfColumn">
-				<?php if ($text) { ?>
-					<div class="inputGroup">
-						<input name="linkTitle" required="" value="<?= $text ?>" type="text" placeholder=" ">
-						<span class="bar"></span>
-						<label>Link Title</label>
-					</div>
-				<?php } ?>
+		<main class="linkDialog" onkeydown="if (event.key === 'Enter' && !event.shiftKey && !event.target.matches('select, [type=search]')) { event.preventDefault(); this.closest('section').querySelector('footer a').click(); }">
+			<div class="fieldGrid is-stack">
 				<?php if ($media) { ?>
-					<div class="inputGroup">
-						<select name="imageFormat" data-on_change="selectImageFormat">
-							<option value=""></option>
+					<label class="field">
+						<span>Image format</span>
+						<select name="imageFormat" onchange="linkFormatChosen(this)">
+							<option value="">Link somewhere else</option>
 							<?php
-							// global from settings.php - out of scope inside PanelNode::render()
-							$image_formats = mediaFormats::get();
-							$i = 0;
-							foreach (array_reverse($image_formats) as $key => $image_format) {
-								if ($image_format['cms_display'] != 'none') {
-									$value = http::$hostUrl.$media->setFormat($key)->src;
-									$i++;
-									if ($i == 1 && empty($selectedFormat)) {
-										$selectedFormat = $key;
-									}
-									if (isset($image_format['width'])) {
-										$format_info = $image_format['width'] . ' x ' . $image_format['height'] . 'px';
-									} elseif (isset($image_format['autocrop'])) {
-										$autocrop = $image_format["autocrop_limit"];
-										$format_info = 'Orientation: ' . $image_format['autocrop'] . '&nbsp&nbsp;&mdash;&nbsp;&nbsp;Aspect Ratio: ' . $autocrop;
-									} else {
-										$format_info = 'Megapixels: ' . settype($image_format['megapixels'], "string");
-									}
-									?>
-									<option value="<?= $value ?>"><?= $key ?> (<?= $format_info ?>)</option>
-									<?php
+							foreach (array_reverse(mediaFormats::get()) as $key => $format) {
+								if ($format['cms_display'] == 'none') {
+									continue;
 								}
+								$size = isset($format['width']) ? $format['width'] . ' × ' . $format['height'] . ' px'
+									: (isset($format['autocrop']) ? $format['autocrop'] . ', ' . mediaFormats::ratioLabel($format['autocrop_limit'] ?? 0) : $format['megapixels'] . ' MP');
+								echo '<option value="' . $e(http::$hostUrl . $media->setFormat($key)->url) . '">' . $e($key . ' (' . $size . ')') . '</option>';
 							}
 							?>
 						</select>
-						<span class="bar"></span>
-						<label>Link to Image Format</label>
-					</div>
+						<small>Links the image to a larger version of itself.</small>
+					</label>
+				<?php } else { ?>
+					<label class="field">
+						<span>Text</span>
+						<textarea name="linkTitle" rows="2" placeholder="What the reader clicks"><?= $e($text) ?></textarea>
+					</label>
 				<?php } ?>
-				<br>
-				<div class="inputGroup">
-					<input name="linkUrl" required="" value="<?= $href ?>" type="url" placeholder=" ">
-					<span class="bar"></span>
-					<label>URL</label>
-				</div>
-				<br>
-				<div class="inputGroup">
-					<input name="linkClass" type="text" value="<?= $classNames ?>" placeholder=" ">
-					<label>Link Class Names</label>
+				<div class="field linkTarget">
+					<span>Link to</span>
+					<nav class="linkTabs" role="tablist">
+						<?php foreach ($tabs as $key => $label) { ?>
+							<a role="tab" data-tab="<?= $key ?>" aria-selected="<?= $key === $tab ? 'true' : 'false' ?>" onclick="linkTab(this)"><?= $label ?></a>
+						<?php } ?>
+					</nav>
+					<div class="linkPane linkTo" data-pane="address" <?= $tab === 'address' ? '' : 'hidden' ?>>
+						<select name="linkType" aria-label="Type" onchange="linkTypeChanged(this)">
+							<?php foreach ($types as $key => [$label, $hint]) { ?>
+								<option value="<?= $key ?>" data-hint="<?= $e($hint) ?>" <?= $key === $type ? 'selected' : '' ?>><?= $label ?></option>
+							<?php } ?>
+						</select>
+						<textarea name="linkUrl" rows="2" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="<?= $e($types[$type][1]) ?>" autofocus><?= $e($address) ?></textarea>
+					</div>
+					<div class="linkPane" data-pane="page" hidden>
+						<input type="search" name="search" data-on_input="searchLinkPages" placeholder="Search pages by title" aria-label="Search pages" autocomplete="off">
+						<ul class="linkPages">
+							<li class="linkHint">Type a few letters of the page title.</li>
+						</ul>
+					</div>
+					<div class="linkPane" data-pane="file" <?= $tab === 'file' ? '' : 'hidden' ?>>
+						<?php if ($files === []) { ?>
+							<p class="linkHint">The media library of this page is empty. Upload a file there first.</p>
+						<?php } else { ?>
+							<ul class="linkFiles">
+								<?php foreach ($files as $i => $file) {
+									$icon = $file->type === 'video' ? 'film' : ($file->type === 'image' ? 'image' : 'file-pdf');
+									?>
+									<li>
+										<button type="button" class="<?= $fileHrefs[$i] === $href ? 'selected' : '' ?>" data-href="<?= $e($fileHrefs[$i]) ?>" data-label="<?= $e($file->label) ?>" onclick="linkPicked(this)" title="<?= $e($file->label) ?>">
+											<i class="fa-regular fa-<?= $icon ?>"></i>
+											<img src="<?= $e($thumbs[$i]) ?>" alt="" loading="lazy" onerror="this.remove()">
+											<span><?= $e($file->label) ?></span>
+										</button>
+									</li>
+								<?php } ?>
+							</ul>
+						<?php } ?>
+					</div>
 				</div>
 			</div>
-			<div class="halfColumn">
-				<ul class="checkBoxList">
-					<li>
-						<label class="checkbox"><span>Download File</span><input type="checkbox"  value='0' <?= $download ?> name='download' class="switch tinyswitch"  /><div><div></div></div></label>
-					</li>
-					<li>
-						<label class="checkbox"><span>Open in New Tab / Window</span><input type="checkbox"  <?= $target ?> value='0' name='newTab' class=" switch tinyswitch" /><div><div></div></div></label>
-					</li>
-				</ul>
+			<div class="fieldGrid is-stack">
+				<label class="field">
+					<span>Open in</span>
+					<select name="target">
+						<option value="">Same window</option>
+						<option value="_blank" <?= $newTab ? 'selected' : '' ?>>New tab</option>
+					</select>
+				</label>
+				<label class="field">
+					<span>Class names</span>
+					<input name="linkClass" type="text" value="<?= $e($classNames) ?>" autocapitalize="off" spellcheck="false">
+					<small>For special styles of the website, separated by spaces.</small>
+				</label>
+				<label class="checkbox"><span>Download the file</span><input type="checkbox" <?= $download ?> name="download" class="switch tinyswitch"><div><div></div></div></label>
 			</div>
 		</main>
 		<footer>
-			<a class="submit button" <?php if ($text) { ?>onclick="insertHTMLeditorLink(), this.classList.add('loading')" <?php } ?> <?php if ($media) { ?> onclick="insertHTMLeditorImageLink(),this.classList.add('loading')"<?php } ?>>Update Link</a>
+			<a class="button submit" onclick="applyHTMLeditorLink(this)"><i class="fa-regular fa-link"></i><?= $href === '' ? 'Insert link' : 'Save' ?></a>
 		</footer>
-    </section>
+	</section>
 </div>

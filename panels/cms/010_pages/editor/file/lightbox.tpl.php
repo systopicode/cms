@@ -6,6 +6,7 @@
  */
 $media = $this->media;
 if ($media === NULL) {
+	message::error("Media node {$this->targetId} has no file");
 	http::redirect('../../');
 	return;
 }
@@ -23,6 +24,9 @@ $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/
 				</li>
 				<li>
 					<a href="<?= htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') ?>" target="_blank" title="Open original"><i class="fa-regular fa-eye"></i></a>
+				</li>
+				<li>
+					<a class="put" data-confirm="Do you really want to delete this File?" data-on_click="userConfirm" data-action="deleteMedia" title="Delete"><i class="fa-regular fa-trash"></i></a>
 				</li>
 				<li>
 					<a class="ajax" href="../../" title="Close"><i class="fa-regular fa-xmark"></i></a>

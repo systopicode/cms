@@ -7,6 +7,7 @@
 
 use Systopic\Db\Type\Text;
 use Systopic\Cms\Tables\Pages\Operator as PageOperator;
+use Systopic\Cms\Pages\Fields\HtmlSource;
 
 /** @var \Systopic\Cms\Panels\Root\Cms\Pages\Panel $pages */
 $pages = $this->parent->parent;
@@ -17,8 +18,7 @@ $row = $property === null ? null : $pages->pageFor($nodeId)?->row;
 $value = $row === null ? '' : $row->$property;
 $value = $value instanceof Text ? $value->value : (string) $value;
 ?>
-<form method=post  action='../../'>
-    <input name='action' value='updateHTML' type='hidden'><!-- RELOAD TROUBLE SOLVED-->
+<form method="post" action="../../updateHTML">
     <input name='field' value='<?= htmlspecialchars($field, ENT_QUOTES) ?>' type='hidden'>
     <input name='node_id' value='<?= $nodeId ?>' type='hidden'>
     <div class="cmslightbox cms" data-size='3'>
@@ -32,7 +32,7 @@ $value = $value instanceof Text ? $value->value : (string) $value;
                 </ul>
             </header>
             <main>
-                <textarea spellcheck='off' style='height:100%;' name='html' autofocus ><?= htmlspecialchars($value) ?></textarea>
+                <textarea class="htmlSource" spellcheck="false" autocapitalize="off" autocomplete="off" name="html" autofocus><?= htmlspecialchars(HtmlSource::pretty($value)) ?></textarea>
             </main>
             <footer>
                 <button type="submit" onclick="this.classList.add('loading')" class="submit">Save</button>

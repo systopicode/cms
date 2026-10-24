@@ -20,8 +20,10 @@
     font-weight: 500;
 }
 
+/* the drop zones sit on the row - Safari needs the transform for that */
 .pageSettings tbody tr{
     position: relative;
+    transform: translate(0);
 }
 
 .pageSettings td.pageSettingDrag{

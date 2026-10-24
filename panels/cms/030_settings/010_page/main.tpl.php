@@ -61,86 +61,88 @@ $addLabel = match ($parentType) {
 	<?php if ($this->rows === []) { ?>
 		<main><p>Nothing here yet.</p></main>
 	<?php } else { ?>
-		<table>
-			<thead>
-				<tr>
-					<th></th>
-					<?php foreach ($columns as $column) { ?>
-						<th><?= $e($heads[$column]) ?></th>
-					<?php } ?>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach ($this->rows as $row) {
-					/** @var Definition $row */
-					$id = (int) $row->nodeId;
-					$kind = (string) $row->type;
-					if ($parentType === 'select') {
-						$kind = 'option';
-					} elseif ($parentType === 'group' || $parentType === 'checkbox') {
-						$kind = 'input';
-					}
-					$opens = $parentType === '' && in_array($kind, ['group', 'select', 'checkbox'], true);
-					$label = $row->label !== '' ? $row->label : 'Untitled';
-					$name = (string) $row->name;
-					$typeLabel = match ($row->datatype) {
-						'int' => 'Number',
-						'decimal' => 'Decimal',
-						default => 'Text',
-					};
-					$about = match ($kind) {
-						'group' => 'A block of fields',
-						'select' => 'One choice',
-						'checkbox' => 'On or off',
-						default => match ($row->datatype) {
-							'int' => 'A number',
-							'decimal' => 'A decimal',
-							default => 'A text',
-						},
-					};
-					?>
+		<div class="tableScroll">
+			<table>
+				<thead>
 					<tr>
-						<td class="pageSettingDrag">
-							<i class="fa-regular fa-grip-vertical" title="Drag to reorder"
-								data-drag_type="setting" data-id="<?= $id ?>"></i>
-							<div class="sort v insertBefore" data-drop_accept="setting" data-on_drop="insertBefore" data-id="<?= $id ?>"></div>
-							<div class="sort v insertAfter" data-drop_accept="setting" data-on_drop="insertAfter" data-id="<?= $id ?>"></div>
-						</td>
+						<th></th>
 						<?php foreach ($columns as $column) { ?>
-							<td><?php
-								if ($column === 'label') {
-									echo '<span class="settingLabel">';
-									if ($opens) {
-										echo '<a class="ajax" href="?id=' . $id . '">' . $e($label) . '</a>';
-									} else {
-										echo $e($label);
-									}
-									if ($parentType === '' && $name !== '') {
-										echo '<small>' . $e($name) . '</small>';
-									}
-									echo '</span>';
-								} elseif ($column === 'value' || $column === 'name') {
-									echo $e($name);
-								} elseif ($column === 'type') {
-									echo $e($typeLabel);
-								} else {
-									echo '<span class="settingAbout">' . $e($about) . '</span>';
-								}
-							?></td>
+							<th><?= $e($heads[$column]) ?></th>
 						<?php } ?>
-						<td class="icons">
-							<ul>
-								<?php if ($opens) { ?>
-									<li><a class="ajax button icononly" title="Open" href="?id=<?= $id ?>"><i class="fa-regular fa-folder-open"></i></a></li>
-								<?php } ?>
-								<li><a class="ajax button icononly" title="Edit" href="edit/?id=<?= $id ?>"><i class="fa-regular fa-pen"></i></a></li>
-								<li><a class="ajax button icononly" title="Delete" href="delete/?id=<?= $id ?>"><i class="fa-regular fa-trash"></i></a></li>
-							</ul>
-						</td>
+						<th></th>
 					</tr>
-				<?php } ?>
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					<?php foreach ($this->rows as $row) {
+						/** @var Definition $row */
+						$id = (int) $row->nodeId;
+						$kind = (string) $row->type;
+						if ($parentType === 'select') {
+							$kind = 'option';
+						} elseif ($parentType === 'group' || $parentType === 'checkbox') {
+							$kind = 'input';
+						}
+						$opens = $parentType === '' && in_array($kind, ['group', 'select', 'checkbox'], true);
+						$label = $row->label !== '' ? $row->label : 'Untitled';
+						$name = (string) $row->name;
+						$typeLabel = match ($row->datatype) {
+							'int' => 'Number',
+							'decimal' => 'Decimal',
+							default => 'Text',
+						};
+						$about = match ($kind) {
+							'group' => 'A block of fields',
+							'select' => 'One choice',
+							'checkbox' => 'On or off',
+							default => match ($row->datatype) {
+								'int' => 'A number',
+								'decimal' => 'A decimal',
+								default => 'A text',
+							},
+						};
+						?>
+						<tr>
+							<td class="pageSettingDrag">
+								<i class="fa-regular fa-grip-vertical" title="Drag to reorder"
+									data-drag_type="setting" data-id="<?= $id ?>"></i>
+								<div class="sort v insertBefore" data-drop_accept="setting" data-on_drop="insertBefore" data-id="<?= $id ?>"></div>
+								<div class="sort v insertAfter" data-drop_accept="setting" data-on_drop="insertAfter" data-id="<?= $id ?>"></div>
+							</td>
+							<?php foreach ($columns as $column) { ?>
+								<td><?php
+									if ($column === 'label') {
+										echo '<span class="settingLabel">';
+										if ($opens) {
+											echo '<a class="ajax" href="?id=' . $id . '">' . $e($label) . '</a>';
+										} else {
+											echo $e($label);
+										}
+										if ($parentType === '' && $name !== '') {
+											echo '<small>' . $e($name) . '</small>';
+										}
+										echo '</span>';
+									} elseif ($column === 'value' || $column === 'name') {
+										echo $e($name);
+									} elseif ($column === 'type') {
+										echo $e($typeLabel);
+									} else {
+										echo '<span class="settingAbout">' . $e($about) . '</span>';
+									}
+								?></td>
+							<?php } ?>
+							<td class="icons">
+								<ul>
+									<?php if ($opens) { ?>
+										<li><a class="ajax button icononly" title="Open" href="?id=<?= $id ?>"><i class="fa-regular fa-folder-open"></i></a></li>
+									<?php } ?>
+									<li><a class="ajax button icononly" title="Edit" href="edit/?id=<?= $id ?>"><i class="fa-regular fa-pen"></i></a></li>
+									<li><a class="ajax button icononly" title="Delete" href="delete/?id=<?= $id ?>"><i class="fa-regular fa-trash"></i></a></li>
+								</ul>
+							</td>
+						</tr>
+					<?php } ?>
+				</tbody>
+			</table>
+		</div>
 	<?php } ?>
 </section>

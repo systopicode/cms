@@ -44,50 +44,52 @@ usort($entries, static function (array $a, array $b): int {
 	<?php if ($entries === []) { ?>
 		<main><p>No addresses.</p></main>
 	<?php } else { ?>
-		<table>
-			<thead>
-				<tr>
-					<th>Page</th>
-					<th>Language</th>
-					<th>Path</th>
-					<th></th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach ($entries as ['path' => $path, 'page' => $page, 'node' => $node]) {
-					$title = trim((string) ($page?->label ?? '')) ?: 'Untitled';
-					$raw = trim((string) $path->string);
-					$shown = $raw !== '' ? $raw : ($path->isPrimary ? '/' : '—');
-					$href = ($raw !== '' || $path->isPrimary)
-						? rtrim((string) \http::$siteRoot, '/') . '/' . ltrim($raw, '/')
-						: '';
-					?>
+		<div class="tableScroll">
+			<table>
+				<thead>
 					<tr>
-						<td>
-							<?= $e($title) ?>
-							<?php if ($node?->isTrashed) { ?><span class="logPill is-bad">Trash</span><?php } ?>
-						</td>
-						<td class="muted"><?= $e($langName($page?->languageIso)) ?></td>
-						<td>
-							<?= $e($shown) ?>
-							<?php if ($path->isPrimary) { ?><span class="logPill">Primary</span><?php } ?>
-							<?php if ($page !== null && !$page->isPublished) { ?><span class="logPill">Unpublished</span><?php } ?>
-						</td>
-						<td class="icons">
-							<ul>
-								<?php if ($href !== '') { ?>
-									<li>
-										<a class="button icononly" target="_blank" rel="noopener" href="<?= $e($href) ?>" title="Preview"><i class="fa-regular fa-eye"></i></a>
-									</li>
-								<?php } ?>
-								<li>
-									<a class="button icononly" title="Delete" data-on_click="userConfirm" data-action="deletePath" data-rewritepath_id="<?= (int) $path->id ?>" data-confirm="<?= $e('Delete “' . $shown . '”?') ?>"><i class="fa-regular fa-trash"></i></a>
-								</li>
-							</ul>
-						</td>
+						<th>Page</th>
+						<th>Language</th>
+						<th>Path</th>
+						<th></th>
 					</tr>
-				<?php } ?>
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					<?php foreach ($entries as ['path' => $path, 'page' => $page, 'node' => $node]) {
+						$title = trim((string) ($page?->label ?? '')) ?: 'Untitled';
+						$raw = trim((string) $path->string);
+						$shown = $raw !== '' ? $raw : ($path->isPrimary ? '/' : '—');
+						$href = ($raw !== '' || $path->isPrimary)
+							? rtrim((string) \http::$siteRoot, '/') . '/' . ltrim($raw, '/')
+							: '';
+						?>
+						<tr>
+							<td>
+								<?= $e($title) ?>
+								<?php if ($node?->isTrashed) { ?><span class="logPill is-bad">Trash</span><?php } ?>
+							</td>
+							<td class="muted"><?= $e($langName($page?->languageIso)) ?></td>
+							<td>
+								<?= $e($shown) ?>
+								<?php if ($path->isPrimary) { ?><span class="logPill">Primary</span><?php } ?>
+								<?php if ($page !== null && !$page->isPublished) { ?><span class="logPill">Unpublished</span><?php } ?>
+							</td>
+							<td class="icons">
+								<ul>
+									<?php if ($href !== '') { ?>
+										<li>
+											<a class="button icononly" target="_blank" rel="noopener" href="<?= $e($href) ?>" title="Preview"><i class="fa-regular fa-eye"></i></a>
+										</li>
+									<?php } ?>
+									<li>
+										<a class="button icononly" title="Delete" data-on_click="userConfirm" data-action="deletePath" data-rewritepath_id="<?= (int) $path->id ?>" data-confirm="<?= $e('Delete “' . $shown . '”?') ?>"><i class="fa-regular fa-trash"></i></a>
+									</li>
+								</ul>
+							</td>
+						</tr>
+					<?php } ?>
+				</tbody>
+			</table>
+		</div>
 	<?php } ?>
 </section>

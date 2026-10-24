@@ -301,15 +301,7 @@ class appSite {
 			$PUBLIC_TITLE = $PUBLIC_PAGE_NAME;
 		}
 
-		switch (STAGE) {
-			case 'DEV':
-				$PUBLIC_TITLE = "DEV | $PUBLIC_TITLE";
-				break;
-			case 'RELEASE':
-				$PUBLIC_TITLE = "RELEASE | $PUBLIC_TITLE";
-				break;
-		}
-		return trim(strip_tags((string) $PUBLIC_TITLE));
+		return \Systopic\System\Sys\WebApp::stageMark() . trim(strip_tags((string) $PUBLIC_TITLE));
 	}
 
 	private function buildDescription(): string {

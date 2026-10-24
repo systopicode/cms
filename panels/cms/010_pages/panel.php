@@ -159,6 +159,31 @@ class Panel extends CmsPanel {
 		}
 	}
 
+	/**
+	 * The thumbnail address of a medium in the media library: the mmlThumb
+	 * format, the poster of a video, the file itself for an svg.
+	 */
+	public function thumbOf(\Systopic\System\Tables\Medias\Model $media): string {
+		$siteRoot = (string) \http::$siteRoot;
+		$mime = (string) $media->mimetype;
+		$filename = (string) $media->filename;
+		$folders = \Systopic\System\Tables\Medias\Files::idPath((int) $media->id);
+		if ($mime === 'image/svg+xml') {
+			return "{$siteRoot}var/original/$folders$filename";
+		}
+		if ($media->type === 'video') {
+			$stem = preg_replace('/\.(mp4|webm|mov|m4v)$/i', '', $filename);
+			foreach (["var/original/$folders$stem.webp", "var/original/$folders$filename.webp"] as $poster) {
+				$abs = \fs::$siteRoot . $poster;
+				if (is_file($abs) && filesize($abs) > 0) {
+					return $siteRoot . $poster . '?v=' . filemtime($abs);
+				}
+			}
+		}
+		$ext = in_array($mime, ['image/webp', 'image/png', 'image/jpeg'], TRUE) ? '' : '.webp';
+		return "{$siteRoot}var/formats/mmlThumb/$folders$filename$ext";
+	}
+
 	/** The medium of a media node — what a library action is about. */
 	public function mediaOfNode(int $nodeId): ?\Systopic\System\Tables\Medias\Model {
 		return $nodeId > 0
@@ -348,7 +373,7 @@ class Panel extends CmsPanel {
 			return FALSE;
 		}
 		try {
-			PageOperator::assign($page->row, $field, is_string($value) ? $value : (string) $value);
+			PageOperator::assign($page->row, $field, ltrim((string) $value, "\r\n"));
 		} catch (\InvalidArgumentException $e) {
 			\message::error($e->getMessage());
 			return FALSE;

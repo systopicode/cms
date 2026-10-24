@@ -44,7 +44,7 @@
 			<ul>
 				<li title="Rename" class="iconOnly">
 					<a data-on_click="editLabel">
-						<i class="fa-regular fa-pen-to-square"></i>
+						<i class="fa-regular fa-pen"></i>
 					</a>
 				</li>
 				<li title="Duplicate" class="iconOnly">
@@ -77,9 +77,9 @@
 						</a>
 					</li>
 				<?php } ?>
-				<li title="Create Child" class="iconOnly">
+				<li title="New subpage" class="iconOnly">
 					<a data-node_id="<?= $node->id ?>" data-on_click="newChild">
-						<i class="fa-regular fa-file-circle-plus"></i>
+						<i class="fa-regular fa-diagram-subtask"></i>
 					</a>
 				</li>
 				<?php if ($node->isAlias && !$node->hasChildren) { ?>

@@ -94,6 +94,9 @@ switch ($this->action) {
 		break;
 
 	case 'updateFooterHeight':
-		$pages->state->pylonFooterHeight = http::put()->height;
+		$height = (int) http::put()->height;
+		if ($height >= 60) {
+			$pages->state->pylonFooterHeight = $height;
+		}
 		break;
 }

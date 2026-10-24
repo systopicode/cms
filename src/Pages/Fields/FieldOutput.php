@@ -78,7 +78,7 @@ final class FieldOutput
             case 'textarea':
                 return "<div class='$class' $dataAttrs data-on_input='updateTextfield'><textarea name={$field->name} value='$value'>$value</textarea></div>";
             default:
-                return "<{$field->tag} class='$class' $dataAttrs data-editorLabel='$tagLabel' data-on_input='updatePageParam' contenteditable='true'>$value</{$field->tag}>";
+                return "<{$field->tag} class='$class' $dataAttrs data-editorLabel='$tagLabel' data-on_input='updatePageParam' contenteditable='plaintext-only'>$value</{$field->tag}>";
         }
     }
 
@@ -135,7 +135,7 @@ final class FieldOutput
                 $replacements = array_map(static fn(string $address): string => 'mailto:' . $address, $results[1]);
                 $fieldContent = str_replace($results[0], $replacements, $fieldContent);
             }
-            $fieldContent = "\n" . str_replace([
+            $fieldContent = str_replace([
                 '###http::siteRoot###',
                 '###http::varRoot###',
                 '###_IMAGE_DROPPABLE_CLASSNAMES_###',

@@ -5,6 +5,7 @@
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Panel $this
  */
 use Systopic\Cms\Tables\Pages\Languages;
+use Systopic\Cms\Pages\PreviewWidths;
 
 if (($this->state->id ?? null) === null) {
 	echo '<!-- controls: no page selected -->';
@@ -18,21 +19,7 @@ while ($walker && count($crumbs) < 10) {
 	$walker = $walker->parent;
 }
 $title = $page?->label->plain ?? '';
-$breakpoints = [];
-$responsiveFile = fs::$siteRoot . 'css/x_responsive.css';
-if (fs::isFile($responsiveFile) && preg_match_all('/max-width:\s*(\d+)px/', (string) fs::file_get_contents($responsiveFile), $found)) {
-	$breakpoints = array_values(array_unique(array_map('intval', $found[1])));
-	sort($breakpoints);
-}
-$mobileWidth = null;
-$tabletWidth = null;
-foreach ($breakpoints as $width) {
-	if ($width <= 640 && $mobileWidth === null) {
-		$mobileWidth = $width;
-	} elseif ($width > 640 && $width <= 1100 && $tabletWidth === null) {
-		$tabletWidth = $width;
-	}
-}
+['desktop' => $desktopWidth, 'tablet' => $tabletWidth, 'mobile' => $mobileWidth] = PreviewWidths::of(fs::$siteRoot . 'css');
 ?>
 <div class="pageHead">
 	<?php if ($page) { ?>
@@ -75,12 +62,16 @@ $current = Languages::activated()[$this->state->lang] ?? null;
 	</div>
 </div>
 
+<?php if ($desktopWidth) { ?>
+<style>body{--cms-desktop-width:<?= (int) $desktopWidth ?>px;<?= $tabletWidth ? '--cms-tablet-width:' . (int) $tabletWidth . 'px;' : '' ?><?= $mobileWidth ? '--cms-mobile-width:' . (int) $mobileWidth . 'px;' : '' ?>}</style>
 <div class="deviceSwitch" role="group" aria-label="Preview width">
-	<button type="button" data-cms-device="desktop" title="Desktop"><i class="fa-regular fa-desktop"></i></button>
+	<button type="button" data-cms-device="fit" title="Fit: the width there is"><i class="fa-regular fa-arrows-left-right-to-line"></i></button>
+	<button type="button" data-cms-device="desktop" title="Desktop (from <?= (int) $desktopWidth ?>px)"><i class="fa-regular fa-desktop"></i></button>
 	<?php if ($tabletWidth) { ?>
-		<button type="button" data-cms-device="tablet" data-cms-width="<?= (int) $tabletWidth ?>" title="Tablet (<?= (int) $tabletWidth ?>px)"><i class="fa-regular fa-tablet-screen-button"></i></button>
+		<button type="button" data-cms-device="tablet" title="Tablet (<?= (int) $tabletWidth ?>px)"><i class="fa-regular fa-tablet-screen-button"></i></button>
 	<?php } ?>
 	<?php if ($mobileWidth) { ?>
-		<button type="button" data-cms-device="mobile" data-cms-width="<?= (int) $mobileWidth ?>" title="Mobile (<?= (int) $mobileWidth ?>px)"><i class="fa-regular fa-mobile-screen-button"></i></button>
+		<button type="button" data-cms-device="mobile" title="Mobile (<?= (int) $mobileWidth ?>px)"><i class="fa-regular fa-mobile-screen-button"></i></button>
 	<?php } ?>
 </div>
+<?php } ?>

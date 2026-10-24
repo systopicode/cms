@@ -5,7 +5,7 @@
  */
 $videoPath = \fs::toNative($original->path);
 $posterPath = preg_replace('/\.mp4$/i', '', $videoPath) . '.webp';
-$posterSrc = preg_replace('/\.mp4$/i', '', $original->src) . '.webp';
+$posterSrc = preg_replace('/\.mp4$/i', '', $original->url) . '.webp';
 $hasPoster = is_file($posterPath);
 $hasVideo = is_file($videoPath);
 $aspect = $media->width && $media->height ? $media->width / $media->height : '16/9';

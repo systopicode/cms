@@ -51,6 +51,10 @@ final class Frontend implements \Systopic\System\Sys\Frontend
         // URL → page id/lang: "is there a page for this URL?" decides.
         UrlResolver::resolve();
         $id = \app::request()->id;
+        if ($id !== null && $id !== '') {
+            \Systopic\Cms\Pages\Route\SiteAccess::guard();
+            \Systopic\Cms\Pages\Route\SiteAccess::detectLanguage();
+        }
         $hasAccess = ($id !== null && $id !== '') ? PageAccess::check() : false;
         \logroute('page resolution', ['id' => $id, 'checkAccess' => $hasAccess]);
         if ($id !== null && $id !== '' && $hasAccess) {

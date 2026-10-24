@@ -23,7 +23,7 @@ if ($page === null || $page->row === null) {
 	return;
 }
 ?>
-<article class="cmsContent">
+<div class="cmsPreview"><article class="cmsContent">
 	<?php
 	// The opened page becomes a regular DomLayer inside the panel layer tree.
 	// That is deliberate — it gives the preview its own diff slot, so switching
@@ -57,4 +57,4 @@ if ($page === null || $page->row === null) {
 		}
 	}
 	?>
-</article>
+</article></div>

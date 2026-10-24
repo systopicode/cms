@@ -4,44 +4,37 @@
  *
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Panel $this
  */
-$pylonWidth = $this->state->pylonWidth;
+$pylonWidth = (int) ($this->state->pylonWidth ?? 0) ?: 250;
 $pylonWidthModule = implode('/', $this->path);
 if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
-	$pylonWidth = $this->childSelected->state->pylonWidth;
+	$pylonWidth = (int) $this->childSelected->state->pylonWidth ?: $pylonWidth;
 	$pylonWidthModule = implode('/', $this->childSelected->path);
 }
 ?>
-<div class="pylon cms" style="max-width: <?= $pylonWidth ?>px;">
+<div class="pylon cms" style="--pylonWidth: <?= (int) $pylonWidth ?>px;">
 
-	<header>
-		<div class='searchInput'>
-			<i class="fa-regular fa-magnifying-glass searchIcon"></i>
-			<div class="inputGroup">
+	<header></header>
+	<nav>
+		<?php
+		echo message::flush('pylon');
+		?>
+		<div class="pylonTitle">
+			<div class='searchInput'>
 				<input class='autosend' id='cmsSearchInput' data-on_input='cmsPageSearch' name='search' autocomplete='off' type="search"
-				       placeholder="Search pages …" value="<?= $this->state->cmsPageSearchstring ?>">
-				<span class="bar"></span>
-				<label></label>
+				       placeholder="Search" aria-label="Search pages" value="<?= htmlspecialchars((string) $this->state->cmsPageSearchstring) ?>">
 				<div class="cmsSearchResults">
 					<ul id='cmsSearchResults'>
 						<?= $this->state->cmsPageSearchResults ?>
 					</ul>
 				</div>
 			</div>
-		</div>
-	</header>
-	<nav>
-		<?php
-		echo message::flush('pylon');
-		?>
-		<div class="pylonTitle">
-			<h2>Pages</h2>
 			<ul class="treeNavi">
 				<?php if ($this->state->treeMode === 'trash') { ?>
-					<li><a class="ajax put" href="closeAllFolds" title="fold all"><i class="fa-regular fa-chevrons-up"></i></a></li>
+					<li><a class="ajax put" href="closeAllFolds" title="Close all folders"><i class="fa-regular fa-folder-minus"></i></a></li>
 					<li><a class='ajax put' href='hideTrash' title="Hide Trash"><i class="fa-regular fa-trash-slash"></i></a></li>
 				<?php } else { ?>
-					<li><a class="ajax put" href="closeAllFolds" title="fold all"><i class="fa-regular fa-chevrons-up"></i></a></li>
-					<li><a onclick='scrollTree("smooth", false, false)' title="jump to selected"><i class="fa-regular fa-crosshairs"></i></a></li>
+					<li><a class="ajax put" href="closeAllFolds" title="Close all folders"><i class="fa-regular fa-folder-minus"></i></a></li>
+					<li><a onclick='scrollTree("smooth", false, false)' title="Show the open page"><i class="fa-regular fa-crosshairs"></i></a></li>
 					<li><a href='../tools/maintenance/trash/' title="Show Trash"><i class="fa-regular fa-trash"></i></a></li>
 				<?php } ?>
 			</ul>
@@ -51,7 +44,7 @@ if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
 			<?php $this->withView('tree'); ?>
 		</div>
 	</nav>
-	<footer class="resizeMML" style="max-height:<?= $this->state->pylonFooterHeight ?>px; ">
+	<footer class="resizeMML" style="max-height:<?= (int) $this->state->pylonFooterHeight ?: 300 ?>px; ">
 			<div class="cms mml <?= ($this->page?->id ?? 0) ? '' : 'mml-empty' ?>">
 				<div class="mmlContent">
 					<label data-drag_type='none' data-on_draginit="draginitFooterHeight">

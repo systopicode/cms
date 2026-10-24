@@ -24,8 +24,7 @@
 			if (isset($image_format['width'])) {
 				$format_info = $image_format['width'] . ' x ' . $image_format['height'] . 'px';
 			} elseif (isset($image_format['autocrop'])) {
-				$autocrop = $image_format["autocrop_limit"];
-				$format_info = 'Orientation: ' . $image_format['autocrop'] . '&nbsp&nbsp;&mdash;&nbsp;&nbsp;Aspect Ratio: ' . $autocrop;
+				$format_info = $image_format['autocrop'] . ', ' . mediaFormats::ratioLabel($image_format['autocrop_limit'] ?? 0);
 			} else {
 				// settype() returns TRUE, not the value - this read 'Megapixels: 1'
 				// for every format that is sized by megapixels.
@@ -105,12 +104,11 @@
 			view.style.height = nextH + 'px';
 		}
 		function viewZoom(factor) {
-			var next = zoom * factor;
-			if (next < 0.25 || next > 6) {
-				return;
-			}
-			zoom = next;
+			zoom = Math.min(6, Math.max(0.25, zoom * factor));
 			paint();
+		}
+		function spread(touches) {
+			return Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
 		}
 		if (frame) {
 			frame.addEventListener('click', function (event) {
@@ -131,6 +129,30 @@
 				event.preventDefault();
 				viewZoom(event.deltaY < 0 ? 1.1 : 1 / 1.1);
 			}, {passive: false});
+			// two fingers zoom the view, not the page
+			var pinch = null;
+			frame.addEventListener('touchstart', function (event) {
+				if (event.touches.length === 2) {
+					pinch = spread(event.touches);
+				}
+			}, {passive: true});
+			frame.addEventListener('touchmove', function (event) {
+				if (pinch === null || event.touches.length !== 2) {
+					return;
+				}
+				event.preventDefault();
+				var now = spread(event.touches);
+				viewZoom(now / pinch);
+				pinch = now;
+			}, {passive: false});
+			frame.addEventListener('touchend', function (event) {
+				if (event.touches.length < 2) {
+					pinch = null;
+				}
+			});
+			frame.addEventListener('gesturestart', function (event) {
+				event.preventDefault();
+			});
 		}
 		function neutral() {
 			return state.brightness === 100 && state.contrast === 100 && state.saturation === 100 && state.rotate === 0 && state.flip === 1;
