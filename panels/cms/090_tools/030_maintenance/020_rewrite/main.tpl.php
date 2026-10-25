@@ -37,8 +37,6 @@ usort($entries, static function (array $a, array $b): int {
 		<?php } ?>
 		<a class="button" data-on_click="assignSites"><i class="fa-regular fa-sitemap"></i><span>Reassign sites</span></a>
 		<a class="button" data-on_click="buildAllAutoRewritepaths"><i class="fa-regular fa-rotate"></i><span>Create paths</span></a>
-		<a class="button" data-on_click="userConfirm" data-action="deleteTrashedPaths" data-confirm="Delete the addresses of trashed pages?"><i class="fa-regular fa-trash"></i><span>Delete trashed</span></a>
-		<a class="button" data-on_click="userConfirm" data-action="removeAllRewritepaths" data-confirm="Delete every address?"><i class="fa-regular fa-trash"></i><span>Delete all</span></a>
 	</header>
 	<p class="tagsHint">Preview opens the address. Delete removes it. Primary is the address the page uses. A dash has no path, so it cannot be opened.</p>
 	<?php if ($entries === []) { ?>
@@ -92,4 +90,8 @@ usort($entries, static function (array $a, array $b): int {
 			</table>
 		</div>
 	<?php } ?>
+	<footer>
+		<a class="button" data-on_click="userConfirm" data-action="deleteTrashedPaths" data-confirm="Delete the addresses of trashed pages?"><i class="fa-regular fa-trash"></i><span>Delete trashed</span></a>
+		<a class="button" data-on_click="userConfirm" data-action="removeAllRewritepaths" data-confirm="Delete every address?"><i class="fa-regular fa-trash"></i><span>Delete all</span></a>
+	</footer>
 </section>

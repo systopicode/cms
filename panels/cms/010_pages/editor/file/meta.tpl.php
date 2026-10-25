@@ -8,7 +8,7 @@
 $row = $this->mediaRow;
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 $when = static function (?DateTimeImmutable $d, ?string $who) use ($e): string {
-	$stamp = $d?->format('d.m.Y H:i') ?? '';
+	$stamp = \Systopic\System\Sys\LocalTime::format($d, 'd.m.Y H:i');
 	$who = trim((string) $who);
 	if ($stamp === '') {
 		return '';

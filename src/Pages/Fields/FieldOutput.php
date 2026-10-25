@@ -78,14 +78,13 @@ final class FieldOutput
             case 'textarea':
                 return "<div class='$class' $dataAttrs data-on_input='updateTextfield'><textarea name={$field->name} value='$value'>$value</textarea></div>";
             default:
-                return "<{$field->tag} class='$class' $dataAttrs data-editorLabel='$tagLabel' data-on_input='updatePageParam' contenteditable='plaintext-only'>$value</{$field->tag}>";
+                return "<{$field->tag} class='$class' $dataAttrs data-editorLabel='$tagLabel' data-on_input='updatePageParam' contenteditable='true'>$value</{$field->tag}>";
         }
     }
 
     /** pageHtml::printEditor() — internal links, protected mail addresses, placeholders. */
     private static function htmlEditor(TextField $field): string
     {
-        global $user;
         $page = $field->page();
         $fieldContent = (string) $field->value;
         $classes = ['editor'];
@@ -104,23 +103,9 @@ final class FieldOutput
         $droppableClassnames = ' mediaDroppable pageDroppable';
 
         if ($fieldContent !== '') {
-            // internal links
-            if (preg_match_all('~###http::siteRoot###.*?\?id=(\d+)((\&amp;lang=([a-z]+))|())~i', $fieldContent, $results)) {
-                $replacements = [];
-                $matches = [];
-                foreach ($results[0] as $key => $result) {
-                    $linkId = $results[1][$key];
-                    $linkLang = empty($results[4][$key]) ? $page->language : $results[4][$key];
-                    $link = getLinkpath($linkId, $linkLang);
-                    if (!empty($link)) {
-                        $matches[] = $result;
-                        $replacements[] = "###http::siteRoot###$link";
-                    }
-                }
-                if (!checkAccess($user, 'updatePageParam')) { // pre replacements when no editor is logged in
-                    $fieldContent = str_replace($matches, $replacements, $fieldContent);
-                }
-            }
+            // page links stay ?id= in the editor: "open" leads to the page in the CMS,
+            // TextField::rendered turns them into the address on the site
+
             // mail links: the marker becomes a plain mailto:
             //
             // The legacy offered to hide the address behind an ajax round trip

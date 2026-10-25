@@ -31,6 +31,7 @@ Packages::addFrontend(new \Systopic\Cms\Frontend());
 // the tables of the CMS — scanned by the ORM on the first Scope
 Registry::addTables(__DIR__ . '/src/Tables', 'Systopic\Cms\Tables');
 
+// cms/search/ (Cmd+K): pages and media
 // A removed media node may be a page's share image (Meta::$shareImageId).
 // Runs inside the removal's transaction.
 Hooks::on('mediaRemoved', static function (\Systopic\Db\Scope $scope, array $nodeIds): void {

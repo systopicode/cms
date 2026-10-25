@@ -16,7 +16,11 @@ $siteRoot = (string) http::$siteRoot;
 ?>
 <ul data-node_parent_node_id='<?= (int) ($this->state->id ?? 0) ?>'>
 <?php foreach ($this->library as $groupName => $entries) {
-	$label = $groupName === 'unassigned' ? 'unassigned (not displayed)' : ($groupInfo[$groupName]['label'] ?? $groupName);
+	$label = $groupInfo[$groupName]['label'] ?? match ($groupName) {
+		'unassigned' => 'unassigned (not displayed)',
+		$this::TEXT_GROUP => 'In text',
+		default => $groupName,
+	};
 	?>
 	<li class='title notselectable' <?= html::arrayToDataAttr(['media_group' => $groupName, 'drop_accept' => 'media', 'on_drop' => 'mml/updateMediaGroup']) ?>>
 		<h4><?= $e($label) ?></h4>
@@ -48,7 +52,7 @@ $siteRoot = (string) http::$siteRoot;
 						$ext = in_array($mime, ['image/png', 'image/jpeg'], true) ? '' : '.png';
 						?>
 						<a class='ajax' href='./?id=<?= (int) $entry['originalParentId'] ?>'>
-							<img src='<?= $e("{$siteRoot}var/formats/mmlThumb/$folders$filename$ext") ?>'>
+							<img src='<?= $e("{$siteRoot}var/formats/mmlThumb/$folders$filename$ext") ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
 							<i class='fa-regular fa-file-import'></i>
 						</a>
 					<?php } else {
@@ -64,7 +68,7 @@ $siteRoot = (string) http::$siteRoot;
 							$icon = 'vector-polygon';
 						}
 						?>
-						<img src='<?= $e($src) ?>'>
+						<img src='<?= $e($src) ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
 						<i class='fa-regular fa-<?= $e($icon) ?> thumbType'></i>
 						<div class='thumbActions'>
 							<span class='thumbGrip' title='Drag'><span></span><span></span><span></span><span></span><span></span><span></span></span>

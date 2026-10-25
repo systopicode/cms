@@ -45,8 +45,8 @@ if ($page === null || $page->row === null) {
 			// would include THIS file a second time.
 			// The trash root is such a page, and so is every container page.
 			if ($pageNav->getActive()->getViewBasePath() === '') {
-				message::info('<b>' . htmlspecialchars((string) $page->row->label) . '</b> hat kein Template - keine Vorschau.');
-				echo message::flush();
+				message::info('<b>' . htmlspecialchars((string) $page->row->label) . '</b> has no template, so there is no preview. Pages below it can have one.');
+				echo '<div class="cmsOwn">' . message::flush() . '</div>';
 			} else {
 				$pageNav->getActive()->render('main.tpl.php');
 			}

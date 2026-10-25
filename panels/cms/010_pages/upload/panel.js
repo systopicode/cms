@@ -44,18 +44,13 @@
 			upload.readDroppedFile();
 		};
 
+		// The preview points at the file itself - read into a data url, a large video stalls the page.
 		upload.readDroppedFile = () => {
-			var reader = new FileReader();
-			reader.onload = function () {
-				upload.src = reader.result;
-				upload.preview();
-			};
-			reader.onprogress = function (e) {
-				upload.updateBar(e.loaded / e.total, 'reading file');
-			};
-			upload.doc.box.className = 'reading';
-			upload.doc.footer.className = 'reading';
-			reader.readAsDataURL(upload.fileInfo);
+			if (upload.src && upload.src.indexOf('blob:') === 0) {
+				URL.revokeObjectURL(upload.src);
+			}
+			upload.src = URL.createObjectURL(upload.fileInfo);
+			upload.preview();
 		};
 
 		upload.inputOf = (event) => {
@@ -114,7 +109,18 @@
 
 		// Several files, or a file dropped onto a tile: no lightbox. The plus
 		// (or the tile) shows a spinner until the last file has been stored.
-		upload.reportQueue = (done, total) => {
+		/** Shows the new files: the library alone is drawn again, and only if the page is still open. */
+		upload.refreshLibrary = (from) => {
+			if (location.pathname + location.search !== from) {
+				return;
+			}
+			var url = new URL('mediaAdded', location.origin + from);
+			var call = new sys.core.server.call();
+			call.data.method = 'put';
+			call.send(url.pathname + new URL(location.origin + from).search);
+		};
+
+		upload.reportQueue = (done, total, el, part) => {
 			if (!window.cmsJobs) {
 				return;
 			}
@@ -122,7 +128,53 @@
 				cmsJobs.clear('upload');
 				return;
 			}
-			cmsJobs.update('upload', { title: 'Uploading', done: done, total: total });
+			cmsJobs.update('upload', {title: 'Uploading', done: done, total: total, el: el, progress: (done + (part || 0)) / total});
+		};
+
+		/**
+		 * What a drop or paste brings along: its files, else the addresses of
+		 * the images and videos in it (dragged out of another browser window).
+		 */
+		upload.mediaIn = (transfer) => {
+			var files = Array.prototype.slice.call((transfer && transfer.files) || []);
+			if (files.length) {
+				return files;
+			}
+			var urls = [];
+			var html = transfer.getData ? transfer.getData('text/html') : '';
+			if (html) {
+				new DOMParser().parseFromString(html, 'text/html').querySelectorAll('img[src], video[src], video source[src]').forEach((el) => {
+					urls.push(el.getAttribute('src'));
+				});
+			}
+			(transfer.getData ? transfer.getData('text/uri-list') : '').split(/\r?\n/).forEach((line) => {
+				if (/\.(jpe?g|png|gif|webp|avif|svg|mp4|m4v|mov|webm)(\?|#|$)/i.test(line.trim())) {
+					urls.push(line.trim());
+				}
+			});
+			return urls.filter((url, i) => /^https?:\/\//i.test(url) && urls.indexOf(url) === i).map((url) => ({url: url}));
+		};
+
+		upload.fetchUrl = (url, target, queue, extra) => {
+			return new Promise((resolve, reject) => {
+				var call = new sys.core.server.call(Object.assign({url: url, queue: !!queue}, extra || {}));
+				call.data.get = {node_parent_node_id: target.node_parent_node_id, group: target.group || ''};
+				call.data.method = 'put';
+				call.send(new URL('upload/fetch', location.origin + (target.from || location.pathname)).pathname).done((data) => {
+					if (data && data.error) {
+						alert(data.error);
+						reject();
+						return;
+					}
+					resolve(data);
+				}).fail(reject);
+			});
+		};
+
+		upload.send = (item, target, queue, queueLast, extra, onPart) => {
+			return item instanceof Blob
+				? upload.sendFileDirect(item, target, queue, queueLast, extra, onPart)
+				: upload.fetchUrl(item.url, target, queue, extra);
 		};
 
 		upload.queueDirect = (files, target, spinner) => {
@@ -131,11 +183,20 @@
 				return;
 			}
 			spinner.classList.add('loading');
-			upload.reportQueue(0, list.length);
+			upload.reportQueue(0, list.length, spinner);
+			var from = target.from = location.pathname + location.search;
 			var step = (index) => {
 				var last = index === list.length - 1;
-				upload.sendFileDirect(list[index], target, list.length > 1, last).then(() => {
-					upload.reportQueue(index + 1, list.length);
+				var item = list[index];
+				var sent = item instanceof Blob
+					? upload.sendFileDirect(item, target, true, last, null, (part) => upload.reportQueue(index, list.length, spinner, part))
+					: upload.fetchUrl(item.url, target, true);
+				sent.then(() => {
+					// files redraw after the last one themselves (sendFileDirect)
+					if (last && !(item instanceof Blob)) {
+						upload.refreshLibrary(from);
+					}
+					upload.reportQueue(index + 1, list.length, spinner);
 					if (!last) {
 						step(index + 1);
 						return;
@@ -151,23 +212,27 @@
 			step(0);
 		};
 
-		upload.sendFileDirect = (file, target, queue, queueLast) => {
+		// One slice in memory at a time: a whole video read at once stalls the page.
+		upload.sendFileDirect = (file, target, queue, queueLast, extra, onPart) => {
 			return new Promise((resolve, reject) => {
-				var reader = new FileReader();
-				reader.onerror = () => reject(reader.error);
-				reader.onload = () => {
-					var blob = reader.result;
-					var size = blob.byteLength;
-					var spanSize = setup.spanSize;
-					var spanCount = Math.max(1, Math.ceil(size / spanSize));
-					var spanIndex = 0;
-					var label = file.name.replace(/\.[^.]+$/, '');
-					var sendSpan = () => {
-						var start = spanIndex * spanSize;
-						var last = spanIndex + 1 >= spanCount;
-						var end = last ? size : start + spanSize;
-						var call = new sys.core.server.call({
-							name: file.name,
+				var size = file.size;
+				var spanSize = setup.spanSize;
+				var spanCount = Math.max(1, Math.ceil(size / spanSize));
+				var spanIndex = 0;
+				var name = file.name || ('pasted.' + (file.type.split('/')[1] || 'bin').replace(/\W.*$/, ''));
+				var label = name.replace(/\.[^.]+$/, '');
+				// fixed for the whole queue: a relative address would follow the user to another panel
+				var from = target.from || (target.from = location.pathname + location.search);
+				var address = new URL('upload/upload', location.origin + from).pathname;
+				var sendSpan = () => {
+					var start = spanIndex * spanSize;
+					var last = spanIndex + 1 >= spanCount;
+					var end = last ? size : start + spanSize;
+					var reader = new FileReader();
+					reader.onerror = () => reject(reader.error);
+					reader.onload = () => {
+						var call = new sys.core.server.call(Object.assign({
+							name: name,
 							label: label,
 							info: {},
 							size: size,
@@ -176,7 +241,7 @@
 							lastSpan: last,
 							queue: !!queue,
 							queueLast: !!(queue && last && queueLast)
-						});
+						}, extra || {}));
 						call.data.get = {
 							node_parent_node_id: target.node_parent_node_id,
 							group: target.group || ''
@@ -185,24 +250,23 @@
 							call.data.get.node_id = target.node_id;
 						}
 						call.data.method = 'put';
-						call.binary = blob.slice(start, end);
-						call.send('upload/upload').done(() => {
+						call.binary = reader.result;
+						call.send(address).done((data) => {
+							onPart && onPart((spanIndex + 1) / spanCount);
 							if (!last) {
 								spanIndex++;
 								sendSpan();
 								return;
 							}
+							resolve(data);
 							if (queue && queueLast) {
-								resolve();
-								sys.core.server.sendGet(location.pathname + location.search);
-								return;
+								upload.refreshLibrary(from);
 							}
-							resolve();
-						});
+						}).fail(reject);
 					};
-					sendSpan();
+					reader.readAsArrayBuffer(file.slice(start, end));
 				};
-				reader.readAsArrayBuffer(file);
+				sendSpan();
 			});
 		};
 
@@ -212,9 +276,18 @@
 			}
 			upload.fileDropBound = true;
 			var depth = 0;
+			// a drag that started on this page (an image moved within a text) is the browser's
+			var innerDrag = false;
+			document.addEventListener('dragstart', () => {
+				innerDrag = true;
+			}, true);
+			document.addEventListener('dragend', () => {
+				innerDrag = false;
+			}, true);
 			var carriesFiles = (event) => {
-				var types = event.dataTransfer && event.dataTransfer.types;
-				return types && Array.prototype.indexOf.call(types, 'Files') !== -1;
+				var types = Array.prototype.slice.call((event.dataTransfer && event.dataTransfer.types) || []);
+				return types.indexOf('Files') !== -1
+					|| (!innerDrag && (types.indexOf('text/uri-list') !== -1 || types.indexOf('text/html') !== -1));
 			};
 			document.addEventListener('click', (event) => {
 				var li = event.target && event.target.closest && event.target.closest('li.upload[data-upload-many]');
@@ -307,7 +380,7 @@
 				event.preventDefault();
 				event.stopPropagation();
 				upload.dropStamp = Date.now();
-				var files = Array.prototype.slice.call(event.dataTransfer.files || []);
+				var files = upload.mediaIn(event.dataTransfer);
 				if (!files.length) {
 					return;
 				}
@@ -316,7 +389,7 @@
 				var group = event.target.closest('li.title');
 				var where = {tile: tile, plus: plus, group: group};
 				var host = where.plus || (where.group && where.group.querySelector('li.upload'));
-				if (files.length === 1) {
+				if (files.length === 1 && files[0] instanceof Blob) {
 					var el = where.tile || host;
 					if (!el) {
 						return;
@@ -338,6 +411,109 @@
 				delete target.node_id;
 				upload.queueDirect(files, target, host);
 			}, true);
+
+			// Into a text: on window, ahead of the editor's own drop and paste
+			// handling, which drops images (HTMLeditor.format.js).
+			var editorOf = (el) => el && el.closest && el.closest('article.cmsContent [contenteditable="true"][data-on_drop="insertMediaInEditor"]');
+			var showable = (item) => !(item instanceof Blob) || /^(image|video)\/|^application\/pdf$/.test(item.type);
+			window.addEventListener('drop', (event) => {
+				var editor = editorOf(event.target);
+				if (!editor || innerDrag) {
+					return;
+				}
+				var items = upload.mediaIn(event.dataTransfer).filter(showable);
+				if (!items.length) {
+					return;
+				}
+				event.preventDefault();
+				event.stopImmediatePropagation();
+				depth = 0;
+				document.body.classList.remove('fileDrag');
+				upload.intoEditor(editor, upload.rangeAt(editor, event.clientX, event.clientY), items);
+			}, true);
+			window.addEventListener('paste', (event) => {
+				var editor = editorOf(event.target);
+				var items = editor && event.clipboardData ? upload.mediaIn({files: event.clipboardData.files}).filter(showable) : [];
+				if (!items.length) {
+					return;
+				}
+				event.preventDefault();
+				event.stopImmediatePropagation();
+				var selection = getSelection();
+				var range = selection.rangeCount && editor.contains(selection.getRangeAt(0).startContainer)
+					? selection.getRangeAt(0)
+					: upload.rangeAt(editor);
+				range.deleteContents();
+				upload.intoEditor(editor, range, items);
+			}, true);
+		};
+
+		/** The caret spot under the pointer, inside the editor - else its end. */
+		upload.rangeAt = (editor, x, y) => {
+			var range = null;
+			if (x !== undefined && document.caretRangeFromPoint) {
+				range = document.caretRangeFromPoint(x, y);
+			} else if (x !== undefined && document.caretPositionFromPoint) {
+				var spot = document.caretPositionFromPoint(x, y);
+				if (spot) {
+					range = document.createRange();
+					range.setStart(spot.offsetNode, spot.offset);
+				}
+			}
+			if (range && editor.contains(range.startContainer)) {
+				range.collapse(true);
+				return range;
+			}
+			range = document.createRange();
+			range.selectNodeContents(editor);
+			range.collapse(false);
+			return range;
+		};
+
+		/**
+		 * Files (or addresses) for a text: each one gets a placeholder where it
+		 * was dropped, goes into the page's library (group "text") and then
+		 * takes the placeholder's place - the editor saves as after typing.
+		 */
+		upload.intoEditor = (editor, range, items) => {
+			var target = {node_parent_node_id: editor.getAttribute('data-node_id'), group: 'text'};
+			var marks = items.map((item) => {
+				var mark = document.createElement('span');
+				mark.className = 'cmsOwn cmsUploading';
+				mark.contentEditable = 'false';
+				mark.textContent = item.name || item.url.split('/').pop().split('?')[0] || 'media';
+				range.insertNode(mark);
+				range.setStartAfter(mark);
+				range.collapse(true);
+				return mark;
+			});
+			var report = (done, part) => upload.reportQueue(done, items.length, marks[done], part);
+			var from = target.from = location.pathname + location.search;
+			report(0);
+			var step = (index) => {
+				if (index >= items.length) {
+					report(index);
+					// the library shows the new files once the text is saved (its input is debounced)
+					setTimeout(() => sys.core.server.onIdle(() => upload.refreshLibrary(from)), 800);
+					return;
+				}
+				var mark = marks[index];
+				var settle = (data) => {
+					if (mark.isConnected && data && data.tag) {
+						mark.insertAdjacentHTML('afterend', data.tag);
+					}
+					mark.remove();
+					if (window.wysiwyg && wysiwyg.changed) {
+						wysiwyg.changed(editor);
+					} else {
+						editor.dispatchEvent(new Event('input', {bubbles: true}));
+					}
+					report(index + 1);
+					step(index + 1);
+				};
+				upload.send(items[index], target, true, false, {editor: true}, (part) => report(index, part)).then(settle, () => settle(null));
+			};
+			step(0);
 		};
 		upload.bindFileDrop();
 
@@ -356,33 +532,13 @@
 
 			};
 			doc.upload.onclick = () => {
-				var reader = new FileReader();
-				reader.onload = function () {
-					upload.blob = reader.result;
-					upload.uploadFile();
-				};
-				reader.onprogress = function (e) {
-					upload.updateBar(e.loaded / e.total, 'preparing file');
-				};
-				doc.box.className = 'preparing';
-				reader.readAsArrayBuffer(upload.fileInfo);
+				upload.uploadFile();
 			};
 		};
 
 		upload.readFileFromInput = (input) => {
 			upload.fileInfo = input.files[0];
-			var reader = new FileReader();
-			reader.onload = function () {
-				upload.src = reader.result;
-				upload.preview();
-			};
-			reader.onprogress = function (e) {
-				upload.updateBar(e.loaded / e.total, 'reading file');
-			};
-			upload.doc.box.className = 'reading';
-			upload.doc.footer.className = 'reading';
-			reader.readAsDataURL(upload.fileInfo);
-
+			upload.readDroppedFile();
 		};
 
 		upload.preview = () => {
@@ -459,7 +615,13 @@
 			upload.doc.footer.className = 'preview';
 		};
 
+		// the lightbox closes when the user goes to another panel - the upload carries on
+		upload.lightboxShown = () => !!(upload.doc && upload.doc.box && upload.doc.box.isConnected);
+
 		upload.updateBar = (progress, info) => {
+			if (!upload.lightboxShown()) {
+				return;
+			}
 			if (upload.doc.footer.className === 'uploading') {
 				upload.doc.upload.classList.add('loading');
 			}
@@ -501,9 +663,20 @@
 		upload.uploadFile = () => {
 			upload.doc.box.className = 'uploading';
 			upload.doc.footer.className = 'uploading';
-			upload.size = upload.blob.byteLength;
+			upload.size = upload.fileInfo.size;
 			upload.spanIndex = 0;
-			upload.spanCount = Math.ceil(upload.size / setup.spanSize);
+			upload.spanCount = Math.max(1, Math.ceil(upload.size / setup.spanSize));
+			// fixed at the start: the user may leave the lightbox for another panel meanwhile
+			upload.from = location.pathname + location.search;
+			upload.address = new URL('upload', location.href).pathname;
+			upload.query = sys.http.parseURL(location.href).query;
+			upload.fields = {
+				name: upload.doc.name.value,
+				label: upload.doc.label.value,
+				type: upload.doc.type ? upload.doc.type.value : '',
+				url: upload.doc.url ? upload.doc.url.value : '',
+				info: upload.info
+			};
 			upload.uploadFileSpan();
 		};
 
@@ -528,21 +701,23 @@
 				lastSpan = true;
 			}
 			var spanEnd = spanStart + spanSize;
-			var call = new sys.core.server.call({
-				name: upload.doc.name.value,
-				label: upload.doc.label.value,
-				type: upload.doc.type ? upload.doc.type.value : '',
-				url: upload.doc.url ? upload.doc.url.value : '',
-				info: upload.info,
+			var reader = new FileReader();
+			reader.onload = () => upload.sendFileSpan(reader.result, spanSize, lastSpan);
+			reader.readAsArrayBuffer(upload.fileInfo.slice(spanStart, spanEnd));
+		};
+
+		upload.sendFileSpan = (binary, spanSize, lastSpan) => {
+			var call = new sys.core.server.call(Object.assign({}, upload.fields, {
 				size: upload.size,
 				spanIndex: upload.spanIndex,
 				spanSize: spanSize,
-				lastSpan: lastSpan
-			});
-			call.data.get = sys.http.parseURL(location.href).query;
-			l(call.data.get);
-			call.binary = upload.blob.slice(spanStart, spanEnd);
-			call.send('upload')
+				lastSpan: lastSpan,
+				// gone elsewhere: no redirect back to the page
+				queue: lastSpan && location.pathname + location.search !== upload.from
+			}));
+			call.data.get = upload.query;
+			call.binary = binary;
+			call.send(upload.address)
 					.onloadstart(e => {
 						upload.updateBar(0, 'upload started');
 					})
@@ -551,17 +726,22 @@
 						var spanProgress = e.loaded / e.total;
 						var progress = (upload.spanIndex + spanProgress) / upload.spanCount;
 						upload.updateBar(progress, barinfo);
+						upload.reportQueue(0, 1, null, progress);
 					})
 					.done(r => {
 						l('done fired', r);
 						if (lastSpan) {
-							upload.doc.box.className = 'done';
-							upload.doc.footer.className = 'done';
+							upload.reportQueue(1, 1);
+							if (upload.lightboxShown()) {
+								upload.doc.box.className = 'done';
+								upload.doc.footer.className = 'done';
+							}
 						} else {
 							upload.spanIndex++;
 							upload.uploadFileSpan();
 						}
-					});
+					})
+					.fail(() => upload.reportQueue(1, 1));
 
 		};
 	});

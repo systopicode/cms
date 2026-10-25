@@ -144,12 +144,7 @@ $choice = static function (string $name, string $label, string $value, array $op
 						foreach ($templates as $name => $template) {
 							$checked = in_array((string) $name, $picked, true) ? ' checked' : '';
 							$shown = trim(str_replace(['_', '-'], ' ', (string) ($template->name ?? $name)));
-							$tick = 'show-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', (string) $name);
-							echo '<div>';
-							echo '<input class="custom" type="checkbox" id="' . $e($tick) . '" name="on" data-on_change="updateTemplates" data-template="' . $e($name) . '"' . $checked . '>';
-							echo '<label for="' . $e($tick) . '"></label>';
-							echo '<label for="' . $e($tick) . '"><span>' . $e($shown) . '</span></label>';
-							echo '</div>';
+							echo '<label><input class="switch" type="checkbox" name="on" data-on_change="updateTemplates" data-template="' . $e($name) . '"' . $checked . '><div><div></div></div><span>' . $e($shown) . '</span></label>';
 						}
 						echo '<small>No tick means this setting is on every template.</small>';
 						echo '</div>';

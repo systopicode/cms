@@ -30,6 +30,9 @@ use Systopic\Cms\Queries\Params;
  */
 class Panel extends CmsPanel {
 
+	/** Media group of files dropped or pasted into a text editor. */
+	public const TEXT_GROUP = 'text';
+
 	public $icon = 'fa-duotone fa-regular fa-files';
 
 	public function buildGranted() {
@@ -144,6 +147,7 @@ class Panel extends CmsPanel {
 		get {
 			$id = (int) ($this->state->id ?? 0);
 			$groups = array_fill_keys(array_keys($this->mediaGroups), []);
+			$groups += [self::TEXT_GROUP => []];
 			foreach (\Systopic\System\Queries\MediaLibrary\MediaLibrary::of($this->scope, $id) as $entry) {
 				// a media node without a medium (an empty folder) lands in 'unassigned', as before
 				$group = (string) ($entry['media']?->group ?? '');
@@ -152,8 +156,24 @@ class Panel extends CmsPanel {
 				}
 				$groups[$group][] = $entry;
 			}
-			if (isset($groups['unassigned']) && $groups['unassigned'] === []) {
-				unset($groups['unassigned']);
+			foreach ([self::TEXT_GROUP, 'unassigned'] as $optional) {
+				if (isset($groups[$optional]) && $groups[$optional] === [] && !isset($this->mediaGroups[$optional])) {
+					unset($groups[$optional]);
+				}
+			}
+			// a group for some templates only ('templates' => 'a;b', Media Settings): left out
+			// elsewhere, media it holds there move to 'unassigned' so they stay reachable
+			$template = (string) ($this->page?->templateName ?? '');
+			foreach ($this->mediaGroups as $name => $info) {
+				$only = $info['templates'] ?? '';
+				$only = array_filter(array_map('trim', is_array($only) ? $only : explode(';', (string) $only)));
+				if ($only === [] || $template === '' || in_array($template, $only, true) || !isset($groups[$name])) {
+					continue;
+				}
+				if ($groups[$name] !== []) {
+					$groups['unassigned'] = [...($groups['unassigned'] ?? []), ...$groups[$name]];
+				}
+				unset($groups[$name]);
 			}
 			return $groups;
 		}
@@ -181,10 +201,49 @@ class Panel extends CmsPanel {
 			}
 		}
 		$ext = in_array($mime, ['image/webp', 'image/png', 'image/jpeg'], TRUE) ? '' : '.webp';
-		return "{$siteRoot}var/formats/mmlThumb/$folders$filename$ext";
+		$thumb = "var/formats/mmlThumb/$folders$filename$ext";
+		// made again (replace, a rebuild): the browser must not keep the old one
+		$made = @filemtime(\fs::$siteRoot . $thumb);
+		return $siteRoot . $thumb . ($made ? '?v=' . $made : '');
+	}
+
+	/** The crossed-out icon a thumb shows when it does not load (`img[data-broken]`, gui/ui.js). */
+	public function brokenIcon(?\Systopic\System\Tables\Medias\Model $media): string {
+		$type = (string) $media?->type;
+		return match (true) {
+			$type === 'image' => 'image-slash',
+			$type === 'video', \Systopic\System\Tables\Medias\External::is($type) => 'video-slash',
+			str_starts_with((string) $media?->mimetype, 'audio/') => 'music-slash',
+			default => 'file-slash',
+		};
 	}
 
 	/** The medium of a media node — what a library action is about. */
+	/** The tag a text editor shows for a medium, null for a type it cannot show. */
+	public function editorTag(int $nodeId): ?string {
+		$row = $this->mediaOfNode($nodeId);
+		if ($row === NULL) {
+			return NULL;
+		}
+		$file = new \Systopic\System\Tables\Medias\Media($row);
+		$label = htmlspecialchars((string) $file->label, ENT_QUOTES);
+		switch ($file->type) {
+			case 'image':
+				$format = (string) array_key_first(\mediaFormats::get());
+				$src = $file->setFormat($format)->src;
+				return "<img data-mimetype='{$file->mimetype}' data-node_id='$nodeId' data-id='$nodeId' data-format='$format' src='$src' alt='$label' />";
+			case 'video':
+				$src = $file->setFormat('original')->src;
+				$poster = str_replace('.mp4', '', $file->setFormat('original')->url) . '.webp';
+				return "<video data-mimetype='{$file->mimetype}' data-node_id='$nodeId' poster='$poster' controls='true' src='$src'></video>";
+			case 'application':
+			case 'pdf':
+				$src = $file->setFormat('original')->src;
+				return "<iframe data-node_id='$nodeId' src='$src'></iframe>";
+		}
+		return NULL;
+	}
+
 	public function mediaOfNode(int $nodeId): ?\Systopic\System\Tables\Medias\Model {
 		return $nodeId > 0
 			? (\Systopic\System\Queries\MediaNodes\MediaNodes::byNodeIds($this->scope, [$nodeId])[$nodeId] ?? NULL)
@@ -429,5 +488,17 @@ class Panel extends CmsPanel {
 	 */
 	function recoverBranch(int $nodeId): int {
 		return $this->trashPage($nodeId, FALSE);
+	}
+
+	public function searchHits(\Systopic\System\Sys\Search $search): void {
+		$pages = \http::$root . 'cms/pages/?id=';
+		foreach (\Systopic\Cms\Queries\PageSearch\PageSearch::everywhere($search->scope, $search->query) as $page) {
+			$search->add('Pages', 'fa-file-lines', $page['label'] !== '' ? $page['label'] : 'Untitled', strtoupper($page['lang']), $pages . $page['node'] . '&lang=' . $page['lang']);
+		}
+		foreach (\Systopic\Cms\Queries\PageSearch\PageSearch::media($search->scope, $search->query) as $media) {
+			$icon = match ($media['type']) { 'image' => 'fa-image', 'video', 'youtube', 'vimeo' => 'fa-film', default => 'fa-file' };
+			$title = $media['label'] !== '' ? $media['label'] : $media['file'];
+			$search->add('Media', $icon, $title, $title === $media['file'] ? '' : $media['file'], $pages . $media['page']);
+		}
 	}
 }

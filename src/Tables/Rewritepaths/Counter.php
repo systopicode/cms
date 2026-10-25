@@ -29,7 +29,7 @@ final class Counter
         $table = Schema::tableNameOf(Model::class);
         $kind = $live ? 'livecount' : 'testcount';
         $scope->connection->run(
-            "UPDATE $table SET rewritepath_$kind = rewritepath_$kind + 1, rewritepath_{$kind}_datetime = NOW() WHERE rewritepath_id = ?",
+            "UPDATE $table SET rewritepath_$kind = rewritepath_$kind + 1, rewritepath_{$kind}_datetime = UTC_TIMESTAMP() WHERE rewritepath_id = ?",
             [(int) $path->id],
         );
         $scope->results->invalidate([$table]);

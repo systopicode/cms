@@ -77,6 +77,8 @@ class PagesRenderer
             'headLayer'   => $head !== null ? $head->export() : false,
             'bodyLayer'   => $body !== null ? $body->export() : false,
             'bodyClasses' => $this->domRenderer->getBodyClasses(),
+            // the edit bar opens the page shown, also after an ajax step
+            'page'        => ['id' => (int) \app::request()->id, 'lang' => (string) ($GLOBALS['lang'] ?? \app::request()->lang ?? '')],
         ];
     }
 

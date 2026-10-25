@@ -105,6 +105,17 @@ class Panel extends CmsPanel {
 		return $html;
 	}
 
+	/** The share image of the page in the editor, read from its row: a drop shows at once. */
+	public function shareImage(): string {
+		$id = $this->parent->page?->meta->shareImageId;
+		$media = $id ? \Systopic\System\Tables\Medias\Media::byNodeId(\Systopic\Db\Scope::default(), $id) : null;
+		if ($media === null) {
+			return '';
+		}
+		$src = htmlspecialchars((string) $media->setFormat('shareImage')->src, ENT_QUOTES);
+		return "<img src='$src' alt=''><div class='dropActions'><a class='ajax' href='editor/file/?target_id=$id&format=shareImage' title='Crop and adjust'><i class='fa-regular fa-pen'></i></a></div>";
+	}
+
 	public function refreshSeoPreview(): void {
 		\client::replaceInner('aside .cmsSeoPreview', $this->seoPreview());
 	}

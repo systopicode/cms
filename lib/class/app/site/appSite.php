@@ -215,7 +215,8 @@ class appSite {
 	/** First real sentence on the page, when the meta description is empty. */
 	private function pageExcerpt(\Systopic\Cms\Tables\Pages\Page $page): string {
 		foreach (['html01', 'html02', 'html03', 'text02', 'text03', 'text04', 'text01'] as $name) {
-			$text = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $page->$name->value)) ?? '');
+			$text = html_entity_decode(strip_tags((string) $page->$name->value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+			$text = trim(preg_replace('/[\s\x{00A0}]+/u', ' ', $text) ?? '');
 			if (mb_strlen($text) >= 40) {
 				return mb_substr($text, 0, 160);
 			}
@@ -376,34 +377,18 @@ class appSite {
 		return $tempPage ? (string) $tempPage->href : "";
 	}
 
+	/** The CMS draws its own (pages sidebar, Panel::shareImage()). */
 	private function buildShareImage(): string {
-		$html = '';
-		$tempPage = self::selectedPage();
-		$shareImageId = $tempPage?->meta->shareImageId;
+		$shareImageId = self::selectedPage()?->meta->shareImageId;
 		$shareMedia = $shareImageId ? \Systopic\System\Tables\Medias\Media::byNodeId(\Systopic\Db\Scope::default(), $shareImageId) : null;
 		if ($shareMedia !== null) {
-
-			$shareImage = $shareMedia->setFormat('shareImage')->src;
-			if (\Systopic\System\Panels\Tree\PanelTree::getInstance()?->inCms() ?? false) {
-				$html = "<a class='ajax' href='editor/file/?target_id={$shareImageId}&format=shareImage'>";
-				$html .= "<img title='Crop Image' src='$shareImage' />";
-				$html .= '</a>';
-			} else {
-				return $shareImage;
-			}
-		} else {
-			if (\Systopic\System\Panels\Tree\PanelTree::getInstance()?->inCms() ?? false) {
-				$html = '';
-			} else {
-				// the site's default share image: absolute url, or a path below the site root
-				$configured = self::siteMeta('shareImage', 'META_SHARE_IMAGE', '');
-				if ($configured === '') {
-					return http::$siteUrl . 'img/share_default.jpg';
-				}
-				return preg_match('~^https?://~', $configured) ? $configured : http::$siteUrl . ltrim($configured, '/');
-			}
+			return (string) $shareMedia->setFormat('shareImage')->src;
 		}
-
-		return $html;
+		// the site's default share image: absolute url, or a path below the site root
+		$configured = self::siteMeta('shareImage', 'META_SHARE_IMAGE', '');
+		if ($configured === '') {
+			return http::$siteUrl . 'img/share_default.jpg';
+		}
+		return preg_match('~^https?://~', $configured) ? $configured : http::$siteUrl . ltrim($configured, '/');
 	}
 }

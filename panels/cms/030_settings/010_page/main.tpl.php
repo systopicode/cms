@@ -1,8 +1,7 @@
 <?php
 
 /**
- * One level of page settings. The path sits in the controls header, the same
- * way a page title does. This list is one card.
+ * One level of page settings: the path above the title, the list as one card.
  *
  * @var \Systopic\Cms\Panels\Root\Cms\Settings\Page\Panel $this
  */
@@ -38,6 +37,11 @@ $heads = [
 	'type' => 'Type',
 	'about' => 'In the sidebar',
 ];
+$chain = [];
+for ($walker = $selected; $walker instanceof Definition; $walker = $walker->parent) {
+	array_unshift($chain, $walker);
+}
+$ancestors = array_slice($chain, 0, -1);
 $heading = $selected !== null
 	? ($selected->label !== '' ? $selected->label : 'Untitled')
 	: 'Template Settings';
@@ -49,6 +53,16 @@ $addLabel = match ($parentType) {
 	default => 'Add setting',
 };
 ?>
+<?php if ($selected !== null) { ?>
+	<nav class="crumbs settingCrumbs">
+		<a class="ajax" href="?">Template Settings</a>
+		<i class="fa-regular fa-chevron-right"></i>
+		<?php foreach ($ancestors as $crumb) { ?>
+			<a class="ajax" href="?id=<?= (int) $crumb->nodeId ?>"><?= $e($crumb->label !== '' ? $crumb->label : 'Untitled') ?></a>
+			<i class="fa-regular fa-chevron-right"></i>
+		<?php } ?>
+	</nav>
+<?php } ?>
 <h1><?= $e($heading) ?></h1>
 <p class="tagsHint"><?= $e($note) ?></p>
 <section class="widget pageSettings">

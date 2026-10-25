@@ -40,7 +40,7 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 	}
 	$html .= "<i data-on_click='sidebar/rewritePath_delete' class='fa-regular fa-trash' title='Remove address'></i>";
 	$html .= '</div>';
-	$when = static fn(?DateTimeImmutable $d): string => $d?->format('d.m.Y H:i') ?? '—';
+	$when = static fn(?DateTimeImmutable $d): string => ($d ? \Systopic\System\Sys\LocalTime::format($d, 'd.m.Y H:i') : '—');
 	$site = $siteOf($path->siteNodeId);
 	$html .= "<p class='pathMeta'>";
 	if ($site !== '') {

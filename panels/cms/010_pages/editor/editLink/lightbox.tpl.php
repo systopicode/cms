@@ -43,7 +43,9 @@ foreach ($pages->library as $entries) {
 	}
 }
 $fileHrefs = array_map(static fn($file) => $file->setFormat('original')->url, $files);
-$tab = in_array($href, $fileHrefs, TRUE) ? 'file' : 'address';
+// a page link is stored by id (TextField::rendered makes the address), so it survives a rename
+$linkedPage = preg_match('~^\?id=(\d+)~', $href, $m) ? $pages->pageFor((int) $m[1]) : NULL;
+$tab = in_array($href, $fileHrefs, TRUE) ? 'file' : ($linkedPage !== NULL ? 'page' : 'address');
 $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 ?>
 <div class="cmslightbox cms" data-size="1">
@@ -69,7 +71,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 									continue;
 								}
 								$size = isset($format['width']) ? $format['width'] . ' × ' . $format['height'] . ' px'
-									: (isset($format['autocrop']) ? $format['autocrop'] . ', ' . mediaFormats::ratioLabel($format['autocrop_limit'] ?? 0) : $format['megapixels'] . ' MP');
+									: (isset($format['autocrop']) ? $format['autocrop'] . ', ' . \mediaFormats::ratioLabel($format['autocrop_limit'] ?? 0) : $format['megapixels'] . ' MP');
 								echo '<option value="' . $e(http::$hostUrl . $media->setFormat($key)->url) . '">' . $e($key . ' (' . $size . ')') . '</option>';
 							}
 							?>
@@ -97,10 +99,16 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 						</select>
 						<textarea name="linkUrl" rows="2" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="<?= $e($types[$type][1]) ?>" autofocus><?= $e($address) ?></textarea>
 					</div>
-					<div class="linkPane" data-pane="page" hidden>
+					<div class="linkPane" data-pane="page" <?= $tab === 'page' ? '' : 'hidden' ?>>
 						<input type="search" name="search" data-on_input="searchLinkPages" placeholder="Search pages by title" aria-label="Search pages" autocomplete="off">
 						<ul class="linkPages">
-							<li class="linkHint">Type a few letters of the page title.</li>
+							<?php if ($linkedPage !== NULL) {
+								$label = $linkedPage->label->plain;
+								$path = $linkedPage->rewritepaths->path . $linkedPage->rewritepaths->appendix; ?>
+								<li><button type="button" class="selected" data-href="<?= $e($href) ?>" data-label="<?= $e($label) ?>" onclick="linkPicked(this)"><b><?= $e($label) ?></b><small>/<?= $e($path) ?></small></button></li>
+							<?php } else { ?>
+								<li class="linkHint">Type a few letters of the page title.</li>
+							<?php } ?>
 						</ul>
 					</div>
 					<div class="linkPane" data-pane="file" <?= $tab === 'file' ? '' : 'hidden' ?>>

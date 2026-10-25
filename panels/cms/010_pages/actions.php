@@ -334,7 +334,7 @@ switch ($this->action) {
                 . htmlspecialchars((string) $result->label) . '</a></li>';
         }
         if ($html === '') {
-            $html = '<li>No Results</li>';
+            $html = '<li class="none">No results</li>';
         }
         $this->state->cmsPageSearchResults = $html;
         client::replaceInner('ul#cmsSearchResults', $html);
@@ -477,31 +477,14 @@ switch ($this->action) {
 
     // ------------------------------------------------------------------ media
 
+    case 'mediaAdded':  // an upload finished (upload/panel.js): only the library shows it
+        $this->updateView('mml');
+        break;
+
     case 'insertMediaInEditor':
-        $nodeId = (int) http::dragdata('node_id');
-        $row = $this->mediaOfNode($nodeId);
-        if ($row === null) {
+        $tag = $this->editorTag((int) http::dragdata('node_id'));
+        if ($tag === null) {
             break;
-        }
-        $file = new \Systopic\System\Tables\Medias\Media($row);
-        $label = htmlspecialchars($file->label, ENT_QUOTES);
-        switch ($file->type) {
-            case 'image':
-                $format = (string) array_key_first(mediaFormats::get());
-                $src = $file->setFormat($format)->src;
-                $tag = "<img data-mimetype='{$file->mimetype}' data-node_id='$nodeId' data-id='$nodeId' data-format='$format' src='$src' alt='$label' />";
-                break;
-            case 'video':
-                $src = $file->setFormat('original')->src;
-                $poster = str_replace('.mp4', '', $file->setFormat('original')->url) . '.webp';
-                $tag = "<video data-mimetype='{$file->mimetype}' data-node_id='$nodeId' poster='$poster' controls='true' src='$src'>";
-                break;
-            case 'application':
-                $src = $file->setFormat('original')->src;
-                $tag = "<iframe data-node_id='$nodeId' src='$src'></iframe>";
-                break;
-            default:
-                break 2;
         }
         $field = http::dataset('field');
         client::insertHtmlAtCursor($tag, "div.editor[data-field='$field']");

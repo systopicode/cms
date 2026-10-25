@@ -34,7 +34,7 @@ $robots = [
     </li>
 	<li class="seperator">Share image <i data-on_click="sidebar/resetShareImage" class="fa-regular fa-arrow-rotate-left" title="Use the site image"></i></li>
 	<li>
-		<div class="mediaDrop shareImage" data-drop_accept="media" data-on_drop="sidebar/updateShareImage"><?= app::site()->shareImage ?></div>
+		<div class="mediaDrop shareImage" data-drop_accept="media" data-on_drop="sidebar/updateShareImage"><?= $this->shareImage() ?></div>
 	</li>
 	<li class="seperator">Robots</li>
     <li>

@@ -11,9 +11,13 @@ if ($page === null || $page->row === null || $this->groups === []) {
 $activeGroup = $this->activeGroup();
 $collapsed = !empty($this->state->sidebarCollapsed);
 $width = $collapsed ? 0 : ((int) $this->state->sidebarWidth ?: 280);
+$manage = [
+	'tags' => ['cms/settings/tags/', 'Manage tags'],
+	'settings' => ['cms/settings/pagesettings/', 'Manage page settings'],
+];
 ?>
 <aside class="cms<?= $collapsed ? ' collapsed' : '' ?>" style="flex: 0 0 <?= $width ?>px" data-cols="1" data-items="1">
-	<a class="sidebarFlag put ajax" href="sidebar/toggleSidebar" title="<?= $collapsed ? 'Show sidebar' : 'Hide sidebar' ?>">
+	<a class="sidebarFlag put ajax" href="sidebar/toggleSidebar" draggable="false" title="<?= $collapsed ? 'Show sidebar' : 'Hide sidebar' ?>">
 		<i class="fa-regular fa-chevron-<?= $collapsed ? 'left' : 'right' ?>"></i>
 	</a>
 	<?php if (!$collapsed) { ?>
@@ -43,6 +47,8 @@ $width = $collapsed ? 0 : ((int) $this->state->sidebarWidth ?: 280);
 								<?= htmlspecialchars((string) $sideBarItem->label, ENT_QUOTES, 'UTF-8') ?>
 								<?php if ($templateName === 'meta') { ?>
 									<a class="ajax sidebarInfo" href="sidebar/defaultMeta/" title="Default values"><i class="fa-regular fa-circle-info"></i></a>
+								<?php } elseif (isset($manage[$templateName])) { ?>
+									<a class="ajax sidebarInfo" href="<?= http::$root . $manage[$templateName][0] ?>" title="<?= $manage[$templateName][1] ?>"><i class="fa-regular fa-pen"></i></a>
 								<?php } ?>
 							</summary>
 							<div class="sidebarItem">

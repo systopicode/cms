@@ -22,7 +22,7 @@ if (!$row->isPublished) {
 	$publishState = ['online', 'Veröffentlicht'];
 }
 $modified = $row->modifiedDate;
-$modifiedDate = $modified instanceof DateTimeImmutable ? $modified->format('d.m.Y H:i') : '';
+$modifiedDate = $modified instanceof DateTimeImmutable ? \Systopic\System\Sys\LocalTime::format($modified, 'd.m.Y H:i') : '';
 $modifiedName = trim((string) ($row->modifiedUser?->fullname ?? ''));
 ?>
 <div class="cmsStatusInfo">

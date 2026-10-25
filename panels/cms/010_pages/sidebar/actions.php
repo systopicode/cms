@@ -108,7 +108,7 @@ switch ($this->action) {
 		if ($row !== null && $mediaNodeId > 0 && http::dragdata('type', false) === 'image') {
 			$row->metaShareImage = $mediaNodeId;
 			$save([$row]);
-			client::replaceInner('aside div.mediaDrop.shareImage', app::site()->shareImage);
+			client::replaceInner('aside div.mediaDrop.shareImage', $this->shareImage());
 			$this->refreshSeoPreview();
 		}
 		break;
@@ -117,7 +117,7 @@ switch ($this->action) {
 		if ($row !== null) {
 			$row->metaShareImage = null;
 			$save([$row]);
-			client::replaceInner('aside div.mediaDrop.shareImage', app::site()->shareImage);
+			client::replaceInner('aside div.mediaDrop.shareImage', $this->shareImage());
 			$this->refreshSeoPreview();
 		}
 		break;

@@ -43,6 +43,15 @@ final class RewritepathIndex
         return $scope->rows(__DIR__ . '/RewritepathIndex.all.sql', [])->all(Rewritepath::class);
     }
 
+    /**
+     * @param list<int> $nodeIds
+     * @return list<Rewritepath> the paths of the pages of these nodes
+     */
+    public static function ofNodes(Scope $scope, array $nodeIds): array
+    {
+        return $nodeIds === [] ? [] : $scope->rows(__DIR__ . '/RewritepathIndex.ofNodes.sql', ['nodeIds' => array_values($nodeIds)])->all(Rewritepath::class);
+    }
+
     /** @return list<Rewritepath> the paths of pages in the trash */
     public static function trashed(Scope $scope): array
     {

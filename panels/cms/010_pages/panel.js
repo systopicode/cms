@@ -126,22 +126,6 @@ document.addEventListener('click', function (event) {
 	}
 }, true);
 
-// A thumb whose file is gone shows its type icon instead of a broken image -
-// on the first load it may have failed before this listener existed.
-function markMissingThumb(img) {
-	if (img.tagName === 'IMG' && img.closest('div.mmlContent')) {
-		img.closest('li').classList.add('thumbMissing');
-	}
-}
-document.addEventListener('error', function (event) { markMissingThumb(event.target); }, true);
-$(function () {
-	document.querySelectorAll('div.mmlContent img').forEach(function (img) {
-		if (img.complete && !img.naturalWidth) {
-			markMissingThumb(img);
-		}
-	});
-});
-
 function changeSrc(src) {
 	$(".srcToChange").attr('src', src);
 }

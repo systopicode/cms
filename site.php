@@ -236,6 +236,7 @@ if (http::$method === 'PUT') {
 	// PagesRenderer::clientData_export().
 	echo '<body class="' . htmlspecialchars(strtolower(implode(' ', $bodyClasses)), ENT_QUOTES) . '" id="top">';
 	echo '<div id="systemPagesBodyPlaceholder"></div>';
+	echo \Systopic\Cms\Pages\EditBar::html((int) $id, (string) $lang);
 	echo "</body>\n</html>";
 }
 
