@@ -30,7 +30,7 @@ switch ($this->action) {
 				continue;
 			}
 			$path = $page->rewritepaths->path . $page->rewritepaths->appendix;
-			$link = '?id=' . (int) $row->relationId('node') . '&lang=' . $pages->params->lang;
+			$link = 'page:' . (int) $row->relationId('node') . '?lang=' . $pages->params->lang;
 			$html .= '<li><button type="button" data-href="' . $e($link) . '" data-label="' . $e($row->label) . '" onclick="linkPicked(this)">'
 				. '<b>' . $e($row->label) . '</b><small>/' . $e($path) . '</small></button></li>';
 		}

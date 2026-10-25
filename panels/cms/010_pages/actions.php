@@ -483,10 +483,10 @@ switch ($this->action) {
 
     case 'insertMediaInEditor':
         $tag = $this->editorTag((int) http::dragdata('node_id'));
-        if ($tag === null) {
-            break;
-        }
-        $field = http::dataset('field');
+		if ($tag === null) {
+			break;
+		}
+		$field = http::dataset('field');
         client::insertHtmlAtCursor($tag, "div.editor[data-field='$field']");
         client::trigger("div.editor[data-field='$field']", 'input');
         break;

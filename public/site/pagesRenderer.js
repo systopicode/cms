@@ -14,7 +14,7 @@
  *
  * and each is mounted against its own placeholder in the served skeleton:
  * <template id=systemPagesHeadPlaceholder> in the head, and
- * <div id=systemPagesBodyPlaceholder> in the body.
+ * <template id=systemPagesBodyPlaceholder> in the body.
  *
  * The shorthand is `siteRenderer` because that is the name
  * core/server/server.command.js already dispatches to when settings.inApp is
@@ -47,6 +47,9 @@
 				return;
 			}
 
+			// layers from an earlier call: this is a diff update (ajax navigation)
+			var isUpdate = headLayer !== null || bodyLayer !== null;
+
 			renderer.applyBodyClasses(data.bodyClasses || []);
 
 			if (data.headLayer) {
@@ -64,7 +67,11 @@
 			if (bodyLayer) {
 				bodyLayer.printDebug();
 			}
+			// onDocumentReady runs once; onDocumentUpdate after every later update
 			sys.flushOnDocumentReady();
+			if (isUpdate) {
+				sys.flushOnDocumentUpdate();
+			}
 		};
 
 		/**
@@ -82,7 +89,7 @@
 				// No skeleton placeholder (e.g. a page served before this
 				// script existed). Create an anchor so the layer still has a
 				// stable position to render at and to collapse back into.
-				placeholder = document.createElement('div');
+				placeholder = document.createElement('template');
 				placeholder.id = placeholderId;
 				host.appendChild(placeholder);
 			}

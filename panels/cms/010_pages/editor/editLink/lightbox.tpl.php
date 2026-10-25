@@ -32,7 +32,7 @@ $address = $type === 'url' ? $href : rawurldecode(substr($href, strlen($type) + 
 $title = ($href === '' ? 'Insert ' : 'Edit ') . ($media ? 'Image Link' : 'Link');
 
 // the files of the page: the originals, as the media library lists them
-$files = $thumbs = [];
+$files = $thumbs = $fileHrefs = [];
 foreach ($pages->library as $entries) {
 	foreach ($entries as $entry) {
 		if ($entry['media'] === NULL || $entry['alias'] || \Systopic\System\Tables\Medias\External::is((string) $entry['media']->type)) {
@@ -40,11 +40,11 @@ foreach ($pages->library as $entries) {
 		}
 		$files[] = new \Systopic\System\Tables\Medias\Media($entry['media']);
 		$thumbs[] = $pages->thumbOf($entry['media']);
+		$fileHrefs[] = 'media:' . (int) $entry['node']->id;
 	}
 }
-$fileHrefs = array_map(static fn($file) => $file->setFormat('original')->url, $files);
-// a page link is stored by id (TextField::rendered makes the address), so it survives a rename
-$linkedPage = preg_match('~^\?id=(\d+)~', $href, $m) ? $pages->pageFor((int) $m[1]) : NULL;
+// a page or a file is stored as a reference (page:43, media:85), so it survives a rename
+$linkedPage = preg_match('~^(?:\?id=|page:)(\d+)~', $href, $m) ? $pages->pageFor((int) $m[1]) : NULL;
 $tab = in_array($href, $fileHrefs, TRUE) ? 'file' : ($linkedPage !== NULL ? 'page' : 'address');
 $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 ?>
@@ -72,7 +72,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 								}
 								$size = isset($format['width']) ? $format['width'] . ' × ' . $format['height'] . ' px'
 									: (isset($format['autocrop']) ? $format['autocrop'] . ', ' . \mediaFormats::ratioLabel($format['autocrop_limit'] ?? 0) : $format['megapixels'] . ' MP');
-								echo '<option value="' . $e(http::$hostUrl . $media->setFormat($key)->url) . '">' . $e($key . ' (' . $size . ')') . '</option>';
+								echo '<option value="media:' . (int) http::post('image_node_id') . '?format=' . $e($key) . '">' . $e($key . ' (' . $size . ')') . '</option>';
 							}
 							?>
 						</select>
@@ -105,7 +105,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 							<?php if ($linkedPage !== NULL) {
 								$label = $linkedPage->label->plain;
 								$path = $linkedPage->rewritepaths->path . $linkedPage->rewritepaths->appendix; ?>
-								<li><button type="button" class="selected" data-href="<?= $e($href) ?>" data-label="<?= $e($label) ?>" onclick="linkPicked(this)"><b><?= $e($label) ?></b><small>/<?= $e($path) ?></small></button></li>
+								<li><button type="button" class="selected" data-href="page:<?= (int) $linkedPage->id ?>?lang=<?= $e($pages->params->lang) ?>" data-label="<?= $e($label) ?>" onclick="linkPicked(this)"><b><?= $e($label) ?></b><small>/<?= $e($path) ?></small></button></li>
 							<?php } else { ?>
 								<li class="linkHint">Type a few letters of the page title.</li>
 							<?php } ?>

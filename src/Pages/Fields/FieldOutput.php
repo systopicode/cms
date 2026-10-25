@@ -82,14 +82,16 @@ final class FieldOutput
         }
     }
 
-    /** pageHtml::printEditor() — internal links, protected mail addresses, placeholders. */
+    /**
+     * The html editor: the field's content with its references resolved for
+     * the browser (TextField::$editorContent) - images show, the references
+     * travel beside them and come back on save (Refs\Resolver::normalize()).
+     */
     private static function htmlEditor(TextField $field): string
     {
         $page = $field->page();
-        $fieldContent = (string) $field->value;
+        $fieldContent = $field->editorContent;
         $classes = ['editor'];
-        $autoEmailAnchorClassnames = 'maillink auto';
-
         $editableAttributes = \html::arrayToDataAttr([
             'on_input'              => 'updatePageParam',
             'on_drop'               => 'insertMediaInEditor',
@@ -100,39 +102,16 @@ final class FieldOutput
             'language_iso'          => $page->language,
         ]);
         $editableAttributes .= ' contenteditable="true"';
-        $droppableClassnames = ' mediaDroppable pageDroppable';
-
         if ($fieldContent !== '') {
-            // page links stay ?id= in the editor: "open" leads to the page in the CMS,
-            // TextField::rendered turns them into the address on the site
-
-            // mail links: the marker becomes a plain mailto:
-            //
-            // The legacy offered to hide the address behind an ajax round trip
-            // (`html_output.protect_email_addresses`, a row in tmp_data, the
-            // `getlink` action in site/actions.php). None of it worked: the
-            // setting is defined nowhere, the table is tmp_datas, the action
-            // reads a column that does not exist, and `clearTempData()` — called
-            // before every replacement — is no function, so a field with a
-            // marker ended the request. Dropped 2026-10-02; mailto is what the
-            // branch that ran would have produced.
+            // leftovers of the path form, until Tools → Migration has rewritten the field
             if (preg_match_all('~##BEGINMAILTOHREF##(.*?)##ENDMAILTOHREF##~', $fieldContent, $results)) {
-                $replacements = array_map(static fn(string $address): string => 'mailto:' . $address, $results[1]);
-                $fieldContent = str_replace($results[0], $replacements, $fieldContent);
+                $fieldContent = str_replace($results[0], array_map(static fn(string $address): string => 'mailto:' . $address, $results[1]), $fieldContent);
             }
-            $fieldContent = str_replace([
-                '###http::siteRoot###',
-                '###http::varRoot###',
-                '###_IMAGE_DROPPABLE_CLASSNAMES_###',
-                '###_ANCHOR_DROPPABLE_CLASSNAMES_###',
-                '###_AUTO_EMAIL_ANCHOR_CLASSNAMES_###',
-            ], [
-                \http::$siteRoot,
-                \http::$siteRoot . 'var/',
-                $droppableClassnames,
-                $droppableClassnames,
-                $autoEmailAnchorClassnames,
-            ], $fieldContent);
+            $fieldContent = str_replace(
+                ['###http::siteRoot###', '###http::varRoot###', '###_IMAGE_DROPPABLE_CLASSNAMES_###', '###_ANCHOR_DROPPABLE_CLASSNAMES_###', '###_AUTO_EMAIL_ANCHOR_CLASSNAMES_###'],
+                [\http::$siteRoot, \http::$siteRoot . 'var/', ' mediaDroppable pageDroppable', ' mediaDroppable pageDroppable', 'maillink auto'],
+                "\n" . $fieldContent,
+            );
             $classes[] = 'mediaDroppable pageDroppable fulltextsearch editor';
         }
         if (!$field->isVisible) {

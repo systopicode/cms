@@ -218,7 +218,6 @@ class Panel extends CmsPanel {
 		};
 	}
 
-	/** The medium of a media node — what a library action is about. */
 	/** The tag a text editor shows for a medium, null for a type it cannot show. */
 	public function editorTag(int $nodeId): ?string {
 		$row = $this->mediaOfNode($nodeId);
@@ -227,23 +226,17 @@ class Panel extends CmsPanel {
 		}
 		$file = new \Systopic\System\Tables\Medias\Media($row);
 		$label = htmlspecialchars((string) $file->label, ENT_QUOTES);
-		switch ($file->type) {
-			case 'image':
-				$format = (string) array_key_first(\mediaFormats::get());
-				$src = $file->setFormat($format)->src;
-				return "<img data-mimetype='{$file->mimetype}' data-node_id='$nodeId' data-id='$nodeId' data-format='$format' src='$src' alt='$label' />";
-			case 'video':
-				$src = $file->setFormat('original')->src;
-				$poster = str_replace('.mp4', '', $file->setFormat('original')->url) . '.webp';
-				return "<video data-mimetype='{$file->mimetype}' data-node_id='$nodeId' poster='$poster' controls='true' src='$src'></video>";
-			case 'application':
-			case 'pdf':
-				$src = $file->setFormat('original')->src;
-				return "<iframe data-node_id='$nodeId' src='$src'></iframe>";
-		}
-		return NULL;
+		// stored form is a reference; the editor shows the url beside it (Refs\Resolver)
+		$stored = match ($file->type) {
+			'image' => '<img src="media:' . $nodeId . '?format=' . (string) array_key_first(\mediaFormats::get()) . '" alt="' . $label . '">',
+			'video' => '<video src="media:' . $nodeId . '" poster="media:' . $nodeId . '" controls></video>',
+			'application', 'pdf' => '<iframe src="media:' . $nodeId . '"></iframe>',
+			default => null,
+		};
+		return $stored === null ? null : (new \Systopic\Cms\Refs\Resolver($this->scope, $this->params))->renderForEditor($stored);
 	}
 
+	/** The medium of a media node — what a library action is about. */
 	public function mediaOfNode(int $nodeId): ?\Systopic\System\Tables\Medias\Model {
 		return $nodeId > 0
 			? (\Systopic\System\Queries\MediaNodes\MediaNodes::byNodeIds($this->scope, [$nodeId])[$nodeId] ?? NULL)
@@ -432,7 +425,9 @@ class Panel extends CmsPanel {
 			return FALSE;
 		}
 		try {
-			PageOperator::assign($page->row, $field, ltrim((string) $value, "\r\n"));
+			// the editor sends urls with the reference beside them - store the reference
+			$value = \Systopic\Cms\Refs\Resolver::normalize(ltrim((string) $value, "\r\n"));
+			PageOperator::assign($page->row, $field, $value);
 		} catch (\InvalidArgumentException $e) {
 			\message::error($e->getMessage());
 			return FALSE;
