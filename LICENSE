@@ -1,21 +1,66 @@
-MIT License
+# Fluxo CMS – Software License
 
-Copyright (c) 2026 systopic GmbH
+Copyright (c) 2026 systopic GmbH. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## 1. Grant of License
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The systopic GmbH grants authorized users a non-exclusive, non-transferable license to use, install, and modify Fluxo CMS for their own websites, applications, and projects, subject to applicable agreements.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+This license does not transfer ownership of the software or any intellectual property rights.
+
+## 2. Permitted Use
+
+Authorized users may:
+
+- Install and operate Fluxo CMS for their own projects.
+- Modify and extend the software to meet project-specific requirements.
+- Develop custom templates, modules, and integrations.
+- Create backups and copies necessary for development, testing, and operation.
+- Deploy projects based on Fluxo CMS to production and staging environments.
+
+## 3. Restrictions
+
+Unless expressly authorized in writing by systopic GmbH, users may not:
+
+- Redistribute, publish, sublicense, sell, or otherwise make Fluxo CMS available as a standalone software product.
+- Offer Fluxo CMS as a competing content management system or independent CMS service.
+- Remove or alter copyright notices or license information.
+- Grant third parties independent rights to the underlying CMS software.
+
+These restrictions do not prevent the delivery or operation of websites and applications developed using Fluxo CMS within the scope of an authorized project.
+
+## 4. Ownership
+
+Fluxo CMS, including its source code, architecture, core components, and documentation, remains the intellectual property of systopic GmbH or its respective rights holders.
+
+Custom content, independently developed extensions, and project-specific materials remain subject to their respective ownership and contractual arrangements.
+
+## 5. Third-Party Components
+
+Fluxo CMS may include third-party libraries and components governed by separate licenses.
+
+Those licenses remain applicable and take precedence for the respective third-party components.
+
+## 6. Warranty Disclaimer
+
+The software is provided "AS IS", without warranties of any kind, to the extent permitted by applicable law.
+
+systopic GmbH does not guarantee uninterrupted operation, freedom from defects, or suitability for any particular purpose, unless otherwise agreed.
+
+## 7. Limitation of Liability
+
+Liability is limited to the extent permitted by applicable law.
+
+Nothing in this license excludes or limits liability where such exclusion or limitation is prohibited by law.
+
+## 8. Additional Agreements
+
+Individual license agreements, service agreements, or other written arrangements with systopic GmbH may grant additional rights or establish different conditions.
+
+In the event of a conflict, such individually agreed terms shall prevail.
+
+---
+
+Fluxo CMS is developed by systopic GmbH.
+
+All rights reserved.
