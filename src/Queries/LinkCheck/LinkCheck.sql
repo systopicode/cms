@@ -16,5 +16,6 @@ SELECT
 FROM cms_pages
 INNER JOIN live ON live.node_id = page_node_id
 INNER JOIN cms_nodes AS node ON node.node_id = page_node_id AND node.node_type = 'page'
-HAVING lc_html LIKE '%href=%' OR lc_html LIKE '%src=%' OR lc_html LIKE '%data-node_id%'
+HAVING lc_html LIKE '%href=%' OR lc_html LIKE '%src=%' OR lc_html LIKE '%poster=%'
+	OR lc_html LIKE '%data-node_id%' OR lc_html LIKE '%{page:%' OR lc_html LIKE '%{media:%'
 ORDER BY page_node_id, page_language_iso

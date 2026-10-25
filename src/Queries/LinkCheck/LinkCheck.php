@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Systopic\Cms\Queries\LinkCheck;
 
+use Systopic\Cms\Refs\Ref;
 use Systopic\Db\Scope;
 
 /**
  * The links and embeds in the html fields of the pages out of the trash.
- * Inside links are checked here against the tree, the paths and the files;
- * outside links only collected - asking every host takes the maintenance
+ * Inside links are checked here against the tree, the paths and the files.
+ * A reference (page:43, media:293, {page:43.label}) is checked by its id.
+ * Older texts still store paths and data-node_id; those are checked too.
+ * Outside links are only collected - asking every host takes the maintenance
  * panel's button (cms/tools/maintenance/links/).
  */
 final class LinkCheck
@@ -67,9 +70,17 @@ final class LinkCheck
             $html = str_replace(['###http::siteRoot###', '###http::varRoot###'], [$root, $root . 'var/'], (string) $row['lc_html']);
             $page = (int) $row['lc_node_id'];
             $found = [];
-            preg_match_all('~\b(href|src)\s*=\s*(["\'])(.*?)\2~i', $html, $links, PREG_SET_ORDER);
+            preg_match_all('~\b(href|src|poster)\s*=\s*(["\'])(.*?)\2~i', $html, $links, PREG_SET_ORDER);
             foreach ($links as [, , , $target]) {
                 $target = html_entity_decode(trim($target), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $ref = Ref::fromAttribute($target);
+                if ($ref !== null) {
+                    $reason = self::reference($ref, $nodes);
+                    if ($reason !== null) {
+                        $found[$ref->toAttribute()] = $reason;
+                    }
+                    continue;
+                }
                 if (preg_match('~^https?://~i', $target)) {
                     $external[$target][$page] = $page;
                     continue;
@@ -77,6 +88,17 @@ final class LinkCheck
                 $reason = self::inside($target, $root, $nodes, $paths);
                 if ($reason !== null) {
                     $found[$target] = $reason;
+                }
+            }
+            preg_match_all('~\{(' . Ref::CORE . '(?:\.[a-zA-Z][a-zA-Z0-9]*)*)\}~', $html, $texts);
+            foreach ($texts[1] as $inner) {
+                $ref = Ref::fromText($inner);
+                if ($ref === null) {
+                    continue;
+                }
+                $reason = self::reference($ref, $nodes);
+                if ($reason !== null) {
+                    $found['{' . $ref->toText() . '}'] = $reason;
                 }
             }
             preg_match_all('~data-node_id\s*=\s*["\']?(\d+)~i', $html, $media);
@@ -194,6 +216,20 @@ final class LinkCheck
         }
         curl_multi_close($multi);
         return $failed + self::ask($retry, true);
+    }
+
+    /**
+     * Why a page: or media: reference leads nowhere, NULL when it is fine
+     * or names something this check does not know.
+     *
+     * @param array<int, true> $nodes
+     */
+    private static function reference(Ref $ref, array $nodes): ?string
+    {
+        if (!in_array($ref->type, ['page', 'media'], true) || isset($nodes[$ref->id])) {
+            return null;
+        }
+        return $ref->type === 'media' ? 'The media is gone or in the trash.' : 'The page is gone or in the trash.';
     }
 
     /**

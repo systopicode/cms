@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Systopic\Cms\Queries\RewritepathLookup;
 
+use Systopic\Db\Schema\Provisioner;
 use Systopic\Db\Schema\Registry;
 use Systopic\Db\Scope;
 use Systopic\Cms\Tables\Pages\Model as PageRow;
@@ -45,7 +46,7 @@ final class RewritepathLookup
             'pageId'  => $exceptPageId ?? 0,
             'anySite' => $any ? 1 : 0,
             'site'    => $any ? null : $siteNodeId,
-        ]);
+        ], provisioner: new Provisioner($scope->connection));
         return $rows->first(Rewritepath::class);
     }
 
@@ -64,7 +65,7 @@ final class RewritepathLookup
             'path'    => trim($path, '/'),
             'anySite' => $any ? 1 : 0,
             'site'    => $any ? null : $siteNodeId,
-        ])->first(Rewritepath::class);
+        ], provisioner: new Provisioner($scope->connection))->first(Rewritepath::class);
     }
 
     /**
