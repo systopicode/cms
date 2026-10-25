@@ -8,6 +8,8 @@
 
 use Systopic\Cms\Queries\Dashboard\Dashboard;
 use Systopic\Cms\Queries\LinkCheck\LinkCheck;
+use Systopic\Cms\Queries\Misses\Misses;
+use Systopic\Cms\Queries\UnusedMedia\UnusedMedia;
 
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 $scope = \Systopic\Db\Scope::default();
@@ -15,6 +17,8 @@ $figures = Dashboard::figures($scope);
 $broken = LinkCheck::brokenPages($scope, PHP_INT_MAX);
 $figures['brokenlinks'] = count($broken);
 $figures['deadlinks'] = count(array_intersect_key(LinkCheck::lastCheck()['failed'], LinkCheck::external($scope)));
+$figures['unusedmedia'] = count(UnusedMedia::of($scope));
+$figures['misses'] = Misses::count($scope);
 $href = \http::$root . 'cms/pages/?id=';
 // level: fix - visitors run into it; improve - better for search and accessibility; info - only to know
 $tasks = array_filter([
@@ -25,6 +29,8 @@ $tasks = array_filter([
 	'hidden' => ['info', 'fa-eye-slash', 'Hidden pages', 'Visitors can’t see them yet.', 'Fine for drafts. To publish, click the crossed-out eye in the page tree.'],
 	'planned' => ['info', 'fa-calendar', 'Planned pages', 'They go online by themselves on their date.', 'Nothing to do, unless the date is wrong.'],
 	'trashed' => ['info', 'fa-trash', 'Pages in the trash', 'Restore them or delete them for good.', ''],
+	'unusedmedia' => ['info', 'fa-photo-film', 'Unused media', 'No page uses these files.', ''],
+	'misses' => ['fix', 'fa-diamond-turn-right', 'Unknown addresses', 'Visitors opened an address that belongs to no page.', ''],
 ], static fn(string $key): bool => $figures[$key] > 0, ARRAY_FILTER_USE_KEY);
 // the first ones concerned, each [href, text, small]: media open by themselves, the rest on their page
 $items = static fn(string $key): array => match ($key) {
@@ -42,8 +48,15 @@ $items = static fn(string $key): array => match ($key) {
 			$count = '<i class="fa-regular ' . $icon . '"></i><b class="dashCount">' . number_format($figures[$key], 0, ',', '.') . '</b><span>' . $label . '<small>' . $why . '</small></span>';
 			?>
 			<li class="is-<?= $level ?>">
-				<?php if ($key === 'trashed' || $key === 'deadlinks') { ?>
-					<a class="ajax" href="<?= $e(\http::$root . 'cms/tools/maintenance/' . ($key === 'trashed' ? 'trash/' : 'links/')) ?>"><?= $count ?><i class="fa-regular fa-chevron-right"></i></a>
+				<?php if (in_array($key, ['trashed', 'deadlinks', 'unusedmedia', 'misses'], true)) {
+					$tool = match ($key) {
+						'trashed' => 'trash/',
+						'unusedmedia' => 'unused/',
+						'misses' => 'misses/',
+						default => 'links/',
+					};
+					?>
+					<a class="ajax" href="<?= $e(\http::$root . 'cms/tools/maintenance/' . $tool) ?>"><?= $count ?><i class="fa-regular fa-chevron-right"></i></a>
 				<?php } else { ?>
 					<details>
 						<summary><?= $count ?><i class="fa-regular fa-chevron-down"></i></summary>

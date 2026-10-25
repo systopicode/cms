@@ -7,6 +7,7 @@ namespace Systopic\Cms\Pages\Router;
 use Systopic\System\Config\Config;
 use Systopic\Db\Scope;
 use Systopic\Cms\Pages\Route\Route;
+use Systopic\Cms\Queries\Misses\Misses;
 use Systopic\Cms\Queries\RewritepathLookup\RewritepathLookup;
 use Systopic\Cms\Queries\Sites\Sites;
 use Systopic\Cms\Tables\Pages\Page;
@@ -113,6 +114,13 @@ final class UrlResolver
         // that matches no rewritepath must stay unresolved and let the panel
         // tree have it.
         if ($rewritePath !== '') {
+            // Nobody answered. Remember the address so it can be sent to a page.
+            // A panel path never gets here: the panel was chosen before this.
+            Misses::note(
+                Scope::default(),
+                $rewritePath,
+                $siteNodeId === RewritepathLookup::ANY_SITE ? null : $siteNodeId,
+            );
             return;
         }
 
