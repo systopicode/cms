@@ -22,11 +22,6 @@ if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
 			<div class='searchInput'>
 				<input class='autosend' id='cmsSearchInput' data-on_input='cmsPageSearch' name='search' autocomplete='off' type="search"
 				       placeholder="Search" aria-label="Search pages" value="<?= htmlspecialchars((string) $this->state->cmsPageSearchstring) ?>">
-				<div class="cmsSearchResults">
-					<ul id='cmsSearchResults'>
-						<?= $this->state->cmsPageSearchResults ?>
-					</ul>
-				</div>
 			</div>
 			<ul class="treeNavi">
 				<?php if ($this->state->treeMode === 'trash') { ?>
@@ -40,7 +35,9 @@ if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
 			</ul>
 			<a class="button submit icononly" data-on_click="new" title="Add Page"><i class="fa-regular fa-plus"></i></a>
 		</div>
-		<div class='tree'>
+		<?php $searching = trim((string) $this->state->cmsPageSearchstring) !== ''; ?>
+		<div class="tree<?= $searching ? ' is-results' : '' ?>">
+			<ul class="tree searchHits" id="cmsSearchResults"><?= $this->state->cmsPageSearchResults ?></ul>
 			<?php $this->withView('tree'); ?>
 		</div>
 	</nav>

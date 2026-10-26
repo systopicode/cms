@@ -2,6 +2,18 @@ sys.onDocumentReady(function () {
 	scrollTree();
 });
 
+// While the field has a word, its hits stand in for the tree.
+document.addEventListener('input', function (event) {
+	var field = event.target;
+	if (!field || field.id !== 'cmsSearchInput') {
+		return;
+	}
+	var tree = field.closest('nav') && field.closest('nav').querySelector('div.tree');
+	if (tree) {
+		tree.classList.toggle('is-results', field.value.trim() !== '');
+	}
+});
+
 function onAfterHisotryPush(url) {
 
 }

@@ -505,44 +505,152 @@
 				aimed = null;
 				upload.intoEditor(editor, spot, items);
 			}, true);
+			var scrollersOf = (node) => {
+				var list = [];
+				var add = (el) => {
+					if (el && el !== document.body && el !== document.documentElement && list.indexOf(el) < 0) {
+						list.push(el);
+					}
+				};
+				add(node && node.closest ? node.closest('article.cmsContent') : null);
+				for (var el = node && node.parentElement; el && el !== document.body && el !== document.documentElement; el = el.parentElement) {
+					var style = getComputedStyle(el);
+					if (/(auto|scroll)/.test(style.overflowY)) {
+						add(el);
+					}
+				}
+				return list;
+			};
 			var beginMove = (media, editor, event) => {
+				var scrollers = scrollersOf(editor);
+				var saved = scrollers.map((el) => ({el: el, top: el.scrollTop, left: el.scrollLeft}));
+				var box = media.getBoundingClientRect();
+				var shown = getComputedStyle(media);
 				var hold = document.createElement('span');
-				hold.className = 'editorMediaHold';
+				hold.className = 'editorMediaHold is-gap';
+				hold.style.display = shown.display === 'inline' ? 'inline-block' : shown.display;
+				hold.style.width = Math.max(1, Math.round(box.width)) + 'px';
+				var coarse = event.pointerType === 'touch';
+				var cap = Math.round(Math.min(window.innerHeight * 0.45, 280));
+				hold.style.height = (coarse && box.height > cap ? 28 : Math.max(1, Math.round(box.height))) + 'px';
+				hold.style.verticalAlign = shown.verticalAlign;
+				var selection = getSelection();
+				if (selection.rangeCount && media.contains(selection.anchorNode)) {
+					selection.removeAllRanges();
+				}
 				media.replaceWith(hold);
+				saved.forEach((item) => {
+					item.el.scrollTop = item.top;
+					item.el.scrollLeft = item.left;
+				});
 				var line = document.createElement('div');
 				line.className = 'editorMediaLine';
+				line.hidden = true;
 				document.body.appendChild(line);
 				document.body.classList.add('editorMediaDrop');
-				var follow = (e) => {
-					var spot = upload.rangeAt(editor, e.clientX, e.clientY);
-					var rects = spot && spot.getClientRects ? spot.getClientRects() : [];
-					var rect = rects.length ? rects[0] : null;
-					var marked = rect && (rect.width > 0 || rect.height > 4);
-					line.style.left = Math.round(marked ? rect.left : e.clientX) + 'px';
-					line.style.top = Math.round(marked ? rect.top : e.clientY + 18) + 'px';
-					line.style.height = Math.round(marked ? Math.max(rect.height, 16) : 18) + 'px';
+				var lastSpot = null;
+				var lastEditor = editor;
+				var point = {x: event.clientX, y: event.clientY};
+				var running = true;
+				var edge = coarse ? 96 : 56;
+				var editorAt = (x, y) => {
+					var stack = document.elementsFromPoint(x, y);
+					for (var i = 0; i < stack.length; i++) {
+						var found = editorOf(stack[i]);
+						if (found) {
+							return found;
+						}
+					}
+					return null;
 				};
-				follow(event);
-				var up = (e) => {
+				var mark = () => {
+					var dest = editorAt(point.x, point.y);
+					var spot = dest && upload.rangeAt(dest, point.x, point.y, true);
+					if (spot && spot.startContainer !== hold && !hold.contains(spot.startContainer)) {
+						lastSpot = spot;
+						lastEditor = dest;
+					}
+					var rects = lastSpot && lastSpot.getClientRects ? lastSpot.getClientRects() : [];
+					var rect = rects.length ? rects[0] : null;
+					if (!rect || rect.height < 4) {
+						line.hidden = true;
+						return;
+					}
+					line.hidden = false;
+					line.style.left = Math.round(rect.left) + 'px';
+					line.style.top = Math.round(rect.top) + 'px';
+					line.style.height = Math.round(Math.max(rect.height, 16)) + 'px';
+				};
+				var nudge = (el) => {
+					if (el.scrollHeight <= el.clientHeight + 4) {
+						return;
+					}
+					var frame = el.getBoundingClientRect();
+					if (frame.height < 40) {
+						return;
+					}
+					var reach = coarse ? 120 : 24;
+					if (point.y < frame.top + edge && point.y > frame.top - reach) {
+						el.scrollTop -= Math.ceil((frame.top + edge - point.y) / 3);
+					} else if (point.y > frame.bottom - edge && point.y < frame.bottom + reach) {
+						el.scrollTop += Math.ceil((point.y - (frame.bottom - edge)) / 3);
+					}
+				};
+				var glide = () => {
+					if (!running) {
+						return;
+					}
+					var moving = scrollersOf(editor);
+					var under = editorAt(point.x, point.y);
+					if (under) {
+						scrollersOf(under).forEach((el) => moving.indexOf(el) < 0 && moving.push(el));
+					}
+					moving.forEach(nudge);
+					mark();
+					requestAnimationFrame(glide);
+				};
+				var follow = (e) => {
+					if (e.cancelable) {
+						e.preventDefault();
+					}
+					if (e.clientX !== undefined) {
+						point.x = e.clientX;
+						point.y = e.clientY;
+					}
+					var sel = getSelection();
+					if (sel && sel.rangeCount && !sel.isCollapsed) {
+						sel.removeAllRanges();
+					}
+				};
+				var stop = (e) => {
+					running = false;
 					document.removeEventListener('pointermove', follow, true);
-					document.removeEventListener('pointerup', up, true);
-					document.removeEventListener('pointercancel', up, true);
+					document.removeEventListener('pointerup', stop, true);
+					document.removeEventListener('pointercancel', stop, true);
 					line.remove();
 					document.body.classList.remove('editorMediaDrop');
-					var spot = upload.rangeAt(editor, e.clientX, e.clientY);
-					if (spot && editor.contains(spot.startContainer)) {
+					var x = e && e.clientX !== undefined ? e.clientX : point.x;
+					var y = e && e.clientY !== undefined ? e.clientY : point.y;
+					var dest = editorAt(x, y) || lastEditor;
+					var spot = dest && upload.rangeAt(dest, x, y, true);
+					if (!spot || spot.startContainer === hold || hold.contains(spot.startContainer)) {
+						spot = lastSpot && lastEditor === dest && lastSpot.startContainer !== hold && !hold.contains(lastSpot.startContainer) ? lastSpot : null;
+					}
+					if (spot && dest && dest.contains(spot.startContainer)) {
 						spot.insertNode(media);
 						hold.remove();
 						if (window.wysiwyg && wysiwyg.changed) {
 							wysiwyg.changed(editor);
+							dest !== editor && wysiwyg.changed(dest);
 						}
 					} else if (hold.isConnected) {
 						hold.replaceWith(media);
 					}
 				};
-				document.addEventListener('pointermove', follow, true);
-				document.addEventListener('pointerup', up, true);
-				document.addEventListener('pointercancel', up, true);
+				document.addEventListener('pointermove', follow, {capture: true, passive: false});
+				document.addEventListener('pointerup', stop, true);
+				document.addEventListener('pointercancel', stop, true);
+				requestAnimationFrame(glide);
 			};
 			window.editorBeginMediaMove = (media, event) => {
 				var editor = editorOf(media);
@@ -568,7 +676,7 @@
 		};
 
 		/** The caret spot under the pointer, inside the editor - else its end. */
-		upload.rangeAt = (editor, x, y) => {
+		upload.rangeAt = (editor, x, y, strict) => {
 			var range = null;
 			if (x !== undefined && document.caretRangeFromPoint) {
 				range = document.caretRangeFromPoint(x, y);
@@ -582,6 +690,9 @@
 			if (range && editor.contains(range.startContainer)) {
 				range.collapse(true);
 				return range;
+			}
+			if (strict) {
+				return null;
 			}
 			range = document.createRange();
 			range.selectNodeContents(editor);

@@ -23,7 +23,6 @@ body.pages > main > div.pylon{
 
 /* One window with the content, like settings: round only at the outer corners, the lines level */
 body.pages > main > div.pylon nav{
-	overflow: visible;  /* the search results reach over the content */
 	border-radius: var(--cmsRadiusLg) 0 0 0;
 }
 
@@ -39,19 +38,21 @@ body.pages .pylonTitle{
 	padding: 0.5rem 0.75rem 0.5rem 1rem;
 }
 
-/* Results right under the field, as wide as their titles need - over the content
-   if need be, its header (z-index 1600, 40_nav.css) included */
-.cms .pylonTitle div.cmsSearchResults{
-	z-index: 1700;
-	top: calc(100% + 3px);
-	right: auto;
-	min-width: 100%;
-	width: max-content;
-	max-width: min(32rem, 80vw);
+/* A search takes the tree's place. The rows are tree rows; the list scrolls there. */
+body.pages div.tree > ul#cmsSearchResults{
+	display: none;
+	max-height: none;
+	overflow: visible;
 }
 
-.cms div.cmsSearchResults ul li.none{
-	padding: 0.4rem 0.6rem;
+body.pages div.tree.is-results > ul.tree:not(.searchHits){
+	display: none;
+}
+
+body.pages div.tree.is-results > ul#cmsSearchResults{
+	display: block;
+}
+
+body.pages ul.searchHits li.none span.label{
 	color: var(--cmsMuted);
-	font-size: 0.8125rem;
 }

@@ -326,15 +326,24 @@ switch ($this->action) {
         break;
 
     case 'cmsPageSearch':
-        $this->state->cmsPageSearchstring = (string) http::values('search');
-        $results = PageSearch::byLabel($this->scope, $this->state->cmsPageSearchstring, $this->params->lang);
+        $term = trim((string) http::values('search'));
+        $this->state->cmsPageSearchstring = $term;
         $html = '';
-        foreach ($results as $result) {
-            $html .= "<li><a class='ajax' href=./?id=" . (int) $result->relationId('node') . '>'
-                . htmlspecialchars((string) $result->label) . '</a></li>';
-        }
-        if ($html === '') {
-            $html = '<li class="none">No results</li>';
+        if ($term !== '') {
+            $active = (int) ($this->state->id ?? 0);
+            foreach (PageSearch::byLabel($this->scope, $term, $this->params->lang) as $result) {
+                $nodeId = (int) $result->relationId('node');
+                $text = html_entity_decode((string) $result->label, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+                $text = $text === '' ? '- - - -' : htmlentities($text);
+                $html .= "<li data-node_id='$nodeId'" . ($nodeId === $active ? " class='active'" : '') . '>'
+                    . "<label><a class='fold leaf'></a>"
+                    . "<a class='label ajax' href='./?id=$nodeId'><i class='type fa-regular fa-file'></i>$text</a>"
+                    . '</label></li>';
+            }
+            if ($html === '') {
+                $html = "<li class='none'><label><a class='fold leaf'></a><span class='label'>No results</span></label></li>";
+            }
         }
         $this->state->cmsPageSearchResults = $html;
         client::replaceInner('ul#cmsSearchResults', $html);

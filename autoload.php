@@ -16,6 +16,12 @@ use Systopic\System\Sys\Packages;
 // lib/class/… (appSite behind app::site()), and the root its panels' JS/CSS load from
 Packages::addLib('systopic/cms', __DIR__);
 
+// Video tiles, the file-type field, and tags on a medium. Projects used to
+// ship these beside the site; they are part of the CMS.
+require_once __DIR__ . '/lib/media.video.php';
+require_once __DIR__ . '/lib/media.types.php';
+require_once __DIR__ . '/lib/media.tags.php';
+
 // panels/cms/… — merged into the system's /cms/ (pages, page settings, path maintenance)
 Packages::addPanels('systopic/cms', 'Systopic\Cms\Panels');
 

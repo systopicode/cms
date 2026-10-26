@@ -352,8 +352,19 @@ class Panel extends CmsPanel {
 		if (!$this->inPath()) {
 			return;
 		}
-		if (\http::method() === 'GET') {
-			$this->checkIfPageChanged();
+		if (\http::method() !== 'GET') {
+			return;
+		}
+		// A page address closes the search. The hit may be the page already
+		// open: then nothing else redraws the pylon, so the tree comes back here.
+		$hadSearch = trim((string) ($this->state->cmsPageSearchstring ?? '')) !== '';
+		$idBefore = $this->state->id;
+		$this->checkIfPageChanged();
+		if ($hadSearch && (string) ($this->action ?? '') === '' && $this->state->id === $idBefore && trim((string) ($this->state->cmsPageSearchstring ?? '')) !== '') {
+			$this->state->cmsPageSearchstring = '';
+			$this->state->cmsPageSearchResults = '';
+			$this->updateView('pylon');
+			$this->updateView('tree');
 		}
 	}
 
@@ -389,6 +400,8 @@ class Panel extends CmsPanel {
 	 * id in the scope, so the next read builds them for the new one.
 	 */
 	function pageChanged() {
+		$this->state->cmsPageSearchstring = '';
+		$this->state->cmsPageSearchResults = '';
 		$this->updateView('main');
 		$this->updateView('controls');
 		$this->updateView('status');
