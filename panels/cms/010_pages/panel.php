@@ -195,8 +195,8 @@ class Panel extends CmsPanel {
 			$stem = preg_replace('/\.(mp4|webm|mov|m4v)$/i', '', $filename);
 			foreach (["var/original/$folders$stem.webp", "var/original/$folders$filename.webp"] as $poster) {
 				$abs = \fs::$siteRoot . $poster;
-				if (is_file($abs) && filesize($abs) > 0) {
-					return $siteRoot . $poster . '?v=' . filemtime($abs);
+				if (\fs::isFile($abs) && \fs::filesize($abs) > 0) {
+					return $siteRoot . $poster . '?v=' . \fs::filemtime($abs);
 				}
 			}
 		}
