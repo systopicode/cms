@@ -203,7 +203,7 @@ class Panel extends CmsPanel {
 		$ext = in_array($mime, ['image/webp', 'image/png', 'image/jpeg'], TRUE) ? '' : '.webp';
 		$thumb = "var/formats/mmlThumb/$folders$filename$ext";
 		// made again (replace, a rebuild): the browser must not keep the old one
-		$made = @filemtime(\fs::$siteRoot . $thumb);
+		$made = @\fs::filemtime(\fs::$siteRoot . $thumb);
 		return $siteRoot . $thumb . ($made ? '?v=' . $made : '');
 	}
 
