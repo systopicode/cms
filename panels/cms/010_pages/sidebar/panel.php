@@ -65,7 +65,7 @@ class Panel extends CmsPanel {
 	}
 
 	function activeGroup(): string {
-		$name = $this->state->sidebarGroup ?? null;
+		$name = (string) ($this->state->sidebarGroup ?? '');
 		return isset($this->groups[$name]) ? (string) $name : (string) array_key_first($this->groups);
 	}
 

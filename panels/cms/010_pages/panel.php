@@ -195,18 +195,18 @@ class Panel extends CmsPanel {
 			$stem = preg_replace('/\.(mp4|webm|mov|m4v)$/i', '', $filename);
 			foreach (["var/original/$folders$stem.webp", "var/original/$folders$filename.webp"] as $poster) {
 				$abs = \fs::$siteRoot . $poster;
-				if (is_file($abs) && filesize($abs) > 0) {
-					return $siteRoot . $poster . '?v=' . filemtime($abs);
+				if (\fs::isFile($abs) && \fs::filesize($abs) > 0) {
+					return $siteRoot . $poster . '?v=' . \fs::filemtime($abs);
 				}
 			}
 		}
 		$ext = in_array($mime, ['image/webp', 'image/png', 'image/jpeg'], TRUE) ? '' : '.webp';
 		$thumb = "var/formats/mmlThumb/$folders$filename$ext";
 		// The thumb may not exist yet: replace deletes it and the next request
-		// builds it. The original's time still changes, so the address does,
-		// and the tile does not keep the picture that failed a moment ago.
-		$made = @filemtime(\fs::$siteRoot . $thumb)
-			?: @filemtime(\fs::$siteRoot . "var/original/$folders$filename");
+		// builds it. The original's time still changes, so the address does.
+		// fs::filemtime, because PHP's own filemtime fails on an internal path.
+		$made = @\fs::filemtime(\fs::$siteRoot . $thumb)
+			?: @\fs::filemtime(\fs::$siteRoot . "var/original/$folders$filename");
 		return $siteRoot . $thumb . ($made ? '?v=' . $made : '');
 	}
 

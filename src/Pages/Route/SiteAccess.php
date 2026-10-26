@@ -29,7 +29,7 @@ final class SiteAccess
             return;
         }
         Session::rememberReturn((string) (\http::ajax() ? ($_SERVER['HTTP_REFERER'] ?? '') : ($_SERVER['REQUEST_URI'] ?? '')));
-        $own = is_dir(rtrim((string) \fs::$projectRoot, '/') . '/panels/auth');
+        $own = \fs::isDir(rtrim((string) \fs::$projectRoot, '/') . '/panels/auth');
         $target = \http::$root . ($own ? 'auth/' : 'cms/auth/');
         // nothing of the page may follow, also not in an ajax answer
         if (\http::ajax()) {
