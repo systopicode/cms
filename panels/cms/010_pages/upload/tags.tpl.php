@@ -19,6 +19,7 @@ echo TagGroupsPanel::forPage(
 	$nodeId,
 	TagLinks::tagIdsOf($pages->scope, $nodeId),
 	TagGroups::relatedNodes($pages->scope, (string) $pages->page->language),
-	'../sidebar/',
+	'',
 	'../?id=',
+	'?node_id=' . $nodeId,
 );

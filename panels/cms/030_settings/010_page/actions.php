@@ -60,6 +60,5 @@ switch ($this->action) {
 			}
 		}
 		$this->scope->save(...NodeOperator::place($nodes, $drag->node, $at));
-		$this->updateView();
 		break;
 }

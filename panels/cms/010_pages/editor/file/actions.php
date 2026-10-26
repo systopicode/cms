@@ -17,6 +17,19 @@ use Systopic\System\Tables\Medias\Removal as MediaRemoval;
 $pages = $this->pages();
 $row = $this->mediaRow;
 
+if (in_array($this->action, ['addTag', 'addTagTo_page', 'removeTagFrom_page'], true)) {
+	$sidebar = $pages->child('sidebar');
+	if ($sidebar) {
+		$sidebar->action = $this->action;
+		(function () {
+			$cmsMediaTagsOnly = true;
+			include dirname(__DIR__, 2) . '/sidebar/actions.tags.php';
+		})->call($sidebar);
+	}
+	$this->updateView('tags');
+	return;
+}
+
 /** Stamp and save the medium. */
 $save = static function () use ($pages, $row): void {
 	MediaOperator::touch($row, $pages->userId());
@@ -60,14 +73,19 @@ switch ($this->action) {
 		if ($row === NULL) {
 			break;
 		}
-		$name = (string) http::values('filename');
+		$name = trim((string) http::values('filename'));
 		$old = (string) $row->filename;
-		if ($name === '' || str_starts_with($name, '.') || $name === pathinfo($old, PATHINFO_EXTENSION)) {
+		$ext = pathinfo($old, PATHINFO_EXTENSION);
+		$stem = pathinfo($name, PATHINFO_FILENAME);
+		if ($stem === '' || $stem === '.' || $name === '') {
 			message::error('File name cant be empty');
 			break;
 		}
-		if (pathinfo($old, PATHINFO_EXTENSION) !== pathinfo($name, PATHINFO_EXTENSION)) {
-			message::error('File extensions don\'t match.');
+		// The ending is the type. Editing the name keeps it.
+		if ($ext !== '' && strcasecmp((string) pathinfo($name, PATHINFO_EXTENSION), $ext) !== 0) {
+			$name = $stem . '.' . $ext;
+		}
+		if ($name === $old) {
 			break;
 		}
 		if (MediaFiles::rename($row, str::getSafeName($name))) {

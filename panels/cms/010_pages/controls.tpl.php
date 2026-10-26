@@ -44,6 +44,9 @@ $flag = static function (array $language) {
 };
 $current = Languages::activated()[$this->state->lang] ?? null;
 ?>
+<div class="cmsPageTools">
+	<button type="button" class="cmsMobileOnly cmsMobileMore" data-cms-more aria-label="Page tools" aria-expanded="false">…</button>
+	<div class="cmsPageToolsMenu">
 <div class="leftAlign">
 	<div class="splitApply langSwitch">
 		<button type="button" class="splitApplyMenu" aria-label="<?= htmlspecialchars((string) ($current['label'] ?? 'Language'), ENT_QUOTES) ?>">
@@ -75,3 +78,8 @@ $current = Languages::activated()[$this->state->lang] ?? null;
 	<?php } ?>
 </div>
 <?php } ?>
+
+		<button type="button" class="cmsMobileOnly" data-cms-properties><i class="fa-regular fa-sliders"></i> Properties</button>
+		<button type="button" class="cmsMobileOnly" data-cms-window="media"><i class="fa-regular fa-images"></i> Media Library</button>
+	</div>
+</div>

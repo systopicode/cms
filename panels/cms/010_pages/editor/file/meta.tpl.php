@@ -35,9 +35,9 @@ $format = ((int) $row->width > 0 && (int) $row->height > 0)
 							<label>Label</label>
 						</div>
 						<div class="inputGroup">
-							<input data-on_input="updateFilename" spellcheck="off" type="text" name="filename" value="<?= $e($row->filename) ?>">
+							<input data-on_blur="updateFilename" spellcheck="off" type="text" name="filename" value="<?= $e($row->filename) ?>" autocomplete="off" enterkeyhint="done">
 							<span class="bar"></span>
-							<label>File name</label>
+							<label>File name, the ending stays</label>
 						</div>
 						<?php
 						echo \Systopic\System\Tables\Medias\External::fieldsHtml([

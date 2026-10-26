@@ -1,5 +1,10 @@
 /****************************** REWRITE DROPDOWN ***************************/
 
+body.pages > main > div.content{
+    position: relative;
+    z-index: 1;
+}
+
 main > div.content > article {
     flex: 1 1 auto;
     overflow: auto;
@@ -8,21 +13,24 @@ main > div.content > article {
 
 [data-on_draginit="draginitPylonwidth"]
 {
-	width:20px;
+	width: 28px;
 	position: absolute;
 	height: 100%;
-	right: -10px;
-	z-index: 3;
+	right: -18px;
+	z-index: 30;
 	cursor: col-resize;
+	touch-action: none;
 }
 [data-on_draginit="draginitSidebarwidth"]
 {
-	width:20px;
+	width: 22px;
 	position: absolute;
-	height: 100%;
-	left: -10px;
-	top: 0;
+	top: 4.6rem;
+	height: calc(100% - 4.6rem);
+	left: -14px;
+	z-index: 6;
 	cursor: col-resize;
+	touch-action: none;
 }
 [data-on_draginit="draginitFooterHeight"]
 {

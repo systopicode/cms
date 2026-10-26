@@ -140,6 +140,11 @@ final class Resolver
                 }
                 $target = $targets[$ref->type . '|' . $this->types[$ref->type]->key($ref)] ?? null;
                 $url = $target === null ? null : $this->types[$ref->type]->url($target, $ref, $name);
+                if ($name === 'poster' && ($url === null || $url === '')) {
+                    $attrs = Attributes::remove($attrs, 'poster');
+                    $attrs = Attributes::remove($attrs, 'data-ref-poster');
+                    continue;
+                }
                 if ($editor) {
                     $attrs = Attributes::set($attrs, $name, (string) $url);
                     $attrs = Attributes::set($attrs, "data-ref-$name", $ref->toAttribute());
@@ -156,6 +161,20 @@ final class Resolver
                     return '';
                 } else {
                     $attrs = Attributes::remove($attrs, $name); // an <a> without href is its text
+                }
+            }
+            // A film in the text keeps its still. Older tags only stored src.
+            if ($tagName === 'video' && Attributes::get($attrs, 'poster') === null && Attributes::get($attrs, 'data-ref-poster') === null) {
+                $srcRef = $this->refIn($m[2] ?? '', 'src');
+                if ($srcRef !== null && isset($this->types[$srcRef->type])) {
+                    $still = $targets[$srcRef->type . '|' . $this->types[$srcRef->type]->key($srcRef)] ?? null;
+                    $poster = $still === null ? null : $this->types[$srcRef->type]->url($still, $srcRef, 'poster');
+                    if ($poster !== null && $poster !== '') {
+                        $attrs = Attributes::set($attrs, 'poster', $poster);
+                        if ($editor) {
+                            $attrs = Attributes::set($attrs, 'data-ref-poster', $srcRef->toAttribute());
+                        }
+                    }
                 }
             }
             return '<' . $m[1] . $attrs . '>';

@@ -16,6 +16,8 @@ use Systopic\System\Tables\TagsInNodes\Model as TagInNode;
 use Systopic\System\Queries\TagGroups\TagGroups;
 use Systopic\System\Queries\TagLinks\TagLinks;
 
+$cmsMediaTagsOnly = $cmsMediaTagsOnly ?? false;
+
 // The file editor and the replace dialog show the same tags. Their URL is
 // not the page, so the click goes up to this panel; the open lightbox has
 // to be drawn again or the chip stays as it was.
@@ -69,8 +71,10 @@ switch ($this->action) {
 			$link->node = Node::withId($nodeId);
 			$uow->persist($link)->commit();
 		}
-		$this->updateView('040_tags');
-		$this->parent->updateView('main');
+		if (empty($cmsMediaTagsOnly)) {
+			$this->updateView('040_tags');
+			$this->parent->updateView('main');
+		}
 		$refreshMediaTags();
 		break;
 
@@ -103,9 +107,11 @@ switch ($this->action) {
 			$link->markLoaded();
 			$uow->remove($link)->commit();
 		}
-		client::done(implode(',', TagLinks::tagIdsOf($this->parent->scope, $nodeId)));
-		$this->updateView('040_tags');
-		$this->parent->updateView('main');
+		if (empty($cmsMediaTagsOnly)) {
+			client::done(implode(',', TagLinks::tagIdsOf($this->parent->scope, $nodeId)));
+			$this->updateView('040_tags');
+			$this->parent->updateView('main');
+		}
 		$refreshMediaTags();
 		break;
 }

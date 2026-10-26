@@ -18,6 +18,19 @@ use Systopic\System\Tables\Medias\Operator as MediaOperator;
 /** @var \Systopic\Cms\Panels\Root\Cms\Pages\Panel $pages */
 $pages = $this->parent;
 
+if (in_array($this->action, ['addTag', 'addTagTo_page', 'removeTagFrom_page'], true)) {
+	$sidebar = $pages->child('sidebar');
+	if ($sidebar) {
+		$sidebar->action = $this->action;
+		(function () {
+			$cmsMediaTagsOnly = true;
+			include dirname(__DIR__) . '/sidebar/actions.tags.php';
+		})->call($sidebar);
+	}
+	$this->updateView('tags');
+	return;
+}
+
 $tmpdir = (string) fs::$siteRoot . 'var/tmp/upload/';
 if (!fs::isDir($tmpdir)) {
 	fs::fsMkdir($tmpdir, 0777, TRUE);

@@ -202,8 +202,11 @@ class Panel extends CmsPanel {
 		}
 		$ext = in_array($mime, ['image/webp', 'image/png', 'image/jpeg'], TRUE) ? '' : '.webp';
 		$thumb = "var/formats/mmlThumb/$folders$filename$ext";
-		// made again (replace, a rebuild): the browser must not keep the old one
-		$made = @filemtime(\fs::$siteRoot . $thumb);
+		// The thumb may not exist yet: replace deletes it and the next request
+		// builds it. The original's time still changes, so the address does,
+		// and the tile does not keep the picture that failed a moment ago.
+		$made = @filemtime(\fs::$siteRoot . $thumb)
+			?: @filemtime(\fs::$siteRoot . "var/original/$folders$filename");
 		return $siteRoot . $thumb . ($made ? '?v=' . $made : '');
 	}
 

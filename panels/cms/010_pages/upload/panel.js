@@ -41,7 +41,8 @@
 			}
 			upload.fileInfo = upload.pendingFile;
 			upload.pendingFile = null;
-			upload.readDroppedFile();
+			upload.src = URL.createObjectURL(upload.fileInfo);
+			upload.preview(true);
 		};
 
 		// The preview points at the file itself - read into a data url, a large video stalls the page.
@@ -90,6 +91,9 @@
 		};
 
 		upload.open = (event) => {
+			// The library lives on the page that opened this. The lightbox
+			// address is a step below it, and mediaAdded belongs to the page.
+			upload.libraryUrl = location.pathname + location.search;
 			upload.event = event;
 			var input = upload.inputOf(event);
 			if (upload.takeMany(input)) {
@@ -109,15 +113,49 @@
 
 		// Several files, or a file dropped onto a tile: no lightbox. The plus
 		// (or the tile) shows a spinner until the last file has been stored.
-		/** Shows the new files: the library alone is drawn again, and only if the page is still open. */
-		upload.refreshLibrary = (from) => {
-			if (location.pathname + location.search !== from) {
-				return;
-			}
+		/** Shows the new files: the library alone is drawn again. */
+		upload.requestLibrary = (from) => {
 			var url = new URL('mediaAdded', location.origin + from);
 			var call = new sys.core.server.call();
 			call.data.method = 'put';
 			call.send(url.pathname + new URL(location.origin + from).search);
+		};
+
+		/** Only while the page that owns the library is still the open one. */
+		upload.refreshLibrary = (from) => {
+			if (location.pathname + location.search !== from) {
+				return;
+			}
+			upload.requestLibrary(from);
+		};
+
+		/** After a replace the address bar is the lightbox, the library is the page that opened it. */
+		upload.reloadLibrary = () => {
+			if (upload.libraryUrl) {
+				upload.requestLibrary(upload.libraryUrl);
+			}
+		};
+
+		/** The tile that was replaced keeps the picture that failed. Ask for it again. */
+		upload.bustTile = () => {
+			var id = upload.query && upload.query.node_id;
+			if (!id) {
+				return;
+			}
+			var img = document.querySelector('li[data-node_id="' + id + '"] > img[data-broken]');
+			if (!img) {
+				return;
+			}
+			var tile = img.parentElement;
+			if (tile) {
+				tile.classList.remove('thumbMissing');
+				var icon = tile.querySelector(':scope > i.thumbBroken');
+				if (icon) {
+					icon.remove();
+				}
+			}
+			var bare = (img.getAttribute('src') || '').replace(/([?&])v=[^&]*/, '').replace(/[?&]$/, '');
+			img.src = bare + (bare.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
 		};
 
 		upload.reportQueue = (done, total, el, part) => {
@@ -278,11 +316,19 @@
 			var depth = 0;
 			// a drag that started on this page (an image moved within a text) is the browser's
 			var innerDrag = false;
-			document.addEventListener('dragstart', () => {
+			var moving = null;
+			document.addEventListener('dragstart', (event) => {
 				innerDrag = true;
+				moving = null;
+				var media = event.target.closest && event.target.closest('img, video, iframe');
+				// The picture must not become the drag image. The grip moves it.
+				if (media && editorOf(media)) {
+					event.preventDefault();
+				}
 			}, true);
 			document.addEventListener('dragend', () => {
 				innerDrag = false;
+				moving = null;
 			}, true);
 			var carriesFiles = (event) => {
 				var types = Array.prototype.slice.call((event.dataTransfer && event.dataTransfer.types) || []);
@@ -416,8 +462,34 @@
 			// handling, which drops images (HTMLeditor.format.js).
 			var editorOf = (el) => el && el.closest && el.closest('article.cmsContent [contenteditable="true"][data-on_drop="insertMediaInEditor"]');
 			var showable = (item) => !(item instanceof Blob) || /^(image|video)\/|^application\/pdf$/.test(item.type);
+			var aimed = null;
+			document.addEventListener('dragover', (event) => {
+				var editor = editorOf(event.target);
+				if (!editor) {
+					return;
+				}
+				if (!moving && (innerDrag || !carriesFiles(event))) {
+					return;
+				}
+				event.preventDefault();
+				aimed = upload.rangeAt(editor, event.clientX, event.clientY);
+			}, true);
 			window.addEventListener('drop', (event) => {
 				var editor = editorOf(event.target);
+				if (editor && moving && moving.editor === editor) {
+					event.preventDefault();
+					event.stopImmediatePropagation();
+					var spot = (aimed && editor.contains(aimed.startContainer)) ? aimed : upload.rangeAt(editor, event.clientX, event.clientY);
+					aimed = null;
+					if (spot && !moving.media.contains(spot.startContainer)) {
+						spot.insertNode(moving.media);
+						if (window.wysiwyg && wysiwyg.changed) {
+							wysiwyg.changed(editor);
+						}
+					}
+					moving = null;
+					return;
+				}
 				if (!editor || innerDrag) {
 					return;
 				}
@@ -429,8 +501,55 @@
 				event.stopImmediatePropagation();
 				depth = 0;
 				document.body.classList.remove('fileDrag');
-				upload.intoEditor(editor, upload.rangeAt(editor, event.clientX, event.clientY), items);
+				var spot = (aimed && editor.contains(aimed.startContainer)) ? aimed : upload.rangeAt(editor, event.clientX, event.clientY);
+				aimed = null;
+				upload.intoEditor(editor, spot, items);
 			}, true);
+			var beginMove = (media, editor, event) => {
+				var hold = document.createElement('span');
+				hold.className = 'editorMediaHold';
+				media.replaceWith(hold);
+				var line = document.createElement('div');
+				line.className = 'editorMediaLine';
+				document.body.appendChild(line);
+				document.body.classList.add('editorMediaDrop');
+				var follow = (e) => {
+					var spot = upload.rangeAt(editor, e.clientX, e.clientY);
+					var rects = spot && spot.getClientRects ? spot.getClientRects() : [];
+					var rect = rects.length ? rects[0] : null;
+					var marked = rect && (rect.width > 0 || rect.height > 4);
+					line.style.left = Math.round(marked ? rect.left : e.clientX) + 'px';
+					line.style.top = Math.round(marked ? rect.top : e.clientY + 18) + 'px';
+					line.style.height = Math.round(marked ? Math.max(rect.height, 16) : 18) + 'px';
+				};
+				follow(event);
+				var up = (e) => {
+					document.removeEventListener('pointermove', follow, true);
+					document.removeEventListener('pointerup', up, true);
+					document.removeEventListener('pointercancel', up, true);
+					line.remove();
+					document.body.classList.remove('editorMediaDrop');
+					var spot = upload.rangeAt(editor, e.clientX, e.clientY);
+					if (spot && editor.contains(spot.startContainer)) {
+						spot.insertNode(media);
+						hold.remove();
+						if (window.wysiwyg && wysiwyg.changed) {
+							wysiwyg.changed(editor);
+						}
+					} else if (hold.isConnected) {
+						hold.replaceWith(media);
+					}
+				};
+				document.addEventListener('pointermove', follow, true);
+				document.addEventListener('pointerup', up, true);
+				document.addEventListener('pointercancel', up, true);
+			};
+			window.editorBeginMediaMove = (media, event) => {
+				var editor = editorOf(media);
+				if (editor && event) {
+					beginMove(media, editor, event);
+				}
+			};
 			window.addEventListener('paste', (event) => {
 				var editor = editorOf(event.target);
 				var items = editor && event.clipboardData ? upload.mediaIn({files: event.clipboardData.files}).filter(showable) : [];
@@ -518,6 +637,13 @@
 		upload.bindFileDrop();
 
 		upload.onUpdateLightbox = doc => {
+			// A span answer or the way back to the page rebuilds the layer
+			// without the file field. Binding it then throws and the library
+			// update that follows in the same answer is the one that shows
+			// the new thumbnail.
+			if (!doc || !doc.input || !doc.label || !doc.upload) {
+				return;
+			}
 			doc.input.onchange = () => {
 				upload.readFileFromInput(doc.input);
 			};
@@ -538,18 +664,82 @@
 
 		upload.readFileFromInput = (input) => {
 			upload.fileInfo = input.files[0];
-			upload.readDroppedFile();
+			if (upload.src && upload.src.indexOf('blob:') === 0) {
+				URL.revokeObjectURL(upload.src);
+			}
+			upload.src = URL.createObjectURL(upload.fileInfo);
+			upload.preview(false);
 		};
 
-		upload.preview = () => {
+		/** The mime the browser omitted, or reported as a generic binary. SketchUp is one of these. */
+		upload.mimeOf = (file) => {
+			var ext = ((file && file.name) || '').split('.').pop().toLowerCase();
+			var byExt = {
+				skp: 'application/vnd.sketchup.skp',
+				jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
+				webp: 'image/webp', svg: 'image/svg+xml', tif: 'image/tiff', tiff: 'image/tiff',
+				pdf: 'application/pdf', mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/quicktime', mpg: 'video/mpeg',
+				mp3: 'audio/mpeg', zip: 'application/zip', doc: 'application/msword', xls: 'application/vnd.ms-excel',
+				docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+				xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+				pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+				vcf: 'text/vcard'
+			};
+			var type = (file && file.type) || '';
+			if (ext === 'skp' || !type || type === 'application/octet-stream' || (byExt[ext] && byExt[ext].indexOf('image/') === 0 && type.indexOf('video/') === 0)) {
+				type = byExt[ext] || type;
+			}
+			return type;
+		};
+
+		/** What the file-type field should say for this mime. */
+		upload.kindOf = (mime) => {
+			if (mime.indexOf('image/') === 0) {
+				return 'image';
+			}
+			if (mime.indexOf('video/') === 0) {
+				return 'video';
+			}
+			if (mime === 'application/pdf') {
+				return 'pdf';
+			}
+			return 'file';
+		};
+
+		upload.preview = (closeOnReject) => {
 			upload.resetPreviews();
 			upload.doc.label.value = '';
 			upload.doc.name.value = '';
-			switch (upload.fileInfo.type) {
+			upload.mime = upload.mimeOf(upload.fileInfo);
+			var known = sys.classes.media.info.__data.mimetypes;
+			if (!known[upload.mime]) {
+				alert('Filetype not supported: ' + (upload.fileInfo.name || upload.mime));
+				upload.resetPreviews();
+				upload.doc.box.className = 'idle';
+				upload.doc.footer.className = 'idle';
+				if (upload.doc.input) {
+					upload.doc.input.value = '';
+				}
+				upload.fileInfo = null;
+				if (upload.src && upload.src.indexOf('blob:') === 0) {
+					URL.revokeObjectURL(upload.src);
+					upload.src = '';
+				}
+				if (closeOnReject) {
+					sys.core.server.sendGet('../');
+				}
+				return;
+			}
+			if (upload.doc.type) {
+				upload.doc.type.value = upload.kindOf(upload.mime);
+			}
+			switch (upload.mime) {
 				case 'image/jpeg':
 				case 'image/svg+xml':
 				case 'image/png':
 				case 'image/webp':
+				case 'image/gif':
+				case 'image/tiff':
 					upload.updatePreviewImage(() => {
 						upload.updateFileInfo();
 					});
@@ -573,15 +763,12 @@
 
 		upload.updateFileInfo = () => {
 			var mimes = sys.classes.media.info.__data.mimetypes; // untested
-			if (!mimes[upload.fileInfo.type]) {
-				alert('Filetype not supported:' + upload.fileInfo.type);
-				upload.doc.label.value = '';
-				upload.doc.name.value = '';
-				upload.resetPreviews();
+			var mime = upload.mime || upload.mimeOf(upload.fileInfo);
+			if (!mimes[mime]) {
 				return;
 			}
 			var safeNameSettings = sys.singletons.str.__data.safeNameSettings;
-			var ext = mimes[upload.fileInfo.type];
+			var ext = mimes[mime];
 			var basename = upload.fileInfo.name.replace(/\..*$/, '');
 			if (upload.doc.label.value.length) {
 				basename = upload.doc.label.value;
@@ -610,7 +797,7 @@
 				});
 			};
 			upload.doc.info.innerHTML = '<div><dt>Format</dt><dd>' + text(format) + '</dd></div>'
-				+ '<div><dt>Type</dt><dd>' + text(upload.fileInfo.type) + '</dd></div>';
+				+ '<div><dt>Type</dt><dd>' + text(upload.mime || mime) + '</dd></div>';
 			upload.doc.box.className = 'preview';
 			upload.doc.footer.className = 'preview';
 		};
@@ -632,7 +819,7 @@
 
 		upload.updatePreviewImage = (callback) => {
 			upload.doc.img.onload = () => {
-				if (upload.fileInfo.type !== 'image/svg+xml') {
+				if (upload.mime !== 'image/svg+xml') {
 					upload.info.width = upload.doc.img.width;
 					upload.info.height = upload.doc.img.height;
 				}
@@ -736,6 +923,8 @@
 								upload.doc.box.className = 'done';
 								upload.doc.footer.className = 'done';
 							}
+							upload.bustTile();
+							upload.reloadLibrary();
 						} else {
 							upload.spanIndex++;
 							upload.uploadFileSpan();

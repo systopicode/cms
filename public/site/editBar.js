@@ -36,6 +36,10 @@
 				'.menu{position:absolute;left:0;bottom:52px;min-width:230px;padding:6px;border-radius:14px;background:#fff;color:#1b1f22;box-shadow:0 12px 36px rgba(0,0,0,.22)}' +
 				'.menu[hidden]{display:none}' +
 				'.menu a{display:flex;width:100%;height:34px;border-radius:8px}.menu a:hover{background:var(--bg)}' +
+				'.menu a.loading{position:relative;color:transparent;pointer-events:none}' +
+				'.menu a.loading i{visibility:hidden}' +
+				'.menu a.loading:before{content:"";position:absolute;left:18px;top:50%;width:12px;height:12px;margin-top:-7px;border-radius:50%;border:2px solid var(--main);border-top-color:transparent;animation:spin .6s linear infinite}' +
+				'@keyframes spin{to{transform:rotate(360deg)}}' +
 				'.menu .who{height:auto;gap:10px;padding:8px 10px;margin-bottom:6px;line-height:1.25}' +
 				'.who img{width:30px;height:30px;border-radius:50%;object-fit:cover}.who small{display:block;color:color-mix(in srgb,var(--main) 55%,#888);font-weight:400;margin-top:2px}' +
 				'hr{border:0;border-top:1px solid color-mix(in srgb,var(--main) 12%,#fff);margin:6px 4px}' +
@@ -95,6 +99,7 @@
 			});
 			root.querySelector('.out').addEventListener('click', event => {
 				event.currentTarget.href = config.cms + 'logout?to=' + encodeURIComponent(location.pathname + location.search);
+				event.currentTarget.classList.add('loading');
 			});
 			menu.addEventListener('click', event => {
 				if (event.target.closest('a[target]')) {

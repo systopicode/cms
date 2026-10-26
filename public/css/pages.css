@@ -85,10 +85,12 @@ header.cms .pageHead h1{
 header.cms .pageTitleEdit{
     display: flex;
     flex: 0 0 auto;
+    align-self: center;
     align-items: center;
     justify-content: center;
     width: 1.75rem;
     height: 1.75rem;
+    min-height: 0;
     margin: 0;
     padding: 0;
     border: 0;
@@ -96,6 +98,8 @@ header.cms .pageTitleEdit{
     background: transparent;
     color: var(--cmsMuted);
     cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 header.cms .pageTitleEdit:hover{
