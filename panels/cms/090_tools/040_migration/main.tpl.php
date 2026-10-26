@@ -17,7 +17,7 @@ $open = array_sum(array_map(static fn(array $entry): int => count($entry['open']
 		<p><?= $report['rows'] ?> page rows, <b><?= $report['changed'] ?> to convert</b>, <?= $open ?> place(s) that look like this site but cannot be resolved (they stay as they are). Hosts taken as this site: <?= $e(implode(', ', $this->ownHosts)) ?>.</p>
 	</main>
 	<?php if ($report['entries'] !== []) { ?>
-		<div class="tableScroll">
+		<div class="tableScroll reportRows">
 			<table>
 				<thead><tr><th>Page</th><th>Field</th><th>Converts</th><th>Open</th></tr></thead>
 				<tbody>

@@ -37,6 +37,20 @@ switch ($this->action) {
 		$this->updateView();
 		break;
 
+	case 'delete':
+		if ($definition === null) {
+			\message::error('No setting at that node.');
+			break;
+		}
+		if ($definition->options !== []) {
+			\message::error('A setting that still has children cannot be deleted.');
+			break;
+		}
+		$this->child('delete')?->removeDefinition($definition);
+		\message::confirm('Setting removed.');
+		$this->updateView('main');
+		break;
+
 	case 'insertBefore':
 	case 'insertAfter':
 		$drag = SettingTree::byNodeId($this->scope, (int) \http::dragdata('id'));

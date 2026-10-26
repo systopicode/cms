@@ -150,7 +150,9 @@ $addLabel = match ($parentType) {
 										<li><a class="ajax button icononly" title="Open" href="?id=<?= $id ?>"><i class="fa-regular fa-folder-open"></i></a></li>
 									<?php } ?>
 									<li><a class="ajax button icononly" title="Edit" href="edit/?id=<?= $id ?>"><i class="fa-regular fa-pen"></i></a></li>
-									<li><a class="ajax button icononly" title="Delete" href="delete/?id=<?= $id ?>"><i class="fa-regular fa-trash"></i></a></li>
+									<?php if (!is_array($row->options) || $row->options === []) { ?>
+										<li><button type="button" class="button transparent icononly" title="Delete" data-on_click="userConfirm" data-action="delete" data-id="<?= $id ?>" data-confirm="Delete this setting?"><i class="fa-regular fa-trash"></i></button></li>
+									<?php } ?>
 								</ul>
 							</td>
 						</tr>
