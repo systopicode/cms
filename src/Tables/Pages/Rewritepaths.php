@@ -266,6 +266,14 @@ final class Rewritepaths
         $row = $this->pageRow();
         $site = $this->siteNodeId;
         $string = PathOperator::fromLabel((string) $row->label);
+        // A page without a label gets its node id as its path, never '': ''
+        // is the start page's address, and a second '' takes the start
+        // page's place in the resolver (galerie, 2026-10-26: "rebuild all"
+        // gave an unnamed, unpublished artist page the address of the home
+        // page, and the site showed nothing).
+        if ($string === '') {
+            $string = 'page_' . $this->page->id;
+        }
         $autoIndex = 0;
         $barrier = null;
 
