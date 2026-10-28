@@ -2,7 +2,7 @@
   "name": "systopic/cms",
   "description": "Fluxo Content Management System for multi-domain Websites",
   "type": "library",
-  "license": "MIT",
+  "license": "proprietary",
   "require": {
     "php": "^8.4",
     "systopic/db": "^1.0",
