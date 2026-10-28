@@ -82,7 +82,7 @@ main > div.content > article {
 	padding: 0.55rem 0.7rem;
 	border: 1px solid var(--cmsLine);
 	border-radius: var(--cmsRadius);
-	background: #fff;
+	background: var(--cmsCanvas);
 	color: var(--cmsTextColor);
 	font-weight: 500;
 }

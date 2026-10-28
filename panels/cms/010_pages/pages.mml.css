@@ -162,7 +162,6 @@ body.mediaDragging:has(.mmlContent li.title.dropTarget) .draghelper{
     margin: 0;
     padding: 0.7rem 0.75rem;
     background: var(--cmsPanelAlt);
-    border-bottom: 1px solid var(--cmsLine);
     cursor: ns-resize;
 }
 
@@ -229,7 +228,7 @@ body.mediaDragging:has(.mmlContent li.title.dropTarget) .draghelper{
     align-items: center;
     border-radius: 0.3rem;
     font-size: 0.85rem;
-    color: var(--cmsMainColor);
+    color: var(--cmsBrandInk);
     pointer-events: none;
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--cmsMainColor) 12%, transparent);
 }
@@ -414,7 +413,7 @@ body.fileDrag .cms div.mmlContent .thumbActions *,
     overflow: hidden;
     float: none;
     border-radius: 50%;
-    background: var(--cmsCanvas);
+    background: #fff;
     color: var(--cmsMainColor);
     pointer-events: auto;
     cursor: pointer;
@@ -565,7 +564,8 @@ div.mmlContent input {
 
 .cms div.mmlContent ul li:not(.title) > span {
     padding: 3px;
-    background: rgba(255, 255, 255, 0.8);
+    background: color-mix(in srgb, var(--cmsCanvas) 88%, transparent);
+    color: var(--cmsTextColor);
     width: calc(100% - 6px);
     display: block;
     position: absolute;
