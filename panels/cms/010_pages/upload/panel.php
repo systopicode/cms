@@ -8,14 +8,18 @@ use Systopic\System\Panels\Root\Cms\Panel as CmsPanel;
 class Panel extends CmsPanel {
 
 	function getDefaultState() {
-		return (object) ['nodeId' => 0];
+		return (object) ['nodeId' => 0, 'pendingTags' => []];
 	}
 
 	function onLoad() {
 		\fs::load('mediaInfo');
 		$id = (int) \http::params('node_id', 0);
+		$tagging = in_array((string) $this->action, ['addTag', 'addTagTo_page', 'removeTagFrom_page'], true);
 		if ($id > 0) {
 			$this->state->nodeId = $id;
+		} elseif (!$tagging && in_array((string) $this->action, ['', 'open'], true)) {
+			$this->state->nodeId = 0;
+			$this->state->pendingTags = [];
 		}
 	}
 

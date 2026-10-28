@@ -45,6 +45,58 @@ class appSite {
 		get => self::siteMeta('appName', 'PUBLIC_APP_NAME', defined('META_AUTHOR') ? META_AUTHOR : '');
 	}
 
+	/** The website's name, not the title of the page that is open. */
+	public string $siteName {
+		get => self::siteMeta('title', 'PUBLIC_PAGE_NAME', '');
+	}
+
+	/**
+	 * Title, description, canonical and the sharing tags, for the first HTML.
+	 *
+	 * The same strings the head template prints after JavaScript. Marked so
+	 * the page script can drop them once the head layer is in place.
+	 */
+	public function crawlerTags(): string {
+		$e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES);
+		$title = $this->title;
+		$description = $this->description;
+		$robots = $this->robots;
+		$url = $this->url;
+		$site = $this->siteName !== '' ? $this->siteName : $title;
+		$image = $this->shareImage;
+		if ($image !== '' && !preg_match('~^https?://~i', $image)) {
+			$image = rtrim((string) \http::$siteUrl, '/') . '/' . ltrim($image, '/');
+		}
+		$tags = [];
+		if ($title !== '') {
+			$tags[] = '<title data-crawler="1">' . $e($title) . '</title>';
+		}
+		if ($description !== '') {
+			$tags[] = '<meta data-crawler="1" name="description" content="' . $e($description) . '">';
+		}
+		if ($robots !== '') {
+			$tags[] = '<meta data-crawler="1" name="robots" content="' . $e($robots) . '">';
+		}
+		if ($url !== '') {
+			$tags[] = '<link data-crawler="1" rel="canonical" href="' . $e($url) . '">';
+			$tags[] = '<meta data-crawler="1" property="og:url" content="' . $e($url) . '">';
+		}
+		if ($title !== '') {
+			$tags[] = '<meta data-crawler="1" property="og:title" content="' . $e($title) . '">';
+		}
+		$tags[] = '<meta data-crawler="1" property="og:type" content="website">';
+		if ($description !== '') {
+			$tags[] = '<meta data-crawler="1" property="og:description" content="' . $e($description) . '">';
+		}
+		if ($site !== '') {
+			$tags[] = '<meta data-crawler="1" property="og:site_name" content="' . $e($site) . '">';
+		}
+		if ($image !== '') {
+			$tags[] = '<meta data-crawler="1" property="og:image" content="' . $e($image) . '">';
+		}
+		return $tags === [] ? '' : implode("\n", $tags) . "\n";
+	}
+
 	public string $topic {
 		get => self::siteMeta('topic', 'META_PAGE_TOPIC', '');
 	}
@@ -248,7 +300,7 @@ class appSite {
 		}
 		$configured = self::siteMeta('shareImage', 'META_SHARE_IMAGE', '');
 		if ($configured === '') {
-			return $this->absoluteUrl('img/share_default.jpg');
+			return \Systopic\System\Settings\ThemeAssets::projectHref('share') ?? $this->absoluteUrl('img/share_default.jpg');
 		}
 		return $this->absoluteUrl($configured);
 	}
@@ -337,7 +389,9 @@ class appSite {
 			}
 		}
 		$configured = self::siteMeta('shareImage', 'META_SHARE_IMAGE', '');
-		$url = $configured === '' ? $this->absoluteUrl('img/share_default.jpg') : $this->absoluteUrl($configured);
+		$url = $configured === ''
+			? (\Systopic\System\Settings\ThemeAssets::projectHref('share') ?? $this->absoluteUrl('img/share_default.jpg'))
+			: $this->absoluteUrl($configured);
 		return ['url' => $url, 'from' => 'Site default'];
 	}
 
@@ -387,7 +441,7 @@ class appSite {
 		// the site's default share image: absolute url, or a path below the site root
 		$configured = self::siteMeta('shareImage', 'META_SHARE_IMAGE', '');
 		if ($configured === '') {
-			return http::$siteUrl . 'img/share_default.jpg';
+			return \Systopic\System\Settings\ThemeAssets::projectHref('share') ?? http::$siteUrl . 'img/share_default.jpg';
 		}
 		return preg_match('~^https?://~', $configured) ? $configured : http::$siteUrl . ltrim($configured, '/');
 	}

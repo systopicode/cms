@@ -26,7 +26,7 @@ final class EditBar
             'page' => ['id' => $pageId, 'lang' => $lang],
             'name' => $identity->fullname !== '' ? $identity->fullname : $identity->name,
             'portrait' => Portrait::src((int) $identity->id, $identity->user?->email),
-            'signet' => Packages::panelAssetHref('img/signet.svg'),
+            'signet' => \Systopic\System\Settings\ThemeAssets::href('signet'),
             'main' => '#' . Theme::color('cmsMainColor'),
             'highlight' => '#' . Theme::color('cmsHighlightColor'),
             'bg' => '#' . Theme::color('cmsBgColor'),

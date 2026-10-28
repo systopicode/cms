@@ -47,6 +47,13 @@
 				return;
 			}
 
+			// The first HTML carries the same title and description for readers
+			// that do not run this script. Once the head layer is mounted they
+			// would sit twice.
+			document.head.querySelectorAll('[data-crawler]').forEach(function (node) {
+				node.remove();
+			});
+
 			// layers from an earlier call: this is a diff update (ajax navigation)
 			var isUpdate = headLayer !== null || bodyLayer !== null;
 

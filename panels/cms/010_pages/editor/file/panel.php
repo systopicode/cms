@@ -55,6 +55,7 @@ class Panel extends CmsPanel {
 			'application/pdf' => 'Edit PDF',
 			'application/zip' => 'Edit ZIP',
 			'video/mp4' => 'Edit video',
+			'audio/mpeg', 'audio/mp3' => 'Edit audio',
 			default => 'Edit file',
 		};
 	}

@@ -109,8 +109,8 @@ final class Meta
     /**
      * Why sitemap.xml and llms.txt leave this page out. Empty means it is listed.
      *
-     * Five checks, nothing else: publishing start, publishing end, navi element,
-     * the live page count of the address, and the robots setting.
+     * Publishing start, publishing end, navi element and the robots setting.
+     * A page that nobody has opened yet is still a page.
      *
      * @return list<string>
      */
@@ -134,15 +134,6 @@ final class Meta
             if (!$this->isNaviElement) {
                 $reasons[] = 'Navi element is off';
             }
-            $path = $page->rewritepaths->primary;
-            // The live counter only moves on LIVE. On every other stage the
-            // visits of this installation are the test counter, otherwise the
-            // sitemap of a development site would stay empty.
-            $onLive = defined('STAGE') && STAGE === 'LIVE';
-            $count = $path === null ? 0 : ($onLive ? $path->livecount : $path->testcount);
-            if ($count === 0) {
-                $reasons[] = $onLive ? 'Live page count is 0' : 'Page count is 0';
-            }
             $robots = trim((string) $this->robots);
             if (str_contains($robots, 'noindex')) {
                 $reasons[] = 'Robots: ' . $robots;
@@ -154,8 +145,8 @@ final class Meta
     /**
      * Should a search engine or an AI list this page?
      *
-     * Publishing start, publishing end, navi element, live page count and
-     * robots. sitemap.xml and llms.txt both ask this, on every request.
+     * Publishing start, publishing end, navi element and robots.
+     * sitemap.xml and llms.txt both ask this, on every request.
      */
     public bool $listed {
         get => $this->listBlockers === [];

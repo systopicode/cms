@@ -64,6 +64,8 @@ $siteRoot = (string) http::$siteRoot;
 							$icon = 'gif';
 						} elseif (\Systopic\System\Tables\Medias\External::is($type)) {
 							$icon = 'circle-play';
+						} elseif (str_starts_with($mime, 'audio/')) {
+							$icon = 'music';
 						} elseif ($mime === 'image/svg+xml') {
 							$icon = 'vector-polygon';
 						}

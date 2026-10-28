@@ -68,6 +68,10 @@ $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/
 						case 'video/mp4':
 							include 'video.tpl.php';
 							break;
+						case 'audio/mpeg':
+						case 'audio/mp3':
+							include 'audio.tpl.php';
+							break;
 					}
 					}
 					?>

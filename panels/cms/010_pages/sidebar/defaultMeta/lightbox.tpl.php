@@ -25,7 +25,7 @@ $settings = http::$root . 'cms/settings/pagesettings/';
 <div class="cmslightbox cms metaDefaults">
 	<section>
 		<header>
-			<h1>Default values</h1>
+			<h1>Site defaults</h1>
 			<ul class="barmenu">
 				<li><a class="ajax" href="../../"><i class="fa-regular fa-xmark"></i></a></li>
 			</ul>
@@ -55,7 +55,7 @@ $settings = http::$root . 'cms/settings/pagesettings/';
 			</div>
 		</main>
 		<footer>
-			<a class="button submit ajax" href="<?= $e($settings) ?>">Edit defaults</a>
+			<a class="button submit ajax" href="<?= $e($settings) ?>"><i class="fa-regular fa-pen"></i> Edit defaults</a>
 		</footer>
 	</section>
 </div>

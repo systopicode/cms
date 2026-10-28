@@ -797,6 +797,9 @@
 				vcf: 'text/vcard'
 			};
 			var type = (file && file.type) || '';
+			if (ext === 'mp3' || type === 'audio/mp3' || type === 'audio/mpeg') {
+				return 'audio/mpeg';
+			}
 			if (ext === 'skp' || !type || type === 'application/octet-stream' || (byExt[ext] && byExt[ext].indexOf('image/') === 0 && type.indexOf('video/') === 0)) {
 				type = byExt[ext] || type;
 			}
@@ -810,6 +813,9 @@
 			}
 			if (mime.indexOf('video/') === 0) {
 				return 'video';
+			}
+			if (mime.indexOf('audio/') === 0) {
+				return 'audio';
 			}
 			if (mime === 'application/pdf') {
 				return 'pdf';
@@ -844,6 +850,8 @@
 			if (upload.doc.type) {
 				upload.doc.type.value = upload.kindOf(upload.mime);
 			}
+			upload.doc.box.className = 'reading';
+			upload.doc.footer.className = 'reading';
 			switch (upload.mime) {
 				case 'image/jpeg':
 				case 'image/svg+xml':
@@ -863,6 +871,11 @@
 				case 'video/mp4':
 				case 'video/quicktime':
 					upload.updatePreviewVideo(() => {
+						upload.updateFileInfo();
+					});
+					break;
+				case 'audio/mpeg':
+					upload.updatePreviewAudio(() => {
 						upload.updateFileInfo();
 					});
 					break;
@@ -938,6 +951,7 @@
 			};
 			upload.resetPreviews();
 			upload.doc.img.style.display = 'block';
+			upload.doc.img.onerror = () => callback();
 			upload.doc.img.src = upload.src;
 		};
 
@@ -958,6 +972,17 @@
 			};
 		};
 
+		upload.updatePreviewAudio = (callback) => {
+			if (!upload.doc.audio) {
+				callback();
+				return;
+			}
+			upload.resetPreviews();
+			upload.doc.audio.onloadedmetadata = () => callback();
+			upload.doc.audio.onerror = () => callback();
+			upload.doc.audio.src = upload.src;
+		};
+
 		upload.uploadFile = () => {
 			upload.doc.box.className = 'uploading';
 			upload.doc.footer.className = 'uploading';
@@ -973,13 +998,32 @@
 				label: upload.doc.label.value,
 				type: upload.doc.type ? upload.doc.type.value : '',
 				url: upload.doc.url ? upload.doc.url.value : '',
-				info: upload.info
+				info: upload.info,
+				tags: upload.chosenTags()
 			};
 			upload.uploadFileSpan();
 		};
 
+		upload.chosenTags = () => {
+			var root = upload.doc.box && upload.doc.box.closest('.cmslightbox');
+			if (!root || root.classList.contains('replacement')) {
+				return '';
+			}
+			var ids = [];
+			root.querySelectorAll('.tag.active').forEach((chip) => {
+				var id = chip.getAttribute('data-tag_id');
+				if (id) {
+					ids.push(id);
+				}
+			});
+			return ids.join(',');
+		};
+
 		upload.resetPreviews = () => {
-			['pdf', 'img', 'video'].forEach((name) => {
+			['pdf', 'img', 'video', 'audio'].forEach((name) => {
+				if (!upload.doc[name]) {
+					return;
+				}
 				upload.doc[name].style.display = '';
 				upload.doc[name].removeAttribute('src');
 			});

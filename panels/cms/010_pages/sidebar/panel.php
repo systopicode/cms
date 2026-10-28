@@ -100,8 +100,8 @@ class Panel extends CmsPanel {
 			$html .= '<dt>' . $e($label) . '</dt><dd>' . $e($value) . '</dd>';
 		}
 		$html .= '</dl>';
-		$html .= '<p class="hint">Search engines and AI read the name, the description, the language and where the page sits. fluxo cms writes that from the fields above. You don’t type it.</p>';
-		$html .= '<p class="hint"><a href="' . $e($root . 'sitemap.xml') . '" target="_blank" rel="noopener">sitemap.xml</a> is the page list. <a href="' . $e($root . 'llms.txt') . '" target="_blank" rel="noopener">llms.txt</a> is the same list as plain text, for AI. Both are built when they are opened, not stored as files.</p>';
+		$html .= '<p class="hint">What a search engine and an AI read for this page. It is written from the fields above.</p>';
+		$html .= '<p class="hint"><a class="cmsTextLink" href="' . $e($root . 'sitemap.xml') . '" target="_blank" rel="noopener">sitemap.xml</a> lists the pages. <a class="cmsTextLink" href="' . $e($root . 'llms.txt') . '" target="_blank" rel="noopener">llms.txt</a> is that list in plain text, for an AI. Both are written when they are opened.</p>';
 		return $html;
 	}
 

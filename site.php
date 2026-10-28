@@ -206,19 +206,21 @@ if (http::$method === 'PUT') {
 	$domRenderer->storeReference();
 	ob_clean();
 
-	// The served document is a skeleton: the static head loader plus two
-	// placeholders. head and body content travel as layer JSON and are built
-	// by pagesRenderer.js, so the first paint runs through the same client
-	// path as every later diff. (Server-rendered HTML for crawlers is a
-	// separate, later step.)
+	// The served document is a skeleton. The body still arrives as layer JSON
+	// and pagesRenderer.js mounts it. Title, description, canonical and the
+	// sharing tags are already in this HTML: a reader that does not run the
+	// script can see them. The script removes the copies once the head layer
+	// is mounted.
 	echo '<!DOCTYPE html>' . "\n";
 	echo '<html lang="' . htmlspecialchars((string) $lang, ENT_QUOTES) . '">' . "\n";
 	echo "<head>\n";
+	echo app::site()->crawlerTags();
 	$headLoader = $route->getViewResolver()->resolveFile('head.loader.tpl.php');
 	if ($headLoader !== null) {
 		fs::includeFile($headLoader);
 	}
 	echo fsLoader::includeScriptFiles(fs::toInternal(__DIR__ . '/public/site/pagesRenderer.js'));
+	echo fsLoader::includeScriptFiles(fs::toInternal(__DIR__ . '/public/site/embedConsent.js'));
 	echo '<template id="systemPagesHeadPlaceholder"></template>' . "\n";
 	if (!defined('JSOFF')) {
 		$clientData = json_encode(clientInterfaces::clientData_export());

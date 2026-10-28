@@ -12,13 +12,68 @@
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Upload\Panel $this
  */
 
+use Systopic\System\Queries\TagGroups\TagGroups;
+use Systopic\System\Queries\TagLinks\TagLinks;
 use Systopic\System\Tables\Medias\Files as MediaFiles;
 use Systopic\System\Tables\Medias\Operator as MediaOperator;
+use Systopic\System\Tables\Nodes\Model as Node;
+use Systopic\System\Tables\TagGroups\Model as TagGroup;
+use Systopic\System\Tables\Tags\Model as Tag;
+use Systopic\System\Tables\TagsInNodes\Model as TagInNode;
 
 /** @var \Systopic\Cms\Panels\Root\Cms\Pages\Panel $pages */
 $pages = $this->parent;
 
 if (in_array($this->action, ['addTag', 'addTagTo_page', 'removeTagFrom_page'], true)) {
+	$targetNode = (int) \http::posted('node_id', \http::dataset('id', 0));
+	if ($this->action !== 'addTag') {
+		$targetNode = (int) \http::dataset('id', $targetNode);
+	}
+	if ($targetNode < 2) {
+		$pending = array_values(array_unique(array_map('intval', (array) ($this->state->pendingTags ?? []))));
+		if ($this->action === 'addTag') {
+			$name = trim((string) \http::posted('name', ''));
+			$groupId = (int) \http::posted('group_id', 0);
+			$group = null;
+			foreach (TagGroups::load($pages->scope) as $candidate) {
+				if ((int) $candidate->id === $groupId) {
+					$group = $candidate;
+					break;
+				}
+			}
+			if ($name !== '' && $group instanceof TagGroup) {
+				$tag = null;
+				foreach ($group->tags as $existing) {
+					if (strcasecmp((string) $existing->name, $name) === 0) {
+						$tag = $existing;
+						break;
+					}
+				}
+				$uow = $pages->uow();
+				if ($tag === null) {
+					$tag = new Tag();
+					$tag->name = $name;
+					$tag->taggroup = $group;
+					$uow->persist($tag)->commit();
+				}
+				$tagId = (int) $tag->id;
+				if ($tagId > 0 && !in_array($tagId, $pending, true)) {
+					$pending[] = $tagId;
+				}
+			}
+		} else {
+			$tagId = (int) \http::dataset('tag_id', \http::put('tag_id', 0));
+			if ($tagId > 0 && $this->action === 'addTagTo_page' && !in_array($tagId, $pending, true)) {
+				$pending[] = $tagId;
+			}
+			if ($tagId > 0 && $this->action === 'removeTagFrom_page') {
+				$pending = array_values(array_filter($pending, static fn(int $id): bool => $id !== $tagId));
+			}
+		}
+		$this->state->pendingTags = $pending;
+		$this->updateView('tags');
+		return;
+	}
 	$sidebar = $pages->child('sidebar');
 	if ($sidebar) {
 		$sidebar->action = $this->action;
@@ -37,7 +92,8 @@ if (!fs::isDir($tmpdir)) {
 }
 
 /** File the finished upload as a medium. False when there is nothing to file it in. */
-$store = static function (string $tmpFileNative, string $fileName, string $label) use ($pages): bool {
+$panel = $this;
+$store = static function (string $tmpFileNative, string $fileName, string $label) use ($pages, $panel): bool {
 	$replace = (int) http::get('node_id');
 	$rows = [];
 	if ($replace > 0) {
@@ -67,13 +123,39 @@ $store = static function (string $tmpFileNative, string $fileName, string $label
 	$uow->commit();
 	MediaFiles::store($media, $tmpFileNative, $fileName);   // type, mime, image size from the file
 	$chosen = strtolower(trim((string) http::put('type')));
-	if ($chosen !== '' && (in_array($chosen, ['image', 'video', 'pdf', 'file'], true) || \Systopic\System\Tables\Medias\External::is($chosen))) {
+	if ($chosen !== '' && (in_array($chosen, ['image', 'video', 'audio', 'pdf', 'file'], true) || \Systopic\System\Tables\Medias\External::is($chosen))) {
 		$media->type = $chosen;
 	}
 	if (\Systopic\System\Tables\Medias\External::is((string) $media->type) || trim((string) http::put('url')) !== '') {
 		\Systopic\System\Tables\Medias\External::storeUrl($media, (string) http::put('url'));
 	}
 	$pages->uow()->persist($media)->commit();
+	if ($replace < 1) {
+		$raw = http::put('tags', null);
+		if (is_string($raw)) {
+			$tagIds = array_map('intval', explode(',', $raw));
+		} elseif (is_array($raw)) {
+			$tagIds = array_map('intval', $raw);
+		} else {
+			$tagIds = array_map('intval', (array) ($panel->state->pendingTags ?? []));
+		}
+		$tagIds = array_values(array_unique(array_filter($tagIds, static fn(int $id): bool => $id > 0)));
+		$nodeId = (int) ($media->node->id ?? 0);
+		if ($nodeId >= 2 && $tagIds !== []) {
+			$links = $pages->uow();
+			foreach ($tagIds as $tagId) {
+				if (TagLinks::has($pages->scope, $tagId, $nodeId)) {
+					continue;
+				}
+				$link = new TagInNode();
+				$link->tag = Tag::withId($tagId);
+				$link->node = Node::withId($nodeId);
+				$links->persist($link);
+			}
+			$links->commit();
+		}
+		$panel->state->pendingTags = [];
+	}
 	// The library tile is this format. Make it now, so replace does not
 	// leave the grey "file missing" card until something else asks for it.
 	if (str_starts_with((string) $media->mimetype, 'image/') && $media->mimetype !== 'image/svg+xml' && class_exists('mediaImage')) {
@@ -138,7 +220,7 @@ switch ($this->action) {
 		$out && fclose($out);
 		$mime = $bytes ? (string) (new finfo(FILEINFO_MIME_TYPE))->file($tmpFileNative) : '';
 		$ext = mediaInfo::$mimetypes[$mime] ?? NULL;
-		if ($ext === NULL || !preg_match('~^(image|video)/~', $mime)) {
+		if ($ext === NULL || !preg_match('~^(image|video|audio)/~', $mime)) {
 			is_file($tmpFileNative) && unlink($tmpFileNative);
 			client::done(['error' => $bytes ? "This file type cannot be used here ($mime)." : 'The file could not be loaded from its address.']);
 			break;

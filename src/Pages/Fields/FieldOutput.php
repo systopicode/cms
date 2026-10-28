@@ -78,8 +78,26 @@ final class FieldOutput
             case 'textarea':
                 return "<div class='$class' $dataAttrs data-on_input='updateTextfield'><textarea name={$field->name} value='$value'>$value</textarea></div>";
             default:
+                // The field is the block. The chip names that block, unless the
+                // template set its own label.
+                if ($tagLabel === '') {
+                    $tagLabel = self::blockChip((string) $field->tag);
+                }
                 return "<{$field->tag} class='$class' $dataAttrs data-editorLabel='$tagLabel' data-on_input='updatePageParam' contenteditable='true'>$value</{$field->tag}>";
         }
+    }
+
+    /** The chip of a plain text field: the same names as a block in a text field. */
+    private static function blockChip(string $tag): string
+    {
+        $tag = strtolower($tag);
+        if (preg_match('/^h([1-6])$/', $tag, $match) === 1) {
+            return 'Headline H' . $match[1];
+        }
+        if ($tag === 'p') {
+            return 'Paragraph p';
+        }
+        return $tag;
     }
 
     /**

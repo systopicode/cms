@@ -49,10 +49,10 @@
 		<button type="button" data-restore-original title="Restore original"><i class="fa-regular fa-clock-rotate-left"></i></button>
 		<button type="button" class="button cropButton" data-on_click="startCroping"><i class="fa-regular fa-crop-simple"></i>Crop</button>
 		<div class="splitApply">
-			<button type="button" class="button submit" data-apply-adjust><i class="fa-regular fa-check"></i>Apply</button>
-			<button type="button" class="button submit splitApplyMenu" title="Apply options"><i class="fa-regular fa-chevron-down"></i></button>
+			<button type="button" class="button submit" data-apply-adjust disabled><i class="fa-regular fa-check"></i>Apply</button>
+			<button type="button" class="button submit splitApplyMenu" title="Apply options" disabled><i class="fa-regular fa-chevron-down"></i></button>
 			<div class="splitApplyList" hidden>
-				<button type="button" data-apply-adjust data-apply-all="1">Apply to all formats</button>
+				<button type="button" data-apply-adjust data-apply-all="1" disabled>Apply to all formats</button>
 			</div>
 		</div>
 	</div>
@@ -83,6 +83,16 @@
 			img.style.transform = 'rotate(' + state.rotate + 'deg) scaleX(' + state.flip + ')';
 			if (view) {
 				view.style.transform = zoom === 1 ? '' : 'scale(' + zoom + ')';
+			}
+			syncApply();
+		}
+		function syncApply() {
+			var idle = neutral();
+			bar.querySelectorAll('.splitApply button').forEach(function (button) {
+				button.disabled = idle;
+			});
+			if (idle) {
+				closeMenu();
 			}
 		}
 		function fitBox() {

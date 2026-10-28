@@ -36,6 +36,8 @@ $currentFormat = $replacement && (int) $media->width > 0
 							<img data-doc="img" alt="">
 							<iframe data-doc="pdf" title="Preview"></iframe>
 							<video data-doc="video" controls muted playsinline></video>
+							<audio data-doc="audio" controls></audio>
+							<p class="readingHint">Reading the file…</p>
 						</div>
 					</div>
 				</div>
@@ -57,6 +59,10 @@ $currentFormat = $replacement && (int) $media->width > 0
 								case 'video/mp4':
 								case 'video/quicktime':
 									echo '<video controls src="' . $e($media->src) . '"></video>';
+									break;
+								case 'audio/mpeg':
+								case 'audio/mp3':
+									echo '<audio controls src="' . $e($media->src) . '"></audio>';
 									break;
 							}
 							?>
@@ -95,6 +101,12 @@ $currentFormat = $replacement && (int) $media->width > 0
 									<dl class="cmsFacts" data-doc="info"></dl>
 								</div>
 							</details>
+							<details class="sidebarSection" data-section="upload-tags" open>
+								<summary>Tags</summary>
+								<div class="sidebarItem">
+									<?php $this->withView('tags'); ?>
+								</div>
+							</details>
 							<?php if ($replacement) { ?>
 								<details class="sidebarSection" data-section="upload-current" open>
 									<summary>Current file</summary>
@@ -117,12 +129,6 @@ $currentFormat = $replacement && (int) $media->width > 0
 												<dd><?= $e($media->mimetype) ?></dd>
 											</div>
 										</dl>
-									</div>
-								</details>
-								<details class="sidebarSection" data-section="upload-tags" open>
-									<summary>Tags</summary>
-									<div class="sidebarItem">
-										<?php $this->withView('tags'); ?>
 									</div>
 								</details>
 							<?php } ?>

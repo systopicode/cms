@@ -366,6 +366,26 @@ class Panel extends CmsPanel {
 			$this->updateView('pylon');
 			$this->updateView('tree');
 		}
+		// The media editor is open: remember that, and leave the preview.
+		// It closes with the next request. The pictures were edited in
+		// between, so the preview is drawn again — it still has the old
+		// addresses. isSelected() is not used: the static tree is not the
+		// one this request built, so it would never notice the editor.
+		if ($this->mediaEditorOpen()) {
+			$this->state->refreshPreview = true;
+		} elseif (!empty($this->state->refreshPreview)) {
+			$this->state->refreshPreview = false;
+			$this->updateView('main');
+		}
+	}
+
+	/** The media editor is the open panel — the preview stays as it is until it closes. */
+	function mediaEditorOpen(): bool {
+		$node = $this->childSelected;
+		while ($node !== null && $node->childSelected !== null) {
+			$node = $node->childSelected;
+		}
+		return $node !== null && $node->name === 'file';
 	}
 
 	function checkIfPageChanged() {
@@ -424,6 +444,7 @@ class Panel extends CmsPanel {
 					'cmsPageSearchResults' => '',
 					'treeMode' => 'normal',
 					'editSite' => NULL, // 'default' | 'new' while main shows the site editor without a node
+					'refreshPreview' => false, // the media editor was open; the preview is drawn again when it closes
 		];
 	}
 

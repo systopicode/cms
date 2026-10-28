@@ -38,6 +38,7 @@ function mediaTypeLabels(): array {
 	return [
 		'image' => 'Image',
 		'video' => 'Video',
+		'audio' => 'Audio',
 		'pdf' => 'PDF',
 		'file' => 'File',
 	] + mediaExternalTypes();
@@ -73,7 +74,7 @@ function mediaTypeFromMime(string $mime): string {
 		return 'video';
 	}
 	if (str_starts_with($mime, 'audio/')) {
-		return 'file';
+		return 'audio';
 	}
 	if ($mime === 'application/pdf') {
 		return 'pdf';
@@ -101,7 +102,7 @@ function mediaAllowedTypesFromMimes(): array {
 		];
 	}
 	$ordered = [];
-	foreach (['image', 'video', 'pdf', 'file'] as $key) {
+	foreach (['image', 'video', 'audio', 'pdf', 'file'] as $key) {
 		if (isset($types[$key])) {
 			$ordered[$key] = $types[$key];
 		}

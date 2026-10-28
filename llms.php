@@ -61,7 +61,7 @@ function collectPage(Page $page, array &$lines): void {
 		$href = (string) $page->href;
 		if ($name !== '' && $href !== '') {
 			$line = '- [' . $name . '](' . $href . ')';
-			$note = oneLine((string) $page->meta->description);
+			$note = oneLine((string) app::site()->record($page)['description']);
 			if ($note !== '') {
 				$line .= ': ' . $note;
 			}

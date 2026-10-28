@@ -241,11 +241,11 @@ header.cms .langSwitch > .splitApplyMenu i{
 
 /****************************** PREVIEW ***************************/
 /* Seiten-Editor: dunkle Arbeitsfläche wie in der Live-Seite */
-.flexRow:has(article.cmsContent){
+body.pages .flexRow:has(article.cmsContent){
     background: var(--cmsEditorBg);
 }
 
-.flexRow:has(article.cmsContent) > aside.cms{
+body.pages .flexRow:has(article.cmsContent) > aside.cms{
     margin-left: auto;
 }
 
@@ -256,6 +256,14 @@ article.cmsContent{
     padding: 0;
     overflow: auto;
     box-sizing: border-box;
+    /* The sidebar tab hangs over this edge. A bar here sits under the tab. */
+    scrollbar-width: none;
+}
+
+article.cmsContent::-webkit-scrollbar{
+    display: none;
+    width: 0;
+    height: 0;
 }
 
 /* Preview width: .cmsPreview is the container the page's @media rules read
@@ -322,8 +330,19 @@ body[data-cms-device="mobile"] article.cmsContent{
         padding-left: 0.75rem;
         padding-right: 0.75rem;
     }
+}
 
-    body.pages header.cms:has(.pageHead) .langSwitch > .splitApplyMenu span{
+/* The header is shared with the device switch. Once it gets tight, the
+   language control keeps the flag. The phone menu still shows the name. */
+@media (max-width: 1400px) and (min-width: 721px){
+    body.pages header.cms:has(.pageHead) .langSwitch > .splitApplyMenu span,
+    body.pages header.cms:has(.pageHead) .langSwitch > .splitApplyMenu > i{
         display: none;
+    }
+
+    body.pages header.cms:has(.pageHead) .langSwitch > .splitApplyMenu{
+        padding-left: 0.4rem;
+        padding-right: 0.4rem;
+        gap: 0;
     }
 }
