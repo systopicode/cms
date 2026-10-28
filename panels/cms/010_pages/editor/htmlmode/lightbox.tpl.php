@@ -35,7 +35,7 @@ $value = $value instanceof Text ? $value->value : (string) $value;
                 <textarea class="htmlSource" spellcheck="false" autocapitalize="off" autocomplete="off" name="html" autofocus><?= htmlspecialchars(HtmlSource::pretty($value)) ?></textarea>
             </main>
             <footer>
-                <button type="submit" onclick="this.classList.add('loading')" class="submit">Save</button>
+                <button type="submit" onclick="this.classList.add('loading')" class="submit"><i class="fa-regular fa-check"></i>Save</button>
             </footer>
         </section>
     </div>

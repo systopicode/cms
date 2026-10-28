@@ -149,7 +149,7 @@ $currentFormat = $replacement && (int) $media->width > 0
 			</aside>
 		</div>
 		<footer data-doc="footer" class="idle">
-			<button class="submit" data-doc="upload"><?= $replacement ? 'Replace' : 'Upload' ?></button>
+			<button class="submit" data-doc="upload"><i class="fa-regular <?= $replacement ? 'fa-arrows-rotate' : 'fa-arrow-up-from-bracket' ?>"></i><?= $replacement ? 'Replace' : 'Upload' ?></button>
 			<div class="bar"><b data-doc="barinfo1"></b><div data-doc="bar"><b data-doc="barinfo2"></b></div></div>
 		</footer>
 	</section>

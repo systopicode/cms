@@ -19,9 +19,9 @@
 		</main>
 		<footer>
 			<?php if ($this->done) { ?>
-				<a class="ajax button" href="<?= htmlspecialchars($back, ENT_QUOTES) ?>">Ok</a>
+				<a class="ajax button" href="<?= htmlspecialchars($back, ENT_QUOTES) ?>"><i class="fa-regular fa-check"></i>Ok</a>
 			<?php } else { ?>
-				<a class='button submit' data-on_click='delete'>Delete Setting</a>
+				<a class='button submit' data-on_click='delete'><i class="fa-regular fa-trash"></i>Delete Setting</a>
 			<?php } ?>
 		</footer>
 	</section>

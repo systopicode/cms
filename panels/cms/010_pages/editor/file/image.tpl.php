@@ -52,7 +52,7 @@
 			<button type="button" class="button submit" data-apply-adjust disabled><i class="fa-regular fa-check"></i>Apply</button>
 			<button type="button" class="button submit splitApplyMenu" title="Apply options" disabled><i class="fa-regular fa-chevron-down"></i></button>
 			<div class="splitApplyList" hidden>
-				<button type="button" data-apply-adjust data-apply-all="1" disabled>Apply to all formats</button>
+				<button type="button" data-apply-adjust data-apply-all="1" disabled><i class="fa-regular fa-layer-group"></i>Apply to all formats</button>
 			</div>
 		</div>
 	</div>
