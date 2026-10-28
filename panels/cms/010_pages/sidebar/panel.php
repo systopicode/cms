@@ -11,7 +11,7 @@ class Panel extends CmsPanel {
 
 	public array $groups = [
 		'content' => ['label' => 'Content', 'templates' => ['templates', 'settings', 'tags']],
-		'seo' => ['label' => 'SEO & KI', 'templates' => ['urls', 'meta']],
+		'seo' => ['label' => 'SEO & KI', 'templates' => ['urls', 'meta', 'search']],
 		'publishing' => ['label' => 'Publishing', 'templates' => ['publishing', 'info']],
 	];
 
@@ -23,6 +23,7 @@ class Panel extends CmsPanel {
 		'publishing' => 'Release',
 		'info' => 'Info',
 		'meta' => 'Meta',
+		'search' => 'Search and AI',
 	];
 
 	/** The site of the page in main (its name is its folder under sites/) — null without config/. */
@@ -113,7 +114,10 @@ class Panel extends CmsPanel {
 			return '';
 		}
 		$src = htmlspecialchars((string) $media->setFormat('shareImage')->src, ENT_QUOTES);
-		return "<img src='$src' alt=''><div class='dropActions'><a class='ajax' href='editor/file/?target_id=$id&format=shareImage' title='Crop and adjust'><i class='fa-regular fa-pen'></i></a></div>";
+		return "<img src='$src' alt=''><div class='dropActions'>"
+			. "<a class='ajax' href='editor/file/?target_id=$id&format=shareImage' title='Crop and adjust'><i class='fa-regular fa-pen'></i></a>"
+			. "<button type='button' data-on_click='sidebar/resetShareImage' title='Use the site image' aria-label='Use the site image' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='fa-regular fa-trash'></i></button>"
+			. "</div>";
 	}
 
 	public function refreshSeoPreview(): void {

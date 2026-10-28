@@ -210,13 +210,43 @@ class Panel extends CmsPanel {
 		return $siteRoot . $thumb . ($made ? '?v=' . $made : '');
 	}
 
+	/**
+	 * A tile that has no picture on purpose. Audio has no cover, a SketchUp
+	 * file has no preview. Neither is a broken image.
+	 *
+	 * @return array{mark: bool, icon: string}
+	 */
+	public function tileFace(?\Systopic\System\Tables\Medias\Model $media): array {
+		$mime = strtolower((string) $media?->mimetype);
+		$file = strtolower((string) $media?->filename);
+		$type = (string) $media?->type;
+		if (str_starts_with($mime, 'audio/') || preg_match('/\.(mp3|m4a|wav|ogg|aac)$/', $file)) {
+			return ['mark' => true, 'icon' => 'music'];
+		}
+		if ($type === 'sketchup' || str_contains($mime, 'sketchup') || str_ends_with($file, '.skp')) {
+			return ['mark' => true, 'icon' => 'cube'];
+		}
+		$icon = $type;
+		if ($type === 'application' || $type === 'pdf') {
+			$icon = 'file-pdf';
+		} elseif ($mime === 'image/gif') {
+			$icon = 'gif';
+		} elseif (\Systopic\System\Tables\Medias\External::is($type)) {
+			$icon = 'circle-play';
+		} elseif ($mime === 'image/svg+xml') {
+			$icon = 'vector-polygon';
+		} elseif ($icon === '') {
+			$icon = 'file';
+		}
+		return ['mark' => false, 'icon' => $icon];
+	}
+
 	/** The crossed-out icon a thumb shows when it does not load (`img[data-broken]`, gui/ui.js). */
 	public function brokenIcon(?\Systopic\System\Tables\Medias\Model $media): string {
 		$type = (string) $media?->type;
 		return match (true) {
 			$type === 'image' => 'image-slash',
 			$type === 'video', \Systopic\System\Tables\Medias\External::is($type) => 'video-slash',
-			str_starts_with((string) $media?->mimetype, 'audio/') => 'music-slash',
 			default => 'file-slash',
 		};
 	}
@@ -528,7 +558,16 @@ class Panel extends CmsPanel {
 			$search->add('Pages', 'fa-file-lines', $page['label'] !== '' ? $page['label'] : 'Untitled', strtoupper($page['lang']), $pages . $page['node'] . '&lang=' . $page['lang']);
 		}
 		foreach (\Systopic\Cms\Queries\PageSearch\PageSearch::media($search->scope, $search->query) as $media) {
-			$icon = match ($media['type']) { 'image' => 'fa-image', 'video', 'youtube', 'vimeo' => 'fa-film', default => 'fa-file' };
+			$file = strtolower($media['file']);
+			$icon = match (true) {
+				$media['type'] === 'image' => 'fa-image',
+				$media['type'] === 'video' => 'fa-film',
+				$media['type'] === 'audio' => 'fa-music',
+				$media['type'] === 'pdf' || str_ends_with($file, '.pdf') => 'fa-file-pdf',
+				in_array($media['type'], ['youtube', 'vimeo'], true) => 'fa-circle-play',
+				$media['type'] === 'sketchup' || str_ends_with($file, '.skp') => 'fa-cube',
+				default => 'fa-file',
+			};
 			$title = $media['label'] !== '' ? $media['label'] : $media['file'];
 			$search->add('Media', $icon, $title, $title === $media['file'] ? '' : $media['file'], $pages . $media['page']);
 		}

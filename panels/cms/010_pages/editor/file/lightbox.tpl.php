@@ -49,6 +49,10 @@ $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/
 						echo '<div class="filePane">';
 						include 'image.tpl.php';
 						echo '</div>';
+					} elseif (str_starts_with((string) $media->mimetype, 'audio/')) {
+						include 'audio.tpl.php';
+					} elseif ((string) $media->type === 'sketchup' || str_contains((string) $media->mimetype, 'sketchup') || str_ends_with(strtolower((string) $media->filename), '.skp')) {
+						include 'skp.tpl.php';
 					} else {
 					switch ($media->mimetype) {
 						case 'image/png':
@@ -67,10 +71,6 @@ $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/
 							break;
 						case 'video/mp4':
 							include 'video.tpl.php';
-							break;
-						case 'audio/mpeg':
-						case 'audio/mp3':
-							include 'audio.tpl.php';
 							break;
 					}
 					}

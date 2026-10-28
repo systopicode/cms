@@ -162,3 +162,43 @@ if (false && id !== '0') {
 		scrollTop: targetTop - parentTop - 100
 	}, 1000, 'easeOutQuint');
 }
+
+function mountSkpStages(root) {
+	(root || document).querySelectorAll('[data-skp-src]').forEach(function (stage) {
+		if (stage.dataset.skpMounted === '1' || !stage.dataset.skpModule) {
+			return;
+		}
+		stage.dataset.skpMounted = '1';
+		import(stage.dataset.skpModule).then(function (mod) {
+			return mod.mountSkpViewer(stage, stage.dataset.skpSrc);
+		}).then(function (handle) {
+			stage._skp = handle;
+		}).catch(function () {
+			stage.dataset.skpMounted = '';
+		});
+	});
+}
+
+function stopFileMedia(root) {
+	(root || document).querySelectorAll('.fileEditor audio, .fileEditor video').forEach(function (media) {
+		media.pause();
+	});
+	(root || document).querySelectorAll('[data-skp-src]').forEach(function (stage) {
+		if (stage._skp && stage._skp.dispose) {
+			stage._skp.dispose();
+		}
+	});
+}
+
+document.addEventListener('cms:rendered', function () {
+	mountSkpStages();
+});
+mountSkpStages();
+
+document.addEventListener('click', function (event) {
+	var closer = event.target.closest && event.target.closest('.fileEditor header a, .fileEditor [data-action="deleteMedia"], .cmslightbox.upload header a');
+	if (!closer) {
+		return;
+	}
+	stopFileMedia(closer.closest('.cmslightbox') || document);
+}, true);

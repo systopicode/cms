@@ -32,7 +32,7 @@ $robots = [
 				name="meta_share_title" value="<?= $e($row->metaShareTitle) ?>" />
 		<small><span><?= mb_strlen((string) $row->metaShareTitle) ?></span> / 100</small>
     </li>
-	<li class="seperator">Share image <i data-on_click="sidebar/resetShareImage" class="fa-regular fa-arrow-rotate-left" title="Use the site image"></i></li>
+	<li class="seperator">Share image <button type="button" class="button transparent icononly small" data-on_click="sidebar/resetShareImage" title="Use the site image" aria-label="Use the site image"><i class="fa-regular fa-arrow-rotate-left"></i></button></li>
 	<li>
 		<div class="mediaDrop shareImage" data-drop_accept="media" data-on_drop="sidebar/updateShareImage"><?= $this->shareImage() ?></div>
 	</li>
@@ -50,8 +50,4 @@ $robots = [
 					 ?>
 		</select>
     </li>
-	<li class="seperator">Search and AI</li>
-	<li>
-		<div class="cmsSeoPreview"><?= $this->seoPreview() ?></div>
-	</li>
 </ul>

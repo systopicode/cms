@@ -115,10 +115,27 @@
 		// (or the tile) shows a spinner until the last file has been stored.
 		/** Shows the new files: the library alone is drawn again. */
 		upload.requestLibrary = (from) => {
-			var url = new URL('mediaAdded', location.origin + from);
+			var page = new URL(from || upload.libraryUrl || (location.pathname + location.search), location.origin);
+			page.pathname = page.pathname.replace(/\/upload\/?$/, '/');
+			if (!page.pathname.endsWith('/')) {
+				page.pathname += '/';
+			}
+			var selected = [];
+			document.querySelectorAll('div.mmlContent li.selected').forEach(function (li) {
+				if (li.dataset.node_id) {
+					selected.push(li.dataset.node_id);
+				}
+			});
 			var call = new sys.core.server.call();
 			call.data.method = 'put';
-			call.send(url.pathname + new URL(location.origin + from).search);
+			call.send(page.pathname + 'mediaAdded' + page.search).done(function () {
+				selected.forEach(function (id) {
+					var li = document.querySelector('div.mmlContent li[data-node_id="' + id + '"]');
+					if (li) {
+						li.classList.add('selected');
+					}
+				});
+			});
 		};
 
 		/** Only while the page that owns the library is still the open one. */
@@ -820,6 +837,9 @@
 			if (mime === 'application/pdf') {
 				return 'pdf';
 			}
+			if (mime.indexOf('sketchup') !== -1) {
+				return 'sketchup';
+			}
 			return 'file';
 		};
 
@@ -876,6 +896,12 @@
 					break;
 				case 'audio/mpeg':
 					upload.updatePreviewAudio(() => {
+						upload.updateFileInfo();
+					});
+					break;
+				case 'application/vnd.sketchup.skp':
+				case 'application/x-sketchup':
+					upload.updatePreviewSkp(() => {
 						upload.updateFileInfo();
 					});
 					break;
@@ -1027,8 +1053,42 @@
 				upload.doc[name].style.display = '';
 				upload.doc[name].removeAttribute('src');
 			});
+			if (upload.doc.skp) {
+				if (upload.doc.skp._skp && upload.doc.skp._skp.dispose) {
+					upload.doc.skp._skp.dispose();
+				}
+				upload.doc.skp.hidden = true;
+				upload.doc.skp._skp = null;
+			}
 			upload.info.width = null;
 			upload.info.height = null;
+		}
+
+		upload.updatePreviewSkp = (callback) => {
+			upload.resetPreviews();
+			var stage = upload.doc.skp;
+			if (!stage || !upload.src) {
+				callback();
+				return;
+			}
+			stage.hidden = false;
+			stage.dataset.skpSrc = upload.src;
+			var token = {};
+			stage._skpToken = token;
+			import(stage.dataset.skpModule).then(function (mod) {
+				return mod.mountSkpViewer(stage, upload.src);
+			}).then(function (handle) {
+				if (stage._skpToken !== token) {
+					if (handle && handle.dispose) {
+						handle.dispose();
+					}
+					return;
+				}
+				stage._skp = handle;
+				callback();
+			}).catch(function () {
+				callback();
+			});
 		}
 
 		upload.uploadFileSpan = () => {

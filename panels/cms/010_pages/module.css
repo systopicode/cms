@@ -44,7 +44,7 @@ main > div.content > article {
 }
 
 .cmslightbox.metaDefaults .metaDefault + .metaDefault{
-	margin-top: 1.5rem;
+	margin-top: 1rem;
 }
 
 .cmslightbox.metaDefaults h2{
@@ -68,7 +68,36 @@ main > div.content > article {
 
 .cmslightbox.metaDefaults p{
 	margin: 0;
+}
+
+.cmslightbox.metaDefaults .metaHint{
+	margin-top: 0.15rem;
+	font-size: 0.75rem;
+	font-weight: 400;
+	color: var(--cmsMuted);
+}
+
+.cmslightbox.metaDefaults .metaPreview{
+	margin-top: 0.4rem;
+	padding: 0.55rem 0.7rem;
+	border: 1px solid var(--cmsLine);
+	border-radius: var(--cmsRadius);
+	background: #fff;
+	color: var(--cmsTextColor);
 	font-weight: 500;
+}
+
+.cmslightbox.metaDefaults .metaVar{
+	color: var(--cmsMuted);
+	font-weight: 600;
+}
+
+.cmslightbox.metaDefaults figure.metaPreview{
+	padding: 0.45rem;
+}
+
+.cmslightbox.metaDefaults figure.metaPreview img{
+	border: 0;
 }
 
 .cmslightbox.metaDefaults .metaSample{

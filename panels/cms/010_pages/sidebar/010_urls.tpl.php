@@ -38,7 +38,7 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 	} else {
 		$html .= "<input type='text' name='rewritePath' data-on_input='sidebar/rewritePath_update' value='$string'/>";
 	}
-	$html .= "<i data-on_click='sidebar/rewritePath_delete' class='fa-regular fa-trash' title='Remove address'></i>";
+	$html .= "<button type='button' class='button transparent icononly small' data-on_click='sidebar/rewritePath_delete' title='Remove address' aria-label='Remove address'><i class='fa-regular fa-trash'></i></button>";
 	$html .= '</div>';
 	$when = static fn(?DateTimeImmutable $d): string => ($d ? \Systopic\System\Sys\LocalTime::format($d, 'd.m.Y H:i') : '—');
 	$site = $siteOf($path->siteNodeId);
@@ -61,11 +61,13 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 <h3>Addresses</h3>
 <ul class="rewrite">
     <li class="seperator">Automatic
-		<i class="fa-regular fa-arrow-rotate-left"
+		<button type="button" class="button transparent icononly small"
 		   data-on_click="sidebar/rewritePath_updateAutoPath"
 		   title="Rebuild from the page name"
+		   aria-label="Rebuild from the page name"
 		   data-page_id="<?= $page->row->id ?>">
-		</i>
+			<i class="fa-regular fa-arrow-rotate-left"></i>
+		</button>
     </li>
 	<li>
 	<?php
@@ -85,11 +87,13 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 	<?php } ?>
 	</li>
 <li  class="seperator">Custom
-	<i class="fa-regular fa-plus"
+	<button type="button" class="button transparent icononly small"
 	   data-on_click="sidebar/rewritePath_new"
 	   title="Add an address"
+	   aria-label="Add an address"
 	   data-page_id="<?= $page->row->id ?>">
-	</i>
+		<i class="fa-regular fa-plus"></i>
+	</button>
 </li>
 <?php
 foreach ($paths->custom as $rewritePath) {

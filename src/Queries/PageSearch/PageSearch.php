@@ -52,7 +52,9 @@ final class PageSearch
             'label' => (string) $row['ps_label'],
             'file' => (string) $row['ps_file'],
             'type' => (string) $row['ps_type'],
-        ], $scope->rows(__DIR__ . '/PageSearch.media.sql', ['term' => self::like($term)])->looseValues());
+        ], $scope->rows(__DIR__ . '/PageSearch.media.sql', [
+            'term' => self::like($term),
+        ])->looseValues());
     }
 
     private static function like(string $term): string

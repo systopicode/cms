@@ -123,7 +123,7 @@ $store = static function (string $tmpFileNative, string $fileName, string $label
 	$uow->commit();
 	MediaFiles::store($media, $tmpFileNative, $fileName);   // type, mime, image size from the file
 	$chosen = strtolower(trim((string) http::put('type')));
-	if ($chosen !== '' && (in_array($chosen, ['image', 'video', 'audio', 'pdf', 'file'], true) || \Systopic\System\Tables\Medias\External::is($chosen))) {
+	if ($chosen !== '' && (in_array($chosen, ['image', 'video', 'audio', 'pdf', 'sketchup', 'file'], true) || \Systopic\System\Tables\Medias\External::is($chosen))) {
 		$media->type = $chosen;
 	}
 	if (\Systopic\System\Tables\Medias\External::is((string) $media->type) || trim((string) http::put('url')) !== '') {
@@ -175,12 +175,15 @@ $store = static function (string $tmpFileNative, string $fileName, string $label
 		client::done(['tag' => $pages->editorTag((int) $media->node->id)]);
 		return TRUE;
 	}
-	// Several files stay on the page that is open. '../' from here is the
-	// CMS root, which is the blank screen. The lightbox is the one case
-	// that lives under upload/ and has to step back up.
+	// The library is drawn again by this answer when several files stay on
+	// the page, and by the step back when the lightbox closes.
+	$pages->updateView('mml');
 	if (!http::put('queue')) {
 		$pages->pageChanged();
-		http::redirect('../');
+		http::redirect('../', '', array_filter([
+			'id' => (int) ($pages->state->id ?? 0),
+			'lang' => (string) ($pages->state->lang ?? ''),
+		], static fn($value): bool => $value !== '' && $value !== 0));
 	}
 	return TRUE;
 };
@@ -197,8 +200,8 @@ switch ($this->action) {
 			$renderStyle = 'none';
 			break;
 		}
-		// A render from here would be the upload panel's: it replaces the
-		// page, the open text included. The client reloads instead.
+		// A render from here would leave the upload panel selected and
+		// replace the page. The client asks the page for its library again.
 		$renderStyle = 'none';
 		$store($tmpFileNative, $fileName, (string) http::put('label'));
 		break;

@@ -33,25 +33,25 @@ $settings = http::$root . 'cms/settings/pagesettings/';
 		<main>
 			<div class="metaDefault">
 				<h2>Description <span><?= mb_strlen($description) ?> / 160</span></h2>
-				<p class="hint">Used when the field is empty and the page has no sentence yet.</p>
-				<p><?= $description !== '' ? $e($description) : '—' ?></p>
+				<p class="metaHint">Used when the field is empty and the page has no sentence yet.</p>
+				<p class="metaPreview"><?= $description !== '' ? $e($description) : '—' ?></p>
 			</div>
 			<div class="metaDefault">
 				<h2>Share title</h2>
-				<p class="hint">The page title comes first.</p>
-				<p class="metaSample"><?= $e('Page title ' . $separator . ' ' . $title) ?></p>
+				<p class="metaHint">The page title comes first.</p>
+				<p class="metaPreview"><span class="metaVar">{page title}</span> <?= $e($separator . ' ' . $title) ?></p>
 			</div>
 			<div class="metaDefault">
 				<h2>Share image</h2>
-				<p class="hint">Used when this page has none. Best size 1200×630.</p>
-				<figure>
+				<p class="metaHint">Used when this page has none. Best size 1200×630.</p>
+				<figure class="metaPreview">
 					<img src="<?= $e($imageUrl) ?>" alt="">
 					<figcaption><?= $e($image) ?></figcaption>
 				</figure>
 			</div>
 			<div class="metaDefault">
 				<h2>Robots</h2>
-				<p><?= $e($robots) ?></p>
+				<p class="metaPreview"><?= $e($robots) ?></p>
 			</div>
 		</main>
 		<footer>

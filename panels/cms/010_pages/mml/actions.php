@@ -37,11 +37,16 @@ switch ($this->action) {
 	case 'updateMediaGroup':     // dropped on a group title: to the end of it
 	case 'insertMediaBefore':    // dropped on the left edge of another medium
 	case 'insertMediaAfter':     // … on its right edge
-		$media = $pages->mediaOfNode((int) http::dragdata('node_id'));
+		$draggedId = (int) http::dragdata('node_id');
+		$media = $pages->mediaOfNode($draggedId);
 		if ($media === NULL) {
 			break;
 		}
 		$targetNode = (int) http::dataset('node_id');
+		// Onto the same medium: not a place, and not a new parent.
+		if ($targetNode > 0 && $targetNode === $draggedId) {
+			break;
+		}
 		$target = $this->action === 'updateMediaGroup' ? NULL : $pages->mediaOfNode($targetNode);
 		// parent and group of the drop: the target medium's, else the dataset's, else the page on screen
 		$parentId = (int) ($target?->node?->relationId('parentNode') ?? http::dataset('node_parent_node_id') ?: ($pages->state->id ?? 0));

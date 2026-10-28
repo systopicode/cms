@@ -44,12 +44,15 @@ $manage = [
 						?>
 						<details class="sidebarSection" data-section="<?= htmlspecialchars((string) $templateName, ENT_QUOTES, 'UTF-8') ?>" open>
 							<summary>
-								<?= htmlspecialchars((string) $sideBarItem->label, ENT_QUOTES, 'UTF-8') ?>
-								<?php if ($templateName === 'meta') { ?>
-									<a class="ajax sidebarInfo" href="sidebar/defaultMeta/" title="Default values"><i class="fa-regular fa-circle-info"></i></a>
-								<?php } elseif (isset($manage[$templateName])) { ?>
-									<a class="ajax sidebarInfo" href="<?= http::$root . $manage[$templateName][0] ?>" title="<?= $manage[$templateName][1] ?>"><i class="fa-regular fa-pen"></i></a>
-								<?php } ?>
+								<span class="sidebarLabel"><?= htmlspecialchars((string) $sideBarItem->label, ENT_QUOTES, 'UTF-8') ?></span>
+								<span class="sidebarTools">
+									<?php if ($templateName === 'meta') { ?>
+										<a class="ajax button transparent icononly small sidebarInfo" href="sidebar/defaultMeta/" title="Default values" aria-label="Default values"><i class="fa-regular fa-circle-info"></i></a>
+									<?php } elseif (isset($manage[$templateName])) { ?>
+										<a class="ajax button transparent icononly small sidebarInfo" href="<?= http::$root . $manage[$templateName][0] ?>" title="<?= $manage[$templateName][1] ?>" aria-label="<?= $manage[$templateName][1] ?>"><i class="fa-regular fa-pen"></i></a>
+									<?php } ?>
+									<i class="fa-regular fa-chevron-down sidebarFold" aria-hidden="true"></i>
+								</span>
 							</summary>
 							<div class="sidebarItem">
 								<?php $this->withView($sideBarItem->view, fn ($panel) => $panel->render($sideBarItem->filename)); ?>

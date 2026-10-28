@@ -107,7 +107,7 @@ switch ($this->action) {
 	case 'updateMediaType':
 		if ($row !== NULL) {
 			$type = strtolower(trim((string) http::values('type')));
-			if ($type !== '' && (in_array($type, ['image', 'video', 'pdf', 'file'], true) || \Systopic\System\Tables\Medias\External::is($type))) {
+			if ($type !== '' && (in_array($type, ['image', 'video', 'audio', 'pdf', 'sketchup', 'file'], true) || \Systopic\System\Tables\Medias\External::is($type))) {
 				$row->type = $type;
 				$save();
 			}

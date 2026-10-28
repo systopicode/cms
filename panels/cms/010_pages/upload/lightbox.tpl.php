@@ -37,6 +37,7 @@ $currentFormat = $replacement && (int) $media->width > 0
 							<iframe data-doc="pdf" title="Preview"></iframe>
 							<video data-doc="video" controls muted playsinline></video>
 							<audio data-doc="audio" controls></audio>
+							<div data-doc="skp" class="cmsSkpStage" hidden data-skp-module="<?= $e(\Systopic\Cms\Media\SkpViewer::moduleUrl()) ?>"></div>
 							<p class="readingHint">Reading the file…</p>
 						</div>
 					</div>
@@ -65,6 +66,10 @@ $currentFormat = $replacement && (int) $media->width > 0
 									echo '<audio controls src="' . $e($media->src) . '"></audio>';
 									break;
 							}
+							$skpNow = str_contains((string) $media->mimetype, 'sketchup') || str_ends_with(strtolower((string) $media->filename), '.skp');
+							if ($skpNow) {
+								echo '<div class="cmsSkpStage" data-skp-src="' . $e($media->src) . '" data-skp-module="' . $e(\Systopic\Cms\Media\SkpViewer::moduleUrl()) . '"></div>';
+							}
 							?>
 						</div>
 					</div>
@@ -88,8 +93,14 @@ $currentFormat = $replacement && (int) $media->width > 0
 										<label>File name</label>
 									</div>
 									<?php
+									$picked = strtolower((string) ($row->type ?? ''));
+									$pickedFile = strtolower((string) ($row->filename ?? ''));
+									if ($row && ($picked === '' || $picked === 'application')
+										&& (str_contains(strtolower((string) ($row->mimetype ?? '')), 'sketchup') || str_ends_with($pickedFile, '.skp'))) {
+										$picked = 'sketchup';
+									}
 									echo \Systopic\System\Tables\Medias\External::fieldsHtml([
-										'type' => (string) ($row->type ?? ''),
+										'type' => $picked,
 										'url' => (string) ($row->url ?? ''),
 									]);
 									?>

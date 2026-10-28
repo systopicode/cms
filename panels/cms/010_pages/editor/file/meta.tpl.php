@@ -40,8 +40,14 @@ $format = ((int) $row->width > 0 && (int) $row->height > 0)
 							<label>File name, the ending stays</label>
 						</div>
 						<?php
+						$type = strtolower((string) $row->type);
+						$file = strtolower((string) $row->filename);
+						if (($type === '' || $type === 'application')
+							&& (str_contains(strtolower((string) $row->mimetype), 'sketchup') || str_ends_with($file, '.skp'))) {
+							$type = 'sketchup';
+						}
 						echo \Systopic\System\Tables\Medias\External::fieldsHtml([
-							'type' => (string) $row->type,
+							'type' => $type,
 							'url' => (string) $row->url,
 							'autosave' => true,
 						]);

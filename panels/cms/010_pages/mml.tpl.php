@@ -39,7 +39,8 @@ $siteRoot = (string) http::$siteRoot;
 				$type = (string) ($media?->type ?? '');
 				$folders = Files::idPath($mediaId);
 				?>
-				<li <?= html::arrayToDataAttr([
+				<?php $faceForClass = $entry['alias'] ? ['mark' => false] : $this->tileFace($entry['media']); ?>
+				<li class="<?= !empty($faceForClass['mark']) ? 'is-mark' : '' ?>" <?= html::arrayToDataAttr([
 					'drag_type' => 'media', 'node_id' => $id,
 					// without a medium these stay off, as in the legacy markup
 					'media_id' => $media?->id, 'type' => $media?->type, 'value' => $media?->label,
@@ -56,22 +57,13 @@ $siteRoot = (string) http::$siteRoot;
 							<i class='fa-regular fa-file-import'></i>
 						</a>
 					<?php } else {
-						$src = $media === NULL ? '' : $this->thumbOf($media);
-						$icon = $type;
-						if ($type === 'application' || $type === 'pdf') {
-							$icon = 'file-pdf';
-						} elseif ($mime === 'image/gif') {
-							$icon = 'gif';
-						} elseif (\Systopic\System\Tables\Medias\External::is($type)) {
-							$icon = 'circle-play';
-						} elseif (str_starts_with($mime, 'audio/')) {
-							$icon = 'music';
-						} elseif ($mime === 'image/svg+xml') {
-							$icon = 'vector-polygon';
-						}
+						$face = $this->tileFace($media);
+						$src = ($media === NULL || $face['mark']) ? '' : $this->thumbOf($media);
 						?>
+						<?php if (!$face['mark']) { ?>
 						<img src='<?= $e($src) ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
-						<i class='fa-regular fa-<?= $e($icon) ?> thumbType'></i>
+						<?php } ?>
+						<i class='fa-regular fa-<?= $e($face['icon']) ?> thumbType'></i>
 						<div class='thumbActions'>
 							<span class='thumbGrip' title='Drag'><span></span><span></span><span></span><span></span><span></span><span></span></span>
 							<div class='thumbButtons'>

@@ -40,6 +40,7 @@ function mediaTypeLabels(): array {
 		'video' => 'Video',
 		'audio' => 'Audio',
 		'pdf' => 'PDF',
+		'sketchup' => 'SketchUp',
 		'file' => 'File',
 	] + mediaExternalTypes();
 }
@@ -79,6 +80,9 @@ function mediaTypeFromMime(string $mime): string {
 	if ($mime === 'application/pdf') {
 		return 'pdf';
 	}
+	if (str_contains($mime, 'sketchup')) {
+		return 'sketchup';
+	}
 	return $mime !== '' ? 'file' : '';
 }
 
@@ -102,7 +106,7 @@ function mediaAllowedTypesFromMimes(): array {
 		];
 	}
 	$ordered = [];
-	foreach (['image', 'video', 'audio', 'pdf', 'file'] as $key) {
+	foreach (['image', 'video', 'audio', 'pdf', 'sketchup', 'file'] as $key) {
 		if (isset($types[$key])) {
 			$ordered[$key] = $types[$key];
 		}

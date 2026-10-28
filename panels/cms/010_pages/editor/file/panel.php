@@ -55,8 +55,11 @@ class Panel extends CmsPanel {
 			'application/pdf' => 'Edit PDF',
 			'application/zip' => 'Edit ZIP',
 			'video/mp4' => 'Edit video',
-			'audio/mpeg', 'audio/mp3' => 'Edit audio',
-			default => 'Edit file',
+			default => str_starts_with((string) $this->mediaRow?->mimetype, 'audio/')
+				? 'Edit audio'
+				: ((string) $this->mediaRow?->type === 'sketchup' || str_contains((string) $this->mediaRow?->mimetype, 'sketchup') || str_ends_with(strtolower((string) $this->mediaRow?->filename), '.skp')
+					? 'Edit SketchUp'
+					: 'Edit file'),
 		};
 	}
 
