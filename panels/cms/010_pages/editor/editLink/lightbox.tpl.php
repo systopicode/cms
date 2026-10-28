@@ -54,7 +54,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 			<h1><?= $title ?></h1>
 			<ul class="barmenu">
 				<li>
-					<a class="ajax" onclick="wysiwyg.cancelLink()" href="../../" title="Close"><i class="fa-regular fa-xmark"></i></a>
+					<a class="ajax" onclick="wysiwyg.cancelLink()" href="../../" aria-label="Close"><i class="fa-regular fa-xmark"></i></a>
 				</li>
 			</ul>
 		</header>

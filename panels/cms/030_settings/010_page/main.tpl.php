@@ -117,7 +117,7 @@ $addLabel = match ($parentType) {
 						?>
 						<tr>
 							<td class="pageSettingDrag">
-								<i class="fa-regular fa-grip-vertical" title="Drag to reorder"
+								<i class="fa-regular fa-grip-dots-vertical" aria-label="Drag to reorder"
 									data-drag_type="setting" data-id="<?= $id ?>"></i>
 								<div class="sort v insertBefore" data-drop_accept="setting" data-on_drop="insertBefore" data-id="<?= $id ?>"></div>
 								<div class="sort v insertAfter" data-drop_accept="setting" data-on_drop="insertAfter" data-id="<?= $id ?>"></div>

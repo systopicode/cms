@@ -29,7 +29,7 @@ $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/
 					<a class="put" data-confirm="Do you really want to delete this File?" data-on_click="userConfirm" data-action="deleteMedia" title="Delete"><i class="fa-regular fa-trash"></i></a>
 				</li>
 				<li>
-					<a class="ajax" href="../../" title="Close"><i class="fa-regular fa-xmark"></i></a>
+					<a class="ajax" href="../../" aria-label="Close"><i class="fa-regular fa-xmark"></i></a>
 				</li>
 			</ul>
 		</header>

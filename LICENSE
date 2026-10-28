@@ -1,10 +1,12 @@
-# Fluxo CMS – Software License
+# systopic Software License
 
 Copyright (c) 2026 systopic GmbH. All rights reserved.
 
+This license applies to software packages developed and distributed by systopic GmbH, including but not limited to `systopic/system` and `systopic/cms` (Fluxo CMS), where this license is included.
+
 ## 1. Grant of License
 
-The systopic GmbH grants authorized users a non-exclusive, non-transferable license to use, install, and modify Fluxo CMS for their own websites, applications, and projects, subject to applicable agreements.
+systopic GmbH grants authorized users a non-exclusive, non-transferable license to use, install, integrate, and modify the software for their own websites, applications, and authorized projects, subject to applicable agreements.
 
 This license does not transfer ownership of the software or any intellectual property rights.
 
@@ -12,55 +14,73 @@ This license does not transfer ownership of the software or any intellectual pro
 
 Authorized users may:
 
-- Install and operate Fluxo CMS for their own projects.
-- Modify and extend the software to meet project-specific requirements.
-- Develop custom templates, modules, and integrations.
-- Create backups and copies necessary for development, testing, and operation.
-- Deploy projects based on Fluxo CMS to production and staging environments.
+- Install and operate the software within authorized projects.
+- Use the software as a framework or component of websites and applications.
+- Modify, customize, and extend the software for project-specific requirements.
+- Develop custom modules, templates, integrations, and extensions.
+- Integrate the software with other libraries, frameworks, and applications.
+- Create copies necessary for development, testing, staging, deployment, backup, and operation.
+- Deploy and operate websites and applications built using the software.
+- Provide development, maintenance, and hosting services for authorized projects.
 
 ## 3. Restrictions
 
 Unless expressly authorized in writing by systopic GmbH, users may not:
 
-- Redistribute, publish, sublicense, sell, or otherwise make Fluxo CMS available as a standalone software product.
-- Offer Fluxo CMS as a competing content management system or independent CMS service.
-- Remove or alter copyright notices or license information.
-- Grant third parties independent rights to the underlying CMS software.
+- Redistribute, publish, sublicense, sell, or otherwise make the software available as a standalone software package, framework, CMS, or development platform.
+- Offer or distribute the software as an independent or competing software product or service.
+- Grant third parties independent rights to the underlying software.
+- Remove or alter copyright notices, license information, or proprietary notices.
+- Make the original or modified source code publicly available outside the scope of an explicitly authorized distribution.
 
-These restrictions do not prevent the delivery or operation of websites and applications developed using Fluxo CMS within the scope of an authorized project.
+These restrictions do not prevent the development, deployment, delivery, hosting, or maintenance of authorized websites and applications built using the software.
 
-## 4. Ownership
+Access to the source code by developers, employees, contractors, or service providers working on an authorized project is permitted to the extent necessary for that project, provided they are bound by appropriate confidentiality and usage restrictions.
 
-Fluxo CMS, including its source code, architecture, core components, and documentation, remains the intellectual property of systopic GmbH or its respective rights holders.
+## 4. Modifications and Extensions
 
-Custom content, independently developed extensions, and project-specific materials remain subject to their respective ownership and contractual arrangements.
+Authorized users may create modifications and extensions for their projects.
 
-## 5. Third-Party Components
+Modifications to the original software do not transfer ownership of the underlying software.
 
-Fluxo CMS may include third-party libraries and components governed by separate licenses.
+Independently developed extensions, custom application code, and project-specific materials remain subject to their respective ownership and contractual arrangements.
 
-Those licenses remain applicable and take precedence for the respective third-party components.
+No obligation to submit modifications or extensions to systopic GmbH is established by this license.
 
-## 6. Warranty Disclaimer
+## 5. Ownership
+
+The software, including its original source code, architecture, core components, and documentation, remains the intellectual property of systopic GmbH or its respective rights holders.
+
+All rights not expressly granted under this license are reserved.
+
+## 6. Third-Party Components
+
+The software may include third-party libraries, dependencies, and components governed by separate licenses.
+
+Those licenses remain applicable to their respective components.
+
+Nothing in this license restricts rights granted under applicable third-party open-source licenses.
+
+## 7. Warranty Disclaimer
 
 The software is provided "AS IS", without warranties of any kind, to the extent permitted by applicable law.
 
-systopic GmbH does not guarantee uninterrupted operation, freedom from defects, or suitability for any particular purpose, unless otherwise agreed.
+Unless otherwise agreed, systopic GmbH does not guarantee uninterrupted operation, freedom from defects, or suitability for any particular purpose.
 
-## 7. Limitation of Liability
+## 8. Limitation of Liability
 
 Liability is limited to the extent permitted by applicable law.
 
-Nothing in this license excludes or limits liability where such exclusion or limitation is prohibited by law.
+Nothing in this license excludes or limits liability where such exclusion or limitation is prohibited by law, including mandatory liability for intent, gross negligence, or injury to life, body, or health.
 
-## 8. Additional Agreements
+## 9. Additional Agreements
 
-Individual license agreements, service agreements, or other written arrangements with systopic GmbH may grant additional rights or establish different conditions.
+Individual license agreements, development agreements, service agreements, or other written arrangements with systopic GmbH may grant additional rights or establish different conditions.
 
 In the event of a conflict, such individually agreed terms shall prevail.
 
 ---
 
-Fluxo CMS is developed by systopic GmbH.
+Developed by systopic GmbH.
 
 All rights reserved.

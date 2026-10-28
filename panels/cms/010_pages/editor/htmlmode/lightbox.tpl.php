@@ -27,7 +27,7 @@ $value = $value instanceof Text ? $value->value : (string) $value;
                 <h1>HTML</h1>
                 <ul class="barmenu">
                     <li>
-                        <a class="ajax" href="../../" title="Close"><i class="fa-regular fa-xmark"></i></a>
+                        <a class="ajax" href="../../" aria-label="Close"><i class="fa-regular fa-xmark"></i></a>
                     </li>
                 </ul>
             </header>
