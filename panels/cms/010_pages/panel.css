@@ -318,7 +318,7 @@ aside.cms table.aclResolution.aclResolution thead th{
 aside.cms table.aclResolution.aclResolution tr.groupStart > *{
 	border-top: 1px solid var(--cmsLineStrong);
 }
-aside.cms table.aclResolution.aclResolution tfoot tr:first-child > th{
+aside.cms table.aclResolution.aclResolution tbody.summary tr:first-child > th{
 	border-top: 2px solid var(--cmsLineStrong);
 }
 aside.cms table.aclResolution.aclResolution .rw{

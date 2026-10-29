@@ -97,7 +97,7 @@ $writable = Session::current()->writeGroupIds;
 					}
 				}
 				$span = max(1, count($rows));
-				$groupCell = '<th scope="row" rowspan="' . $span . '">' . $e($group?->name ?? "#$groupId") . '</th>';
+				$groupCell = '<td class="group" rowspan="' . $span . '">' . $e($group?->name ?? "#$groupId") . '</td>';
 				if ($rows === []) { ?>
 					<tr class="groupStart"><?= $groupCell ?><td colspan="3" class="none">no role</td></tr>
 				<?php }
@@ -111,7 +111,7 @@ $writable = Session::current()->writeGroupIds;
 				<?php }
 			} ?>
 		</tbody>
-		<tfoot>
+		<tbody class="summary">
 			<?php $check = static fn(bool $on, string $title): string => $on ? '<i class="fa-regular fa-check" title="' . $title . '"></i>' : ''; ?>
 			<tr><th colspan="2">Summary</th><th class="rw" title="Read">R</th><th class="rw" title="Write">W</th></tr>
 			<?php if ($sum === []) { ?>
@@ -124,6 +124,6 @@ $writable = Session::current()->writeGroupIds;
 					<td class="rw"><?= $check($write, 'Write') ?></td>
 				</tr>
 			<?php } ?>
-		</tfoot>
+		</tbody>
 	</table>
 <?php } ?>
