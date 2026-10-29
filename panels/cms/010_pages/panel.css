@@ -306,22 +306,20 @@ aside.cms table.aclResolution.aclResolution :is(th, td){
 	text-align: left;
 	vertical-align: top;
 }
-aside.cms table.aclResolution.aclResolution thead th{
+/* every header cell like the sidebar's section bars */
+aside.cms table.aclResolution.aclResolution th{
+	background: var(--cmsPanelAlt);
 	font-weight: 700;
-	color: var(--cmsSubText);
-	border-bottom-color: var(--cmsLineStrong);
+	color: var(--cmsTextColor);
 }
-aside.cms table.aclResolution.aclResolution tbody th{
-	font-weight: 600;
+aside.cms table.aclResolution.aclResolution thead th{
+	border-bottom-color: var(--cmsLineStrong);
 }
 aside.cms table.aclResolution.aclResolution tr.groupStart > *{
 	border-top: 1px solid var(--cmsLineStrong);
 }
-aside.cms table.aclResolution.aclResolution tfoot tr.groupStart > *{
+aside.cms table.aclResolution.aclResolution tfoot tr:first-child > th{
 	border-top: 2px solid var(--cmsLineStrong);
-}
-aside.cms table.aclResolution.aclResolution tfoot th{
-	font-weight: 700;
 }
 aside.cms table.aclResolution.aclResolution .rw{
 	width: 1.5rem;

@@ -81,7 +81,7 @@ $writable = Session::current()->writeGroupIds;
 	?>
 	<table class="aclResolution">
 		<thead>
-			<tr><th>Group</th><th>Role</th><th title="Read">R</th><th title="Write">W</th></tr>
+			<tr><th>Group</th><th>Role</th><th class="rw" title="Read">R</th><th class="rw" title="Write">W</th></tr>
 		</thead>
 		<tbody>
 			<?php foreach ($active as $groupId) {
@@ -112,16 +112,14 @@ $writable = Session::current()->writeGroupIds;
 			} ?>
 		</tbody>
 		<tfoot>
-			<?php
-			$check = static fn(bool $on, string $title): string => $on ? '<i class="fa-regular fa-check" title="' . $title . '"></i>' : '';
-			if ($sum === []) { ?>
-				<tr class="groupStart"><th scope="row">Summary</th><td colspan="3" class="none">nobody but the owner and superusers</td></tr>
+			<?php $check = static fn(bool $on, string $title): string => $on ? '<i class="fa-regular fa-check" title="' . $title . '"></i>' : ''; ?>
+			<tr><th colspan="2">Summary</th><th class="rw" title="Read">R</th><th class="rw" title="Write">W</th></tr>
+			<?php if ($sum === []) { ?>
+				<tr><td colspan="4" class="none">nobody but the owner and superusers</td></tr>
 			<?php }
-			$i = 0;
 			foreach ($sum as [$role, $read, $write]) { ?>
-				<tr<?= $i === 0 ? ' class="groupStart"' : '' ?>>
-					<?php if ($i++ === 0) { ?><th scope="row" rowspan="<?= count($sum) ?>">Summary</th><?php } ?>
-					<td><?= $e($role->name) ?></td>
+				<tr>
+					<td colspan="2"><?= $e($role->name) ?></td>
 					<td class="rw"><?= $check($read, 'Read') ?></td>
 					<td class="rw"><?= $check($write, 'Write') ?></td>
 				</tr>
