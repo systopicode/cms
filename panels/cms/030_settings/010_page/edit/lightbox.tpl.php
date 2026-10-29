@@ -37,7 +37,7 @@ $vorgabe = static function (?Definition $d, string $name): string {
 $field = static function (string $action, string $name, string $label, string $value, string $hint = '', string $wide = '') use ($e): void {
 	echo '<label class="field' . ($wide !== '' ? " $wide" : '') . '" data-on_input="' . $action . '">';
 	echo '<span>' . $e($label) . '</span>';
-	echo '<input name="' . $e($name) . '" value="' . $e($value) . '" autocomplete="off">';
+	echo '<input' . ($name === 'name' ? ' data-setting-key pattern="[A-Za-z_][A-Za-z0-9_]*" required title="Use letters, digits and underscores; start with a letter or underscore."' : '') . ' name="' . $e($name) . '" value="' . $e($value) . '" autocomplete="off">';
 	if ($hint !== '') {
 		echo '<small>' . $e($hint) . '</small>';
 	}
@@ -63,15 +63,21 @@ $choice = static function (string $name, string $label, string $value, array $op
 ?>
 <div class="cmslightbox cms pageSettingDialog">
 	<section data-doc="box">
-		<header>
+		<header class="tagEditTitle">
 			<h1><?= $d ? $e($d->label !== '' ? $d->label : 'Untitled') : 'Setting' ?></h1>
+			<?php if ($d) { ?>
+                <button type="button" class="tagGroupRename" onclick="renameUserAdminTitle(this)" data-rename-field="label" data-rename-url="<?= $e($this->href . 'updateSetting?id=' . (int) $d->nodeId) ?>" title="Rename" aria-label="Rename"><i class="fa-regular fa-pen"></i></button>
+            <?php } ?>
 			<?php
 			$back = '../';
 			if ($d?->parent) {
 				$back = '../?id=' . (int) $d->parent->nodeId;
 			}
-			echo \menu::create('barmenu')->link($back)->icon('fa-regular fa-xmark-large');
 			?>
+            <ul class="barmenu">
+                <?php if ($d && $d->options === []) { ?><li><button type="button" class="button icononly" data-on_click="userConfirm" data-action="removeSetting?id=<?= (int) $d->nodeId ?>" data-confirm="Delete this setting?" title="Delete" aria-label="Delete"><i class="fa-regular fa-trash"></i></button></li><?php } ?>
+                <li><a class="ajax" href="<?= $e($back) ?>" aria-label="Close"><i class="fa-regular fa-xmark-large"></i></a></li>
+            </ul>
 		</header>
 		<?php if ($d) { ?>
 			<main>
@@ -85,9 +91,7 @@ $choice = static function (string $name, string $label, string $value, array $op
 				?></p>
 				<div class="fieldGrid">
 					<?php
-					$field('updateSetting', 'name', 'Name', $feld($d, 'name'), 'Template key');
-					$field('updateSetting', 'label', 'Label', $feld($d, 'label'), 'Sidebar text');
-					$field('updateSetting', 'description', 'Description', $feld($d, 'description'), '', 'is-wide');
+					$field('updateSetting', 'name', 'Key', $feld($d, 'name'), 'Template key');
 					$parentKind = (string) ($d->parent?->type ?? '');
 					$kind = $feld($d, 'type');
 					$kinds = match ($parentKind) {
@@ -116,6 +120,7 @@ $choice = static function (string $name, string $label, string $value, array $op
 					} else {
 						$choice('type', 'Kind', $kind, $kinds, 'Field stores a value. Group, select and checkbox hold children.');
 					}
+					$field('updateSetting', 'description', 'Description', $feld($d, 'description'), '', 'is-wide');
 					$isField = $kind === '' || $kind === 'input' || $parentKind === 'group' || $parentKind === 'checkbox';
 					$datatype = $feld($d, 'datatype') !== '' ? $feld($d, 'datatype') : 'varchar';
 					if ($isField) {

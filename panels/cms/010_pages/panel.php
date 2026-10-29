@@ -228,6 +228,9 @@ class Panel extends CmsPanel {
 		if ($type === 'sketchup' || str_contains($mime, 'sketchup') || str_ends_with($file, '.skp')) {
 			return ['mark' => true, 'icon' => 'cube'];
 		}
+        if (!\Systopic\System\Media\Presentation::hasThumbnail($mime)) {
+            return ['mark' => true, 'icon' => \Systopic\System\Media\Presentation::icon($file)];
+        }
 		$icon = $type;
 		if ($type === 'application' || $type === 'pdf') {
 			$icon = 'file-pdf';
@@ -254,20 +257,20 @@ class Panel extends CmsPanel {
 	}
 
 	/** The tag a text editor shows for a medium, null for a type it cannot show. */
+    /** The page behind informational lightboxes, including its current language. */
+    public function currentViewHref(): string
+    {
+        $query = array_filter(['id' => (int) ($this->state->id ?? 0), 'lang' => (string) $this->params->lang], static fn($value) => $value !== '' && $value !== 0);
+        return $this->href . ($query !== [] ? '?' . http_build_query($query) : '');
+    }
+
 	public function editorTag(int $nodeId): ?string {
 		$row = $this->mediaOfNode($nodeId);
 		if ($row === NULL) {
 			return NULL;
 		}
 		$file = new \Systopic\System\Tables\Medias\Media($row);
-		$label = htmlspecialchars((string) $file->label, ENT_QUOTES);
-		// stored form is a reference; the editor shows the url beside it (Refs\Resolver)
-		$stored = match ($file->type) {
-			'image' => '<img src="media:' . $nodeId . '?format=' . (string) array_key_first(\mediaFormats::get()) . '" alt="' . $label . '">',
-			'video' => '<video src="media:' . $nodeId . '" poster="media:' . $nodeId . '" controls></video>',
-			'application', 'pdf' => '<iframe src="media:' . $nodeId . '"></iframe>',
-			default => null,
-		};
+        $stored = \Systopic\Cms\Media\EditorTag::stored($nodeId, (string) $file->filename, (string) $file->label, (string) $file->mimetype, (string) array_key_first(\mediaFormats::get()));
 		return $stored === null ? null : (new \Systopic\Cms\Refs\Resolver($this->scope, $this->params))->renderForEditor($stored);
 	}
 

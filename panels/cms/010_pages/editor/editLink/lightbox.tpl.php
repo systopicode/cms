@@ -17,9 +17,9 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 $imageRow = http::post('image_node_id', FALSE) ? $pages->mediaOfNode((int) http::post('image_node_id')) : NULL;
 $media = $imageRow !== NULL ? new \Systopic\System\Tables\Medias\Media($imageRow) : FALSE;
 $text = (string) http::post('text', '');
-$href = (string) http::post('href', '');
+$href = preg_replace('~^(media|page)::(?=\d)~', '$1:', (string) http::post('href', ''));
 $classNames = (string) http::post('classNames', '');
-$newTab = http::post('target', '') === '_blank';
+$newTab = $href === '' || http::post('target', '') === '_blank';
 $download = http::post('download') ? 'checked' : '';
 $types = [
 	'url' => ['Web', 'https://example.com or /page/'],
@@ -30,16 +30,22 @@ $types = [
 $type = preg_match('/^(mailto|tel|sms):/i', $href, $m) ? strtolower($m[1]) : 'url';
 $address = $type === 'url' ? $href : rawurldecode(substr($href, strlen($type) + 1));
 $title = ($href === '' ? 'Insert ' : 'Edit ') . ($media ? 'Image Link' : 'Link');
+$returnUrl = (string) http::post('return_url', $this->state->returnUrl ?? $pages->href);
+if (parse_url($returnUrl, PHP_URL_HOST) !== null || parse_url($returnUrl, PHP_URL_SCHEME) !== null || parse_url($returnUrl, PHP_URL_PATH) !== parse_url($pages->href, PHP_URL_PATH)) $returnUrl = $pages->href;
+$this->state->returnUrl = $returnUrl;
+
 
 // the files of the page: the originals, as the media library lists them
-$files = $thumbs = $fileHrefs = [];
+$files = $thumbs = $fileHrefs = $faces = [];
 foreach ($pages->library as $entries) {
 	foreach ($entries as $entry) {
 		if ($entry['media'] === NULL || $entry['alias'] || \Systopic\System\Tables\Medias\External::is((string) $entry['media']->type)) {
 			continue;
 		}
 		$files[] = new \Systopic\System\Tables\Medias\Media($entry['media']);
-		$thumbs[] = $pages->thumbOf($entry['media']);
+		$face = $pages->tileFace($entry['media']);
+        $faces[] = $face;
+        $thumbs[] = $face['mark'] ? '' : $pages->thumbOf($entry['media']);
 		$fileHrefs[] = 'media:' . (int) $entry['node']->id;
 	}
 }
@@ -48,13 +54,13 @@ $linkedPage = preg_match('~^(?:\?id=|page:)(\d+)~', $href, $m) ? $pages->pageFor
 $tab = in_array($href, $fileHrefs, TRUE) ? 'file' : ($linkedPage !== NULL ? 'page' : 'address');
 $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 ?>
-<div class="cmslightbox cms" data-size="1">
+<div class="cmslightbox cms" data-size="1" data-existing-link="<?= $href !== '' ? 'true' : 'false' ?>">
 	<section>
 		<header>
 			<h1><?= $title ?></h1>
 			<ul class="barmenu">
 				<li>
-					<a class="ajax" onclick="wysiwyg.cancelLink()" href="../../" aria-label="Close"><i class="fa-regular fa-xmark"></i></a>
+					<a class="ajax" onclick="wysiwyg.cancelLink()" data-history="false" href="<?= $e($returnUrl) ?>" aria-label="Close"><i class="fa-regular fa-xmark"></i></a>
 				</li>
 			</ul>
 		</header>
@@ -67,11 +73,10 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 							<option value="">Link somewhere else</option>
 							<?php
 							foreach (array_reverse(mediaFormats::get()) as $key => $format) {
-								if ($format['cms_display'] == 'none') {
+								if (($format['cms_display'] ?? '') === 'none') {
 									continue;
 								}
-								$size = isset($format['width']) ? $format['width'] . ' × ' . $format['height'] . ' px'
-									: (isset($format['autocrop']) ? $format['autocrop'] . ', ' . \mediaFormats::ratioLabel($format['autocrop_limit'] ?? 0) : $format['megapixels'] . ' MP');
+								$size = \mediaFormats::sizeLabel($format);
 								echo '<option value="media:' . (int) http::post('image_node_id') . '?format=' . $e($key) . '">' . $e($key . ' (' . $size . ')') . '</option>';
 							}
 							?>
@@ -100,7 +105,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 						<textarea name="linkUrl" rows="2" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="<?= $e($types[$type][1]) ?>" autofocus><?= $e($address) ?></textarea>
 					</div>
 					<div class="linkPane" data-pane="page" <?= $tab === 'page' ? '' : 'hidden' ?>>
-						<input type="search" name="search" data-on_input="searchLinkPages" placeholder="Search pages by title" aria-label="Search pages" autocomplete="off">
+						<input type="search" name="search" data-on_input="<?= $e($pages->href . 'editor/editLink/searchLinkPages') ?>" placeholder="Search pages by title" aria-label="Search pages" autocomplete="off">
 						<ul class="linkPages">
 							<?php if ($linkedPage !== NULL) {
 								$label = $linkedPage->label->plain;
@@ -117,12 +122,12 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 						<?php } else { ?>
 							<ul class="linkFiles">
 								<?php foreach ($files as $i => $file) {
-									$icon = $file->type === 'video' ? 'film' : ($file->type === 'image' ? 'image' : 'file-pdf');
+									$icon = $faces[$i]['icon'];
 									?>
 									<li>
-										<button type="button" class="<?= $fileHrefs[$i] === $href ? 'selected' : '' ?>" data-href="<?= $e($fileHrefs[$i]) ?>" data-label="<?= $e($file->label) ?>" onclick="linkPicked(this)" title="<?= $e($file->label) ?>">
+										<button type="button" class="<?= $fileHrefs[$i] === $href ? 'selected' : '' ?>" data-file-inline="<?= \Systopic\System\Media\Presentation::opensInline((string) $file->mimetype) ? '1' : '0' ?>" data-href="<?= $e($fileHrefs[$i]) ?>" data-label="<?= $e($file->label) ?>" onclick="linkPicked(this)" title="<?= $e($file->label) ?>">
 											<i class="fa-regular fa-<?= $icon ?>"></i>
-											<img src="<?= $e($thumbs[$i]) ?>" alt="" loading="lazy" onerror="this.remove()">
+											<?php if ($thumbs[$i] !== '') { ?><img src="<?= $e($thumbs[$i]) ?>" alt="" loading="lazy" onerror="this.remove()"><?php } ?>
 											<span><?= $e($file->label) ?></span>
 										</button>
 									</li>
@@ -135,7 +140,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 			<div class="fieldGrid is-stack">
 				<label class="field">
 					<span>Open in</span>
-					<select name="target">
+					<select name="target" onchange="this.dataset.userOverride='true'">
 						<option value="">Same window</option>
 						<option value="_blank" <?= $newTab ? 'selected' : '' ?>>New tab</option>
 					</select>
@@ -145,7 +150,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 					<input name="linkClass" type="text" value="<?= $e($classNames) ?>" autocapitalize="off" spellcheck="false">
 					<small>For special styles of the website, separated by spaces.</small>
 				</label>
-				<label class="checkbox"><span>Download the file</span><input type="checkbox" <?= $download ?> name="download" class="switch tinyswitch"><div><div></div></div></label>
+				<label class="checkbox"><span>Download the file</span><input type="checkbox" <?= $download ?> name="download" onchange="this.dataset.userOverride='true'" class="switch tinyswitch"><div><div></div></div></label>
 			</div>
 		</main>
 		<footer>

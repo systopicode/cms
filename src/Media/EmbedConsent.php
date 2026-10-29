@@ -76,7 +76,7 @@ final class EmbedConsent
      *
      * `poster` is a ready URL. Without it, an image medium uses `poster_format`.
      *
-     * @param array{class?:string, poster?:string, poster_format?:string, poster_loading?:string} $opts
+     * @param array{class?:string, poster?:string, poster_format?:string, poster_loading?:string, scope?:string} $opts
      */
     public static function html(object $media, array $opts = []): string
     {
@@ -87,6 +87,12 @@ final class EmbedConsent
         }
         $provider = $info['provider'];
         $copy = self::provider($provider);
+        $perView = ($opts['scope'] ?? '') === 'view';
+        if ($perView) {
+            $name = External::label($provider);
+            $copy['hint'] = 'Loading this player connects your browser to ' . $name . '. The provider receives your IP address and technical request data. This choice applies only to this view.';
+            $copy['activate'] = 'Load ' . $name . ' player';
+        }
         $poster = trim((string) ($opts['poster'] ?? ''));
         if ($poster === '' && method_exists($media, 'setFormat')) {
             $format = (string) ($opts['poster_format'] ?? 'background');
@@ -102,18 +108,19 @@ final class EmbedConsent
         $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 
         $html = '<div class="' . $e($class) . '" data-ext-video'
+            . ($perView ? ' data-ext-scope="view"' : '')
             . ' data-provider="' . $e($provider) . '"'
             . ' data-embed-src="' . $e($info['embedSrc']) . '"'
             . ' data-embed-title="' . $e($copy['title']) . '">';
         if ($poster !== '') {
             $html .= '<img class="extVideo__poster" src="' . $e($poster) . '" alt="' . $e($alt) . '"'
-                . ' decoding="async" loading="' . $e($loading) . '">';
+                . ' referrerpolicy="no-referrer" decoding="async" loading="' . $e($loading) . '">';
         }
         $html .= '<div class="extVideo__overlay"><div class="extVideo__copy">';
         $html .= '<span class="extVideo__brand" aria-hidden="true"></span>';
         $html .= '<p class="extVideo__hint">' . self::hint($copy['hint']) . '</p>';
         $html .= '<button type="button" class="extVideo__btn" data-ext-activate="' . $e($provider) . '">'
-            . $e($copy['activate']) . '</button>';
+            . ($perView ? '<i class="fa-regular fa-play" aria-hidden="true"></i>' : '') . $e($copy['activate']) . '</button>';
         $html .= '</div></div></div>';
         return $html;
     }

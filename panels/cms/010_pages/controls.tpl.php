@@ -49,7 +49,7 @@ $title = $page?->label->plain ?? '';
 <?php
 $flag = static function (array $language) {
 	$code = htmlspecialchars(strtolower((string) ($language['code'] ?? '')), ENT_QUOTES);
-	return '<img alt="" src="https://flagcdn.com/' . $code . '.svg">';
+	return '<img referrerpolicy="no-referrer" alt="" src="https://flagcdn.com/' . $code . '.svg">';
 };
 $current = Languages::activated()[$this->state->lang] ?? null;
 ?>

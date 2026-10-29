@@ -410,3 +410,14 @@ aside.cms .releaseFields input[type="datetime-local"]::-webkit-date-and-time-val
 aside.cms .pageRelations .relationIncoming .relationLink { border: 0; outline: 0; box-shadow: none; }
 aside.cms .pageRelations .relationIncoming .relationLink:is(:hover, :focus-visible) span { text-decoration: none; }
 aside.cms .pageRelations .relationIncoming .relationLink:focus-visible { outline: 2px solid var(--cmsHighlightColor); outline-offset: -2px; }
+
+.pageRelations .relationBlock h4 {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.pageRelations .relationBlock h4 > i { flex: 0 0 1rem; text-align: center; }
+
+.cms aside textarea[name="meta_description"] { min-height: calc(3 * 1.5em + 1rem); line-height: 1.5; }
+
+aside.cms .pageRelations .relationLink small { word-break: break-all; overflow-wrap: anywhere; }

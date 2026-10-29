@@ -7,7 +7,23 @@ use Systopic\Cms\Tables\Settings\Operator as SettingOperator;
 $definition = $this->definition;
 
 switch ($this->action) {
+    case 'removeSetting':
+        if (!$definition || $definition->options !== []) {
+            \message::error('A setting that still has children cannot be deleted.');
+            break;
+        }
+        $back = $this->parent->href . ($definition->parent ? '?id=' . (int) $definition->parent->nodeId : '');
+        $this->parent->child('delete')->removeDefinition($definition);
+        $this->parent->updateView('main');
+        \http::redirect($back);
+        break;
+
 	case 'updateSetting':
+        $postedValues = (array) (\http::values() ?: []);
+        if (isset($postedValues['name']) && !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', (string) $postedValues['name'])) {
+            \message::error('Use a valid key: letters, digits and underscores; start with a letter or underscore.');
+            return;
+        }
 		if ($definition) {
 			$values = (array) (\http::values() ?: []);
 			$this->scope->save(SettingOperator::assign($definition->setting, $values));

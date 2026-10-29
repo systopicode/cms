@@ -12,6 +12,7 @@
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Upload\Panel $this
  */
 
+use Systopic\System\Media\GroupPolicy;
 use Systopic\System\Queries\TagGroups\TagGroups;
 use Systopic\System\Queries\TagLinks\TagLinks;
 use Systopic\System\Tables\Medias\Files as MediaFiles;
@@ -96,15 +97,26 @@ $panel = $this;
 $store = static function (string $tmpFileNative, string $fileName, string $label) use ($pages, $panel): bool {
 	$replace = (int) http::get('node_id');
 	$rows = [];
+	$existing = $replace > 0 ? $pages->mediaOfNode($replace) : null;
+    $previousType = (string) ($existing?->type ?? '');
+	$group = $replace > 0 ? (string) ($existing?->group ?? '') : (string) (http::get('group') ?: 'main');
+	$error = $replace > 0 && $existing === null ? 'Medium not found.'
+		: (GroupPolicy::error($pages->mediaGroups, $group, $fileName) ?? GroupPolicy::contentError($tmpFileNative, $fileName));
+	if ($error !== null) {
+		client::done(['error' => $error]);
+		is_file($tmpFileNative) && unlink($tmpFileNative);
+		return false;
+	}
+	$fileName = GroupPolicy::storageName($fileName);
 	if ($replace > 0) {
-		$media = $pages->mediaOfNode($replace);
+		$media = $existing;
 	} else {
 		$parent = (int) http::get('node_parent_node_id');
 		if (http::put('editor')) {
 			// an editor shown through an alias writes the original page's text: its library
 			$parent = (int) ($pages->pageFor($parent)?->row?->relationId('node') ?: $parent);
 		}
-		[$media, $rows] = MediaOperator::create($pages->scope, $parent, (string) (http::get('group') ?: 'main'), $pages->userId());
+		[$media, $rows] = MediaOperator::create($pages->scope, $parent, $group, $pages->userId());
 	}
 	if ($media === NULL) {
 		message::error('Medium not found');
@@ -122,13 +134,13 @@ $store = static function (string $tmpFileNative, string $fileName, string $label
 	}
 	$uow->commit();
 	MediaFiles::store($media, $tmpFileNative, $fileName);   // type, mime, image size from the file
-	$chosen = strtolower(trim((string) http::put('type')));
-	if ($chosen !== '' && (in_array($chosen, ['image', 'video', 'audio', 'pdf', 'sketchup', 'file'], true) || \Systopic\System\Tables\Medias\External::is($chosen))) {
-		$media->type = $chosen;
-	}
-	if (\Systopic\System\Tables\Medias\External::is((string) $media->type) || trim((string) http::put('url')) !== '') {
-		\Systopic\System\Tables\Medias\External::storeUrl($media, (string) http::put('url'));
-	}
+    $chosen = strtolower(trim((string) http::put('type')));
+    $media->type = \Systopic\System\Media\TypePolicy::selected(
+        (string) $media->mimetype, (string) $media->filename, $chosen, $previousType, \Systopic\System\Auth\Session::isSuperuser()
+    );
+    if (\Systopic\System\Tables\Medias\External::is((string) $media->type) && http::put('url', null) !== null) {
+        \Systopic\System\Tables\Medias\External::storeUrl($media, (string) http::put('url'));
+    }
 	$pages->uow()->persist($media)->commit();
 	if ($replace < 1) {
 		$raw = http::put('tags', null);

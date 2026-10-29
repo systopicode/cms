@@ -9,12 +9,13 @@
  */
 
 use Systopic\System\Tables\Medias\Files;
+use Systopic\System\Media\GroupPolicy;
 
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 $groupInfo = $this->mediaGroups;
 $siteRoot = (string) http::$siteRoot;
 ?>
-<ul data-node_parent_node_id='<?= (int) ($this->state->id ?? 0) ?>'>
+<ul data-all-media-accept="<?= $e(GroupPolicy::accept([], 'text')) ?>" data-node_parent_node_id='<?= (int) ($this->state->id ?? 0) ?>'>
 <?php foreach ($this->library as $groupName => $entries) {
 	$label = $groupInfo[$groupName]['label'] ?? match ($groupName) {
 		'unassigned' => 'unassigned (not displayed)',
@@ -22,8 +23,8 @@ $siteRoot = (string) http::$siteRoot;
 		default => $groupName,
 	};
 	?>
-	<li class='title notselectable' <?= html::arrayToDataAttr(['media_group' => $groupName, 'drop_accept' => 'media', 'on_drop' => 'mml/updateMediaGroup']) ?>>
-		<h4><?= $e($label) ?></h4>
+	<li class='title notselectable' <?= html::arrayToDataAttr(['media_group' => $groupName, 'drop_accept' => 'media', 'on_drop' => 'mml/updateMediaGroup', 'media-accept' => GroupPolicy::accept($groupInfo, $groupName)]) ?>>
+		<h4><span><?= $e($label) ?></span><a class="ajax button transparent icononly small mediaGroupInfo" data-history="false" href="<?= $e($this->href . 'mml/groupInfo/?group=' . rawurlencode($groupName)) ?>" title="Allowed file types" aria-label="Allowed file types for <?= $e($label) ?>"><i class="fa-regular fa-circle-info"></i></a></h4>
 		<ul>
 			<li class="upload" data-upload-many>
 				<i class='fa-regular fa-plus'></i>
@@ -43,11 +44,12 @@ $siteRoot = (string) http::$siteRoot;
 				<li class="<?= !empty($faceForClass['mark']) ? 'is-mark' : '' ?>" <?= html::arrayToDataAttr([
 					'drag_type' => 'media', 'node_id' => $id,
 					// without a medium these stay off, as in the legacy markup
-					'media_id' => $media?->id, 'type' => $media?->type, 'value' => $media?->label,
+					'media-extension' => GroupPolicy::extension($filename),
+                    'media_id' => $media?->id, 'type' => $media?->type, 'value' => $media?->label,
 					'on_contextmenu' => 'mml/getMmlContextmenu',
 				]) ?>>
 					<?php if ($entry['alias']) { ?>
-					<input type=file data-on_change='upload/open'>
+					<input type=file accept="<?= $e(GroupPolicy::accept($groupInfo, $groupName)) ?>" data-on_change='upload/open'>
 					<?php } ?>
 					<?php if ($entry['alias']) {
 						$ext = in_array($mime, ['image/png', 'image/jpeg'], true) ? '' : '.png';
@@ -70,7 +72,7 @@ $siteRoot = (string) http::$siteRoot;
 								<a class='ajax' href='editor/file/?target_id=<?= $id ?>' title='Edit' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='fa-regular fa-pen'></i></a>
 								<label title='Replace' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'>
 									<i class='fa-regular fa-arrows-rotate'></i>
-									<input type=file data-on_change='upload/open'>
+									<input type=file accept="<?= $e(GroupPolicy::accept($groupInfo, $groupName)) ?>" data-on_change='upload/open'>
 								</label>
 							</div>
 						</div>

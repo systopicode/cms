@@ -9,9 +9,9 @@
 $original = http::$root . 'var/original/' . \Systopic\System\Tables\Medias\Files::idPath((int) $media->id) . $media->filename;
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 ?>
-<ul class="contextmenu">
-    <li>
-	<ul class="iconsonly">
+<ul class="contextmenu mediaContextMenu">
+    <li class="iconsonly">
+	<ul>
 	    <li title="Edit" class="iconOnly">
 		<a class="ajax" href="editor/file/?target_id=<?= $nodeId ?>">
 		    <i class="fa-regular fa-crop-simple"></i>

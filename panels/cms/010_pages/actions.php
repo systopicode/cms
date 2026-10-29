@@ -36,7 +36,29 @@ $savePage = function (PageRow $row): void {
 };
 
 switch ($this->action) {
+    case 'resolveEditorLink':
+        $renderStyle = 'none';
+        $reference = preg_replace('~^(media|page)::(?=\d)~', '$1:', trim((string) http::put('ref')));
+        $ref = \Systopic\Cms\Refs\Ref::fromAttribute($reference);
+        $media = $ref?->type === 'media' ? $this->mediaOfNode($ref->id) : null;
+        if ($media === null) {
+            message::error('The linked file is no longer available.');
+            client::done(['error' => true]);
+            break;
+        }
+        $file = new \Systopic\System\Tables\Medias\Media($media);
+        client::done([
+            'url' => (string) $file->setFormat($ref->param('format', 'original'))->src,
+            'filename' => (string) $media->filename,
+            'inline' => \Systopic\System\Media\Presentation::opensInline((string) $media->mimetype),
+        ]);
+        break;
+
     // ------------------------------------------------------------ the tree
+
+    case 'cancelEditLabel':
+        $this->updateView('tree');
+        break;
 
     case 'getTreeContextmenu':
         client::contextmenu($this->printTreeContextmenu(http::dataset('node_id')));
@@ -510,14 +532,23 @@ switch ($this->action) {
         $this->updateView('mml');
         break;
 
-    case 'insertMediaInEditor':
-        $tag = $this->editorTag((int) http::dragdata('node_id'));
-		if ($tag === null) {
-			break;
-		}
-		$field = http::dataset('field');
-        client::insertHtmlAtCursor($tag, "div.editor[data-field='$field']");
-        client::trigger("div.editor[data-field='$field']", 'input');
+    case 'insertMediaInEditor': // existing rendered fields still use this name
+    case 'insertItemInEditor':
+        $sourceId = (int) http::dragdata('node_id');
+        if (http::dragdata('drag_type') === 'page') {
+            $targetPage = $this->pageFor($sourceId);
+            $stored = $targetPage === null ? null : \Systopic\Cms\Media\EditorTag::page($sourceId, (string) $targetPage->row->label, $this->params->lang);
+            $tag = $stored === null ? null : (new \Systopic\Cms\Refs\Resolver($this->scope, $this->params))->renderForEditor($stored);
+        } else {
+            $tag = $this->editorTag($sourceId);
+        }
+        if ($tag === null) break;
+        $field = (string) http::dataset('field');
+        if (!in_array($field, PageOperator::EDITABLE, true)) break;
+        $selector = '.editor[data-field="' . $field . '"]';
+        if ($targetId = (int) http::dataset('node_id')) $selector .= '[data-node_id="' . $targetId . '"]';
+        client::insertHtmlAtCursor($tag, $selector);
+        client::trigger($selector, 'input');
         break;
 
     case 'updateMediaCrop':

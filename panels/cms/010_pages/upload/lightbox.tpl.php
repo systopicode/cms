@@ -9,6 +9,8 @@ $nodeId = $this->nodeId;
 $row = $nodeId > 1 ? $this->parent->mediaOfNode($nodeId) : null;
 $media = $row !== null ? (new \Systopic\System\Tables\Medias\Media($row))->setFormat('original') : null;
 $replacement = $media !== null;
+$group = $replacement ? (string) $row->group : (string) (http::get('group') ?: 'main');
+$accept = \Systopic\System\Media\GroupPolicy::accept($this->parent->mediaGroups, $group);
 $currentPath = $replacement ? \fs::toNative($media->path) : '';
 $currentSize = ($currentPath !== '' && is_file($currentPath)) ? str::formatbytes($currentPath) : 'not on disk';
 $currentFormat = $replacement && (int) $media->width > 0
@@ -32,12 +34,17 @@ $currentFormat = $replacement && (int) $media->width > 0
 					<div data-doc="box" class="idle">
 						<div class="uploader">
 							<p class="dropHint"><i class="fa-regular fa-cloud-arrow-up"></i>Drop a file here, or click to choose</p>
-							<input type="file" data-doc="input">
+							<input type="file" accept="<?= $e($accept) ?>" data-doc="input">
 							<img data-doc="img" alt="">
 							<iframe data-doc="pdf" title="Preview"></iframe>
 							<video data-doc="video" controls muted playsinline></video>
 							<audio data-doc="audio" controls></audio>
 							<div data-doc="skp" class="cmsSkpStage" hidden data-skp-module="<?= $e(\Systopic\Cms\Media\SkpViewer::moduleUrl()) ?>"></div>
+                            <div class="filePreviewFallback" data-doc="fileFallback" data-icons="<?= $e(json_encode(\Systopic\System\Media\Presentation::ICONS)) ?>" hidden>
+                                <i class="fa-regular fa-file" data-doc="fileFallbackIcon" aria-hidden="true"></i>
+                                <strong data-doc="fileFallbackName"></strong>
+                                <p>Ready to upload. A browser preview is not available for this file type.</p>
+                            </div>
 							<p class="readingHint">Reading the file…</p>
 						</div>
 					</div>
@@ -52,6 +59,7 @@ $currentFormat = $replacement && (int) $media->width > 0
 								case 'image/svg+xml':
 								case 'image/png':
 								case 'image/webp':
+                                case 'image/gif':
 									echo '<img alt="" src="' . $e($media->src) . '">';
 									break;
 								case 'application/pdf':
@@ -63,9 +71,15 @@ $currentFormat = $replacement && (int) $media->width > 0
 									break;
 								case 'audio/mpeg':
 								case 'audio/mp3':
+                                case 'audio/mp4':
+                                case 'audio/x-m4a':
 									echo '<audio controls src="' . $e($media->src) . '"></audio>';
 									break;
-							}
+                                default:
+                                    if (!str_contains((string) $media->mimetype, 'sketchup') && !str_ends_with(strtolower((string) $media->filename), '.skp')) {
+                                        echo '<div class="filePreviewFallback"><i class="fa-regular fa-' . $e(\Systopic\System\Media\Presentation::icon((string) $media->filename)) . '" aria-hidden="true"></i><strong>' . $e($media->filename) . '</strong><p>A browser preview is not available for this file type.</p><a href="' . $e($media->src) . '" download>Download file</a></div>';
+                                    }
+                            }
 							$skpNow = str_contains((string) $media->mimetype, 'sketchup') || str_ends_with(strtolower((string) $media->filename), '.skp');
 							if ($skpNow) {
 								echo '<div class="cmsSkpStage" data-skp-src="' . $e($media->src) . '" data-skp-module="' . $e(\Systopic\Cms\Media\SkpViewer::moduleUrl()) . '"></div>';

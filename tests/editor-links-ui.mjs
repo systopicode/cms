@@ -1,0 +1,55 @@
+import {readFile} from 'node:fs/promises';
+import {pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+const {chromium}=await import(pathToFileURL(process.env.FLUXO_PLAYWRIGHT_MODULE).href);
+const system=new URL('../../system/',import.meta.url),read=p=>readFile(new URL(p,system),'utf8');
+const browser=await chromium.launch({channel:'chrome',headless:true});
+try {
+ const page=await browser.newPage();
+ await page.setContent('<div class="editor" contenteditable="true" data-field="html01" data-node_id="10"><p>Perspektiven</p></div>');
+ await page.evaluate(()=>{window.wysiwygOf=node=>(node.nodeType===1?node:node.parentElement)?.closest('.editor');window.editorRange={};});
+ await page.addScriptTag({content:await read('public/js/gui/HTMLeditor.format.js')});
+ const inserted=await page.evaluate(()=>{const el=document.querySelector('p'),r=document.createRange();r.selectNodeContents(el);getSelection().removeAllRanges();getSelection().addRange(r);wysiwyg.linkFor(el);const editor=el.closest('.editor');editor.replaceWith(editor.cloneNode(true));const result=wysiwyg.applyLink({href:'media:42',text:'Archive',download:true});return result&&wysiwyg.html(result);});
+ assert.equal(inserted,'<p><a href="media:42" target="_self" download="">Archive</a></p>','insert survives rerendered field without language attribute');
+ const edited=await page.evaluate(()=>{const a=document.querySelector('a');a.setAttribute('href','/old.zip');a.setAttribute('data-ref-href','media:42');wysiwyg.linkFor(a);const result=wysiwyg.applyLink({href:'media:99',text:'New archive',download:true});return wysiwyg.html(result);});
+ assert.match(edited,/href="media:99"/);assert.ok(!edited.includes('data-ref-href'),'old reference cannot overwrite newly selected link');
+ const css=await read('public/css/12_HTMLeditor.css');
+ await page.setContent(`<style>${css}</style><span class="editor plaintext" data-editorlabel="Link text" contenteditable="true" style="display:block;width:250px;height:80px">Text</span>`);
+ await page.evaluate(()=>document.activeElement.blur());
+ await page.mouse.move(900,600);
+ await page.locator('.editor').hover();await page.waitForTimeout(180);
+ assert.equal(await page.locator('.editor').evaluate(el=>getComputedStyle(el,'::after').opacity),'1');
+ await page.locator('.editor').click();await page.waitForTimeout(180);
+ assert.equal(await page.locator('.editor').evaluate(el=>getComputedStyle(el,'::after').opacity),'0');
+ await page.setContent(await readFile('/private/tmp/fluxo-link-dialog-fixture.html','utf8'));
+ await page.addScriptTag({content:await read('public/js/gui/HTMLeditor.funcs.js')});
+ const state=async()=>({target:await page.locator('[name=target]').inputValue(),download:await page.locator('[name=download]').isChecked()});
+ assert.deepEqual(await state(),{target:'_blank',download:false});
+ for (const type of ['mailto','tel','sms']) {
+  await page.locator('[name=linkType]').selectOption(type);
+  assert.deepEqual(await state(),{target:'',download:false});
+  assert.equal(await page.locator('[name=target] option[value="_blank"]').evaluate(el=>el.disabled),false);
+  await page.locator('[name=target]').selectOption('_blank');
+  assert.deepEqual(await state(),{target:'_blank',download:false});
+  await page.evaluate(()=>linkDefaults(document.querySelector('[name=target]').closest('main'),'page',false));
+  assert.equal((await state()).target,'_blank','manual target survives defaults');
+  await page.locator('[name=target]').evaluate(el=>delete el.dataset.userOverride);
+ }
+ await page.locator('[name=linkType]').selectOption('url');
+ assert.deepEqual(await state(),{target:'_blank',download:false});
+ await page.locator('[data-tab=file]').click();assert.deepEqual(await state(),{target:'',download:true});
+ await page.locator('[data-tab=page]').click();assert.deepEqual(await state(),{target:'',download:false});
+ await page.locator('[data-tab=address]').click();assert.deepEqual(await state(),{target:'_blank',download:false});
+ await page.evaluate(()=>{const pane=document.querySelector('[data-pane=file]');pane.innerHTML='<button id="pdf" data-file-inline="1" data-href="media:42" onclick="linkPicked(this)">PDF</button><button id="zip" data-file-inline="0" data-href="media:43" onclick="linkPicked(this)">ZIP</button>';});
+ await page.locator('[data-tab=file]').click();await page.locator('#pdf').click();assert.deepEqual(await state(),{target:'_blank',download:false});
+ await page.locator('#zip').click();assert.deepEqual(await state(),{target:'',download:true});
+ await page.locator('[name=download]').uncheck();
+ await page.locator('#pdf').click();await page.locator('#zip').click();
+ assert.equal((await state()).download,false,'manual download choice survives changing files');
+ await page.locator('[name=target]').evaluate(el=>el.closest('.cmslightbox').dataset.existingLink='true');
+ await page.locator('[data-tab=address]').click();
+ assert.deepEqual(await state(),{target:'',download:false},'existing link settings survive target tabs');
+ await page.locator('[name=target]').selectOption('_blank');await page.locator('[name=download]').uncheck();
+ assert.deepEqual(await state(),{target:'_blank',download:false},'manual settings stay editable after defaults');
+ console.log('ok: stable link references, editor rerenders, focus chips and dynamic address/page/inline/download defaults');
+} finally {await browser.close();}

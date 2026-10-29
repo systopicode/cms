@@ -112,8 +112,8 @@ final class FieldOutput
         $classes = ['editor'];
         $editableAttributes = \html::arrayToDataAttr([
             'on_input'              => 'updatePageParam',
-            'on_drop'               => 'insertMediaInEditor',
-            'drop_accept'           => 'media',
+            'on_drop'               => 'insertItemInEditor',
+            'drop_accept'           => 'media page',
             'field'                 => $field->name,
             'node_id'               => $page->id,
             'node_original_node_id' => $page->node->relationId('originalNode'),

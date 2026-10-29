@@ -12,6 +12,7 @@ if ($media === NULL) {
 }
 $original = $media->setFormat('original');
 $embed = $this->mediaRow ? \Systopic\System\Tables\Medias\External::embedOf($this->mediaRow) : null;
+if ($embed !== null) echo \fsLoader::includeScriptFiles(\fs::toInternal(dirname(__DIR__, 5) . '/public/site/embedConsent.js'));
 $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/svg', 'video/mp4'], true);
 ?>
 <div class="cmslightbox cms fileEditor" data-size="3">
@@ -41,7 +42,7 @@ $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/
 					if ($embed !== null) { ?>
 						<div class="filePane">
 							<div class="fileFrame embedFrame">
-								<iframe src="<?= htmlspecialchars($embed['embedSrc'], ENT_QUOTES, 'UTF-8') ?>" title="<?= htmlspecialchars(\Systopic\System\Tables\Medias\External::label($embed['provider']), ENT_QUOTES, 'UTF-8') ?>" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+								<?= \Systopic\Cms\Media\EmbedConsent::html($this->mediaRow, ['scope' => 'view']) ?>
 							</div>
 						</div>
 					<?php }
@@ -69,9 +70,15 @@ $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/
 						case 'application/pdf':
 							include 'pdf.tpl.php';
 							break;
-						case 'video/mp4':
+						case 'video/webm':
+                            echo '<div class="filePane"><video controls playsinline style="width:100%;max-height:70vh" src="' . htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') . '"></video></div>';
+                            break;
+                        case 'video/mp4':
 							include 'video.tpl.php';
 							break;
+                        default:
+                            echo '<div class="filePreviewFallback"><i class="fa-regular fa-' . htmlspecialchars(\Systopic\System\Media\Presentation::icon((string) $media->filename), ENT_QUOTES, 'UTF-8') . '" aria-hidden="true"></i><strong>' . htmlspecialchars((string) $media->filename, ENT_QUOTES, 'UTF-8') . '</strong><p>A browser preview is not available for this file type.</p><a href="' . htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') . '" download>Download file</a></div>';
+                            break;
 					}
 					}
 					?>

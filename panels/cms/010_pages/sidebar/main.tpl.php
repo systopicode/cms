@@ -48,9 +48,9 @@ $manage = [
 								<span class="sidebarLabel"><?= htmlspecialchars((string) $sideBarItem->label, ENT_QUOTES, 'UTF-8') ?></span>
 								<span class="sidebarTools">
 									<?php if ($templateName === 'meta') { ?>
-										<a class="ajax button transparent icononly small sidebarInfo" href="sidebar/defaultMeta/" title="Default values" aria-label="Default values"><i class="fa-regular fa-circle-info"></i></a>
+										<a class="ajax button transparent icononly small sidebarInfo" data-history="false" href="<?= htmlspecialchars($this->parent->href . 'sidebar/defaultMeta/', ENT_QUOTES) ?>" title="Default values" aria-label="Default values"><i class="fa-regular fa-circle-info"></i></a>
 									<?php } elseif ($templateName === 'relations') { ?>
-                                        <a class="ajax button transparent icononly small sidebarInfo" href="sidebar/relationsHelp/" title="About Aliases &amp; Redirects" aria-label="About Aliases &amp; Redirects"><i class="fa-regular fa-circle-info"></i></a>
+                                        <a class="ajax button transparent icononly small sidebarInfo" data-history="false" href="<?= htmlspecialchars($this->parent->href . 'sidebar/relationsHelp/', ENT_QUOTES) ?>" title="About Aliases &amp; Redirects" aria-label="About Aliases &amp; Redirects"><i class="fa-regular fa-circle-info"></i></a>
                                     <?php } elseif (isset($manage[$templateName])) { ?>
 										<a class="ajax button transparent icononly small sidebarInfo" href="<?= http::$root . $manage[$templateName][0] ?>" title="<?= $manage[$templateName][1] ?>" aria-label="<?= $manage[$templateName][1] ?>"><i class="fa-regular fa-pen"></i></a>
 									<?php } ?>

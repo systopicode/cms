@@ -21,15 +21,7 @@
 			$selectedFormat = (string) array_key_first($visibleFormats);
 		}
 		foreach ($visibleFormats as $key => $image_format) {
-			if (isset($image_format['width'])) {
-				$format_info = $image_format['width'] . ' x ' . $image_format['height'] . 'px';
-			} elseif (isset($image_format['autocrop'])) {
-				$format_info = $image_format['autocrop'] . ', ' . mediaFormats::ratioLabel($image_format['autocrop_limit'] ?? 0);
-			} else {
-				// settype() returns TRUE, not the value - this read 'Megapixels: 1'
-				// for every format that is sized by megapixels.
-				$format_info = 'Megapixels: ' . $image_format['megapixels'];
-			}
+			$format_info = mediaFormats::sizeLabel($image_format);
 			?>
 			<option value="<?= $key ?>"<?= $selectedFormat === $key ? ' selected' : '' ?>><?= $key ?> (<?= $format_info ?>)</option>
 			<?php

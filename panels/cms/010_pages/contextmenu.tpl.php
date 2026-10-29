@@ -63,22 +63,26 @@ if ($active !== null) {
 							<i class="fa-regular fa-eye-slash"></i>
 						</a>
 					</li>
+                    <?php if ($node->hasChildren) { ?>
 					<li title="Hide with children" class="iconOnly">
 						<a title="Hide with children" aria-label="Hide with children"  data-on_click="unPublishAll?id=<?= $node->id ?>">
 							<span class="layerEyeIcon" aria-hidden="true"><i class="fa-regular fa-layer-group"></i><i class="fa-regular fa-eye-slash"></i></span>
 						</a>
 					</li>
+                    <?php } ?>
 				<?php } else { ?>
 					<li title="Publish" class="iconOnly">
 						<a title="Publish" aria-label="Publish"  data-on_click="publish?id=<?= $node->id ?>">
 							<i class="fa-regular fa-eye"></i>
 						</a>
 					</li>
+                    <?php if ($node->hasChildren) { ?>
 					<li title="Publish with children" class="iconOnly">
 						<a title="Publish with children" aria-label="Publish with children"  data-on_click="publishAll?id=<?= $node->id ?>">
 							<span class="layerEyeIcon" aria-hidden="true"><i class="fa-regular fa-layer-group"></i><i class="fa-regular fa-eye"></i></span>
 						</a>
 					</li>
+                    <?php } ?>
 				<?php } ?>
 				<li title="New subpage" class="iconOnly">
 					<a title="New subpage" aria-label="New subpage" data-node_id="<?= $node->id ?>" data-on_click="newChild">

@@ -17,6 +17,11 @@ switch ($this->action) {
 		break;
 
 	case 'updateSetting':
+        $postedValues = (array) (\http::values() ?: []);
+        if (isset($postedValues['name']) && !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', (string) $postedValues['name'])) {
+            \message::error('Use a valid key: letters, digits and underscores; start with a letter or underscore.');
+            return;
+        }
 		// One field per keystroke, no redraw: the field is on screen already.
 		if ($definition) {
 			$this->scope->save(SettingOperator::assign($definition->setting, (array) (\http::values() ?: [])));

@@ -104,7 +104,7 @@ if (document.readyState === 'loading') {
 } else {
     revealRequestedPageRelations();
 }
-document.addEventListener('cms:rendered', revealRequestedPageRelations);
+
 
 function clearPageRelationSearch(source) {
     var root = document.querySelector('.scrollContainerContent[data-node_id="' + Number(source) + '"]');

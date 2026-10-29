@@ -20,14 +20,15 @@ $separator = $meta('titleSeparator', 'PAGE_TITLE_SEPERATOR', '|');
 $robots = $meta('robots', 'META_ROBOTS', 'index, follow');
 $image = $meta('shareImage', 'META_SHARE_IMAGE', 'img/share_default.jpg');
 $imageUrl = preg_match('~^https?://~i', $image) ? $image : rtrim((string) http::$siteUrl, '/') . '/' . ltrim($image, '/');
+$pages = $this->parent->parent;
 $settings = http::$root . 'cms/settings/pagesettings/';
 ?>
-<div class="cmslightbox cms metaDefaults">
+<div class="cmslightbox cms metaDefaults" data-transient-info>
 	<section>
 		<header>
 			<h1>Site defaults</h1>
 			<ul class="barmenu">
-				<li><a class="ajax" href="../../"><i class="fa-regular fa-xmark"></i></a></li>
+				<li><a class="ajax" data-history="false" aria-label="Close" href="<?= $e($pages->currentViewHref()) ?>"><i class="fa-regular fa-xmark"></i></a></li>
 			</ul>
 		</header>
 		<main>

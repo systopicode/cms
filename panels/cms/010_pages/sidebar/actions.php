@@ -114,7 +114,12 @@ switch ($this->action) {
 
 	case 'updateShareImage':
 		$mediaNodeId = (int) http::dragdata('node_id', 0);
-		if ($row !== null && $mediaNodeId > 0 && http::dragdata('type', false) === 'image') {
+        $shareMedia = $mediaNodeId > 0 ? $pages->mediaOfNode($mediaNodeId) : null;
+        if ($row !== null && $shareMedia !== null && !\Systopic\System\Media\GroupPolicy::shareImageAllowed((string) $shareMedia->filename, (string) $shareMedia->mimetype)) {
+            message::error('Share images must be JPG, PNG, GIF or WebP images.');
+            break;
+        }
+		if ($row !== null && $shareMedia !== null) {
 			$row->metaShareImage = $mediaNodeId;
 			$save([$row]);
 			client::replaceInner('aside div.mediaDrop.shareImage', $this->shareImage());

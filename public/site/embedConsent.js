@@ -102,7 +102,7 @@
 		var name = providerOf(provider);
 		if (!name || !allowed(name)) return;
 		document.querySelectorAll('[data-ext-video][data-provider="' + name + '"]').forEach(function (el) {
-			mount(el, autoplayTarget === el);
+			if (el.getAttribute('data-ext-scope') !== 'view') mount(el, autoplayTarget === el);
 		});
 	}
 
@@ -118,6 +118,11 @@
 	function grant(provider, source) {
 		var name = providerOf(provider);
 		if (!name) return;
+		var placeholder = source && source.closest ? source.closest('[data-ext-video]') : null;
+		if (placeholder && placeholder.getAttribute('data-ext-scope') === 'view') {
+			mount(placeholder, true);
+			return;
+		}
 		var x = window.scrollX;
 		var y = window.scrollY;
 		write(name);

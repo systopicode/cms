@@ -47,11 +47,11 @@
 				'@media print{:host{display:none}}' +
 				'</style>' +
 				'<div class="bar">' +
-				'<button class="brand" type="button" aria-expanded="false" aria-label="fluxo menu" title="fluxo"><img src="' + esc(config.signet) + '" alt=""></button>' +
+				'<button class="brand" type="button" aria-expanded="false" aria-label="fluxo menu" title="fluxo"><img referrerpolicy="no-referrer" src="' + esc(config.signet) + '" alt=""></button>' +
 				'<a class="edit" href="#"' + blank + '>' + svg('pen') + '<span>Edit page</span></a>' +
 				'<button class="fold" type="button" title="Fold the bar">' + svg('fold') + '</button>' +
 				'<div class="menu" hidden>' +
-				'<a class="who" href="' + esc(config.cms) + 'user/"' + blank + '><img src="' + esc(config.portrait) + '" alt=""><span>' + esc(config.name) + '<small>Your account</small></span></a>' +
+				'<a class="who" href="' + esc(config.cms) + 'user/"' + blank + '><img referrerpolicy="no-referrer" src="' + esc(config.portrait) + '" alt=""><span>' + esc(config.name) + '<small>Your account</small></span></a>' +
 				'<a href="' + esc(config.cms) + '"' + blank + '>' + fa('grid-2') + 'Dashboard</a>' +
 				'<div class="sections"></div>' +
 				'<hr><a class="out" href="#">' + fa('arrow-right-from-bracket') + 'Log out</a>' +

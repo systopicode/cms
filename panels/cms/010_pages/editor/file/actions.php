@@ -107,15 +107,17 @@ switch ($this->action) {
 	case 'updateMediaType':
 		if ($row !== NULL) {
 			$type = strtolower(trim((string) http::values('type')));
-			if ($type !== '' && (in_array($type, ['image', 'video', 'audio', 'pdf', 'sketchup', 'file'], true) || \Systopic\System\Tables\Medias\External::is($type))) {
+			if (\Systopic\System\Media\TypePolicy::mayChoose($type, \Systopic\System\Auth\Session::isSuperuser())) {
 				$row->type = $type;
 				$save();
+            } elseif ($type !== (string) $row->type) {
+                message::error('The file type is detected automatically. Only a superuser can change it.');
 			}
 		}
 		break;
 
 	case 'updateMediaUrl':
-		if ($row !== NULL) {
+		if ($row !== NULL && (\Systopic\System\Tables\Medias\External::is((string) $row->type) || \Systopic\System\Auth\Session::isSuperuser())) {
 			\Systopic\System\Tables\Medias\External::storeUrl($row, (string) http::values('url'));
 			$save();
 		}

@@ -17,7 +17,7 @@ switch ($this->action) {
 			(string) http::dataset('field'),
 			http::put('html'),
 		);
-		http::redirect('../../');
+        $renderStyle = 'none';
 		break;
 
 	case 'searchLinkPages':

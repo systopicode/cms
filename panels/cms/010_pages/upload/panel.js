@@ -9,6 +9,46 @@
 	sys.lib.add(setup, function () {
 		sys.lib.applyParentConstructor(this, setup);
 		var upload = this;
+        upload.showError = (text) => {
+            var list = document.querySelector('.mmlContent > div > ul');
+            var host = list || document.querySelector('.cmslightbox.upload main') || document.querySelector('section.cms');
+            if (!host) return;
+            var holder = host.querySelector('.mmlUploadMessages');
+            if (!holder) {
+                holder = document.createElement(list ? 'li' : 'div');
+                holder.className = 'mmlUploadMessages';
+                var messages = document.createElement('div');
+                messages.className = 'cms message';
+                messages.setAttribute('data-system-messages', '');
+                messages.setAttribute('role', 'alert');
+                messages.setAttribute('aria-live', 'assertive');
+                holder.appendChild(messages);
+                host.prepend(holder);
+            }
+            var error = document.createElement('div');
+            error.className = 'error';
+            var paragraph = document.createElement('p');
+            paragraph.className = 'message';
+            paragraph.textContent = text;
+            error.appendChild(paragraph);
+            error.addEventListener('animationend', (event) => {
+                if (event.target !== error || event.animationName !== 'cmsMessageRetire') return;
+                error.remove();
+                if (!holder.firstChild.children.length) holder.remove();
+            });
+            holder.firstChild.appendChild(error);
+            if (list) list.scrollTo({top: 0, behavior: 'auto'});
+            else holder.scrollIntoView({block: 'nearest'});
+        };
+        upload.accepts = (file, accept, onReject) => {
+            if (!file || !accept) return true;
+            var ext = (file.name || '').split('.').pop().toLowerCase();
+            if (accept.split(',').indexOf('.' + ext) !== -1) return true;
+            var text = file.name + ': this file type is not allowed in this group. Allowed: ' + accept;
+            upload.showError(text);
+            onReject && onReject(text);
+            return false;
+        };
 		upload.info = {};
 
 		upload.targetOf = (el) => {
@@ -17,7 +57,8 @@
 			var mediaLi = el.closest('li[data-node_id]');
 			var target = {
 				node_parent_node_id: root ? root.getAttribute('data-node_parent_node_id') : '',
-				group: groupLi ? groupLi.getAttribute('data-media_group') : ''
+				group: groupLi ? groupLi.getAttribute('data-media_group') : '',
+                accept: groupLi ? groupLi.getAttribute('data-media-accept') : ''
 			};
 			if (mediaLi && !mediaLi.classList.contains('upload') && !mediaLi.classList.contains('title')) {
 				target.node_id = mediaLi.getAttribute('data-node_id');
@@ -26,6 +67,7 @@
 		};
 
 		upload.openLightbox = (get, file, nodeId) => {
+            if (file && !upload.accepts(file, get.accept)) return;
 			if (nodeId) {
 				get.node_id = nodeId;
 			}
@@ -39,7 +81,8 @@
 			if (!upload.pendingFile || !upload.doc || !upload.doc.box) {
 				return;
 			}
-			upload.fileInfo = upload.pendingFile;
+			if (!upload.accepts(upload.pendingFile, upload.doc.input.accept)) { upload.pendingFile = null; return; }
+            upload.fileInfo = upload.pendingFile;
 			upload.pendingFile = null;
 			upload.src = URL.createObjectURL(upload.fileInfo);
 			upload.preview(true);
@@ -96,6 +139,7 @@
 			upload.libraryUrl = location.pathname + location.search;
 			upload.event = event;
 			var input = upload.inputOf(event);
+            if (input && input.files && input.files.length === 1 && !upload.accepts(input.files[0], input.accept)) { input.value = ''; return; }
 			if (upload.takeMany(input)) {
 				return;
 			}
@@ -114,7 +158,7 @@
 		// Several files, or a file dropped onto a tile: no lightbox. The plus
 		// (or the tile) shows a spinner until the last file has been stored.
 		/** Shows the new files: the library alone is drawn again. */
-		upload.requestLibrary = (from) => {
+		upload.requestLibrary = (from, onReady) => {
 			var page = new URL(from || upload.libraryUrl || (location.pathname + location.search), location.origin);
 			page.pathname = page.pathname.replace(/\/upload\/?$/, '/');
 			if (!page.pathname.endsWith('/')) {
@@ -135,15 +179,16 @@
 						li.classList.add('selected');
 					}
 				});
+                onReady && onReady();
 			});
 		};
 
 		/** Only while the page that owns the library is still the open one. */
-		upload.refreshLibrary = (from) => {
+		upload.refreshLibrary = (from, onReady) => {
 			if (location.pathname + location.search !== from) {
 				return;
 			}
-			upload.requestLibrary(from);
+			upload.requestLibrary(from, onReady);
 		};
 
 		/** After a replace the address bar is the lightbox, the library is the page that opened it. */
@@ -217,7 +262,7 @@
 				call.data.method = 'put';
 				call.send(new URL('upload/fetch', location.origin + (target.from || location.pathname)).pathname).done((data) => {
 					if (data && data.error) {
-						alert(data.error);
+						upload.showError(data.error);
 						reject();
 						return;
 					}
@@ -233,7 +278,8 @@
 		};
 
 		upload.queueDirect = (files, target, spinner) => {
-			var list = Array.prototype.slice.call(files);
+			var rejected = [];
+            var list = Array.prototype.slice.call(files).filter(file => !(file instanceof Blob) || upload.accepts(file, target.accept, text => rejected.push(text)));
 			if (!list.length || !spinner) {
 				return;
 			}
@@ -244,12 +290,12 @@
 				var last = index === list.length - 1;
 				var item = list[index];
 				var sent = item instanceof Blob
-					? upload.sendFileDirect(item, target, true, last, null, (part) => upload.reportQueue(index, list.length, spinner, part))
+					? upload.sendFileDirect(item, target, true, false, null, (part) => upload.reportQueue(index, list.length, spinner, part))
 					: upload.fetchUrl(item.url, target, true);
 				sent.then(() => {
-					// files redraw after the last one themselves (sendFileDirect)
-					if (last && !(item instanceof Blob)) {
-						upload.refreshLibrary(from);
+					// Redraw once, then keep skipped-file feedback visible in the new library.
+					if (last) {
+						upload.refreshLibrary(from, () => rejected.forEach(text => upload.showError(text)));
 					}
 					upload.reportQueue(index + 1, list.length, spinner);
 					if (!last) {
@@ -270,7 +316,8 @@
 		// One slice in memory at a time: a whole video read at once stalls the page.
 		upload.sendFileDirect = (file, target, queue, queueLast, extra, onPart) => {
 			return new Promise((resolve, reject) => {
-				var size = file.size;
+				if (!upload.accepts(file, target.accept)) { reject(new Error('File type not allowed.')); return; }
+                var size = file.size;
 				var spanSize = setup.spanSize;
 				var spanCount = Math.max(1, Math.ceil(size / spanSize));
 				var spanIndex = 0;
@@ -307,6 +354,7 @@
 						call.data.method = 'put';
 						call.binary = reader.result;
 						call.send(address).done((data) => {
+                            if (data && data.error) { upload.showError(data.error); reject(new Error(data.error)); return; }
 							onPart && onPart((spanIndex + 1) / spanCount);
 							if (!last) {
 								spanIndex++;
@@ -361,6 +409,7 @@
 				event.stopPropagation();
 				var picker = document.createElement('input');
 				picker.type = 'file';
+                picker.accept = upload.targetOf(li).accept || '';
 				picker.multiple = true;
 				picker.style.cssText = 'position:fixed;left:-100px;top:0;width:1px;height:1px;opacity:0';
 				document.body.appendChild(picker);
@@ -378,7 +427,8 @@
 					}
 					upload.openLightbox({
 						node_parent_node_id: target.node_parent_node_id,
-						group: target.group
+						group: target.group,
+                        accept: target.accept
 					}, files[0]);
 				});
 				picker.click();
@@ -463,7 +513,8 @@
 					}
 					upload.openLightbox({
 						node_parent_node_id: single.node_parent_node_id,
-						group: single.group
+						group: single.group,
+                        accept: single.accept
 					}, files[0], single.node_id);
 					return;
 				}
@@ -478,7 +529,7 @@
 			// Into a text: on window, ahead of the editor's own drop and paste
 			// handling, which drops images (HTMLeditor.format.js).
 			var editorOf = (el) => el && el.closest && el.closest('article.cmsContent [contenteditable="true"][data-on_drop="insertMediaInEditor"]');
-			var showable = (item) => !(item instanceof Blob) || /^(image|video)\/|^application\/pdf$/.test(item.type);
+			var showable = (item) => !(item instanceof Blob) || upload.accepts(item, document.querySelector('.mmlContent [data-all-media-accept]')?.getAttribute('data-all-media-accept'));
 			var aimed = null;
 			document.addEventListener('dragover', (event) => {
 				var editor = editorOf(event.target);
@@ -791,7 +842,8 @@
 		};
 
 		upload.readFileFromInput = (input) => {
-			upload.fileInfo = input.files[0];
+			if (!input.files[0] || !upload.accepts(input.files[0], input.accept)) { input.value = ''; return; }
+            upload.fileInfo = input.files[0];
 			if (upload.src && upload.src.indexOf('blob:') === 0) {
 				URL.revokeObjectURL(upload.src);
 			}
@@ -806,15 +858,17 @@
 				skp: 'application/vnd.sketchup.skp',
 				jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
 				webp: 'image/webp', svg: 'image/svg+xml', tif: 'image/tiff', tiff: 'image/tiff',
-				pdf: 'application/pdf', mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/quicktime', mpg: 'video/mpeg',
+				webm: 'video/webm', m4a: 'audio/mp4', wav: 'audio/wav', ogg: 'audio/ogg', aac: 'audio/aac',
+                pdf: 'application/pdf', mp4: 'video/mp4', m4v: 'video/mp4', mov: 'video/quicktime', mpg: 'video/mpeg',
 				mp3: 'audio/mpeg', zip: 'application/zip', doc: 'application/msword', xls: 'application/vnd.ms-excel',
 				docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 				xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 				pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-				vcf: 'text/vcard'
+				txt: 'text/plain', csv: 'text/csv', vcf: 'text/vcard'
 			};
-			var type = (file && file.type) || '';
-			if (ext === 'mp3' || type === 'audio/mp3' || type === 'audio/mpeg') {
+			var type = byExt[ext] || (file && file.type) || '';
+			if (['m4a', 'ogg', 'wav', 'aac'].indexOf(ext) !== -1) return byExt[ext];
+            if (ext === 'mp3' || type === 'audio/mp3' || type === 'audio/mpeg') {
 				return 'audio/mpeg';
 			}
 			if (ext === 'skp' || !type || type === 'application/octet-stream' || (byExt[ext] && byExt[ext].indexOf('image/') === 0 && type.indexOf('video/') === 0)) {
@@ -844,13 +898,14 @@
 		};
 
 		upload.preview = (closeOnReject) => {
+            if (!upload.accepts(upload.fileInfo, upload.doc.input.accept)) { upload.doc.box.className = 'idle'; upload.doc.footer.className = 'idle'; return; }
 			upload.resetPreviews();
 			upload.doc.label.value = '';
 			upload.doc.name.value = '';
 			upload.mime = upload.mimeOf(upload.fileInfo);
 			var known = sys.classes.media.info.__data.mimetypes;
 			if (!known[upload.mime]) {
-				alert('Filetype not supported: ' + (upload.fileInfo.name || upload.mime));
+				upload.showError('File type not supported: ' + (upload.fileInfo.name || upload.mime));
 				upload.resetPreviews();
 				upload.doc.box.className = 'idle';
 				upload.doc.footer.className = 'idle';
@@ -867,7 +922,7 @@
 				}
 				return;
 			}
-			if (upload.doc.type) {
+			if (upload.doc.type && !upload.doc.type.selectedOptions[0]?.hasAttribute('data-external')) {
 				upload.doc.type.value = upload.kindOf(upload.mime);
 			}
 			upload.doc.box.className = 'reading';
@@ -890,11 +945,18 @@
 					break;
 				case 'video/mp4':
 				case 'video/quicktime':
+                case 'video/webm':
 					upload.updatePreviewVideo(() => {
 						upload.updateFileInfo();
 					});
 					break;
 				case 'audio/mpeg':
+                case 'audio/mp4':
+                case 'audio/x-m4a':
+                case 'audio/wav':
+                case 'audio/x-wav':
+                case 'audio/ogg':
+                case 'audio/aac':
 					upload.updatePreviewAudio(() => {
 						upload.updateFileInfo();
 					});
@@ -906,7 +968,7 @@
 					});
 					break;
 				default:
-					l('unknown:', upload.fileInfo.type);
+                    upload.showFileFallback();
 					upload.updateFileInfo();
 			}
 		};
@@ -977,7 +1039,7 @@
 			};
 			upload.resetPreviews();
 			upload.doc.img.style.display = 'block';
-			upload.doc.img.onerror = () => callback();
+			upload.doc.img.onerror = () => { upload.showFileFallback(); callback(); };
 			upload.doc.img.src = upload.src;
 		};
 
@@ -990,7 +1052,8 @@
 
 		upload.updatePreviewVideo = (callback) => {
 			upload.resetPreviews();
-			upload.doc.video.src = upload.src;
+			upload.doc.video.onerror = () => { upload.showFileFallback(); callback(); };
+            upload.doc.video.src = upload.src;
 			upload.doc.video.onloadedmetadata = () => {
 				upload.info.width = upload.doc.video.videoWidth;
 				upload.info.height = upload.doc.video.videoHeight;
@@ -1005,7 +1068,7 @@
 			}
 			upload.resetPreviews();
 			upload.doc.audio.onloadedmetadata = () => callback();
-			upload.doc.audio.onerror = () => callback();
+			upload.doc.audio.onerror = () => { upload.showFileFallback(); callback(); };
 			upload.doc.audio.src = upload.src;
 		};
 
@@ -1045,7 +1108,18 @@
 			return ids.join(',');
 		};
 
+        upload.showFileFallback = () => {
+            if (!upload.doc.fileFallback) return;
+            var name = upload.fileInfo.name || 'File';
+            var icons = JSON.parse(upload.doc.fileFallback.dataset.icons || '{}');
+            var extension = name.split('.').pop().toLowerCase();
+            upload.doc.fileFallbackIcon.className = 'fa-regular fa-' + (icons[extension] || 'file');
+            upload.doc.fileFallbackName.textContent = name;
+            upload.doc.fileFallback.hidden = false;
+        };
+
 		upload.resetPreviews = () => {
+            if (upload.doc.fileFallback) upload.doc.fileFallback.hidden = true;
 			['pdf', 'img', 'video', 'audio'].forEach((name) => {
 				if (!upload.doc[name]) {
 					return;
@@ -1131,7 +1205,17 @@
 						upload.reportQueue(0, 1, null, progress);
 					})
 					.done(r => {
-						l('done fired', r);
+						if (r && r.error) {
+                            upload.showError(r.error);
+                            upload.reportQueue(1, 1);
+                            if (upload.lightboxShown()) {
+                                upload.doc.box.className = 'idle';
+                                upload.doc.footer.className = 'idle';
+                                upload.doc.upload.classList.remove('loading');
+                            }
+                            return;
+                        }
+                        l('done fired', r);
 						if (lastSpan) {
 							upload.reportQueue(1, 1);
 							if (upload.lightboxShown()) {

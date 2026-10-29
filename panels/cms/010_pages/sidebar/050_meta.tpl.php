@@ -19,7 +19,7 @@ $robots = [
     <li class="seperator">Description</li>
     <li>
 		<p class="hint">Search results and shares. Empty uses the first sentence on the page.</p>
-		<textarea data-on_input='sidebar/updateParam' autocomplete='off'
+		<textarea rows="3" data-on_input='sidebar/updateParam' autocomplete='off'
 				  data-node_id="<?= $page->id ?>" maxlength="160" type="text"
 				  name="meta_description"><?= $e($row->metaDescription) ?></textarea>
 		<small><span><?= mb_strlen((string) $row->metaDescription) ?></span> / 160</small>
@@ -32,9 +32,9 @@ $robots = [
 				name="meta_share_title" value="<?= $e($row->metaShareTitle) ?>" />
 		<small><span><?= mb_strlen((string) $row->metaShareTitle) ?></span> / 100</small>
     </li>
-	<li class="seperator">Share image <button type="button" class="button transparent icononly small" data-on_click="sidebar/resetShareImage" title="Use the site image" aria-label="Use the site image"><i class="fa-regular fa-arrow-rotate-left"></i></button></li>
+	<li class="seperator">Share image</li>
 	<li>
-		<div class="mediaDrop shareImage" data-drop_accept="media" data-on_drop="sidebar/updateShareImage"><?= $this->shareImage() ?></div>
+		<div class="mediaDrop shareImage" data-media-accept=".jpg,.jpeg,.png,.gif,.webp" data-drop_accept="media" data-on_drop="sidebar/updateShareImage"><?= $this->shareImage() ?></div>
 	</li>
 	<li class="seperator">Robots</li>
     <li>

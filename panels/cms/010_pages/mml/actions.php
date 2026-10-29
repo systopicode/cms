@@ -12,6 +12,7 @@
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Mml\Panel|\Systopic\System\Panels\PanelNode $this
  */
 
+use Systopic\System\Media\GroupPolicy;
 use Systopic\System\Tables\Medias\Operator as MediaOperator;
 use Systopic\System\Tables\Medias\Removal as MediaRemoval;
 
@@ -54,6 +55,11 @@ switch ($this->action) {
 		if ($parentId <= 0) {
 			break;
 		}
+		if ($error = GroupPolicy::error($pages->mediaGroups, $group, (string) $media->filename)) {
+			message::error($error);
+			$pages->updateView('mml');
+			break;
+		}
 		$rows = MediaOperator::placed(
 			$pages->scope, $media, $parentId, $group,
 			$this->action === 'insertMediaBefore' ? $targetNode : NULL,
@@ -66,6 +72,10 @@ switch ($this->action) {
 		$media = $pages->mediaOfNode((int) http::dragdata('node_id'));
 		$pageId = (int) http::dataset('node_id');
 		if ($media === NULL || $pageId <= 0) {
+			break;
+		}
+		if ($error = GroupPolicy::error($pages->mediaGroups, (string) ($media->group ?: 'main'), (string) $media->filename)) {
+			message::error($error);
 			break;
 		}
 		$save(MediaOperator::placed($pages->scope, $media, $pageId, (string) ($media->group ?: 'main')), $media);
