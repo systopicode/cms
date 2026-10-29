@@ -113,13 +113,15 @@ $writable = Session::current()->writeGroupIds;
 		</tbody>
 		<tbody class="summary">
 			<?php $check = static fn(bool $on, string $title): string => $on ? '<i class="fa-regular fa-check" title="' . $title . '"></i>' : ''; ?>
-			<tr><th colspan="2">Summary</th><th class="rw" title="Read">R</th><th class="rw" title="Write">W</th></tr>
+			<tr><th>Summary</th><th>Role</th><th class="rw" title="Read">R</th><th class="rw" title="Write">W</th></tr>
 			<?php if ($sum === []) { ?>
-				<tr><td colspan="4" class="none">nobody but the owner and superusers</td></tr>
+				<tr><td></td><td colspan="3" class="none">nobody but the owner and superusers</td></tr>
 			<?php }
+			$i = 0;
 			foreach ($sum as [$role, $read, $write]) { ?>
 				<tr>
-					<td colspan="2"><?= $e($role->name) ?></td>
+					<?php if ($i++ === 0) { ?><td rowspan="<?= count($sum) ?>"></td><?php } ?>
+					<td><?= $e($role->name) ?></td>
 					<td class="rw"><?= $check($read, 'Read') ?></td>
 					<td class="rw"><?= $check($write, 'Write') ?></td>
 				</tr>

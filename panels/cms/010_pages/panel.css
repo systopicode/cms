@@ -321,6 +321,14 @@ aside.cms table.aclResolution.aclResolution tr.groupStart > *{
 aside.cms table.aclResolution.aclResolution tbody.summary tr:first-child > th{
 	border-top: 2px solid var(--cmsLineStrong);
 }
+/* a read-only overview: no row highlight on hover (24_table.css) */
+aside.cms table.aclResolution.aclResolution tbody tr:hover > :is(td, th):nth-child(n){
+	background: none;
+	box-shadow: none;
+}
+aside.cms table.aclResolution.aclResolution tbody tr:hover > th:nth-child(n){
+	background: var(--cmsPanelAlt);
+}
 aside.cms table.aclResolution.aclResolution .rw{
 	width: 1.5rem;
 	text-align: center;
