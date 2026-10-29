@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Systopic\Cms\Pages\Fields;
 
+use Systopic\Cms\Pages\PageAccess;
 use Systopic\Cms\Tables\Pages\TextField;
 
 /**
@@ -20,6 +21,9 @@ use Systopic\Cms\Tables\Pages\TextField;
  * is CMS business, not the row's. The editor markup is the legacy one, field
  * for field: the CMS JavaScript (updatePageParam, updateTextfield,
  * insertMediaInEditor) reads these attributes.
+ *
+ * A page the user may not change (`PageAccess::mayEdit()`) shows in the CMS
+ * as it does on the site.
  */
 final class FieldOutput
 {
@@ -31,7 +35,7 @@ final class FieldOutput
 
     public static function text(TextField $field): string
     {
-        if (self::editing()) {
+        if (self::editing() && PageAccess::mayEdit($field->page())) {
             return $field->isHtml ? self::htmlEditor($field) : self::textEditor($field);
         }
         return self::live($field);

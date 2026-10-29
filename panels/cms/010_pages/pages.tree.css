@@ -56,3 +56,15 @@ body.pages div.tree.is-results > ul#cmsSearchResults{
 body.pages ul.searchHits li.none span.label{
 	color: var(--cmsMuted);
 }
+
+/* Content groups (PageAccess): a page the user may read but not change is
+   pale with a lock; a superuser sees where the groups change */
+.cms ul.tree li.readonly > label a.label{
+	opacity: 0.6;
+}
+.cms ul.tree label > i.acl.own{
+	color: var(--cmsTextColor);
+}
+.cms ul.tree label > i.acl.none{
+	color: var(--cmsRedirect);
+}

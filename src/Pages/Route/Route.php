@@ -169,28 +169,9 @@ class Route implements RenderTree
             siteUrl: (string) \http::$siteUrl,
             inCms: $inCms,
             nodeType: 'page',
-            readAcls: self::viewerAcls(),
+            readAcls: \Systopic\Cms\Pages\PageAccess::readAcls(),
             owner: (int) Session::id(),
         );
-    }
-
-    /**
-     * The ACLs the viewer of this request may read — NULL for one who sees
-     * every page: a superuser (unless faking roles) and the recovery user.
-     *
-     * NULL as well while the project has not switched page permissions on
-     * (`PAGE_ACL` 1 in the global settings). A node without groups is for
-     * superusers only, and every installation starts with nothing but such
-     * nodes: switched on before its pages have groups, a site would be empty.
-     *
-     * @return list<int>|null
-     */
-    public static function viewerAcls(): ?array
-    {
-        if (!defined('PAGE_ACL') || !PAGE_ACL || Session::isSuperuser() || Session::isRecovery()) {
-            return null;
-        }
-        return Session::current()->readAclIds;
     }
 
     public function getParams(): Params

@@ -5,6 +5,10 @@ declare(strict_types=1);
 namespace Systopic\Cms\Queries\PageTree;
 
 use Stringable;
+use Systopic\Cms\Pages\PageAccess;
+use Systopic\System\Auth\Session;
+use Systopic\System\Queries\UserAdmin\UserAdmin;
+use Systopic\System\Tables\Acls\Operator as AclOperator;
 use Systopic\System\Tables\Nodes\Model as Node;
 use Systopic\Db\Scope;
 use Systopic\Cms\Queries\Params;
@@ -320,30 +324,36 @@ final class PageTree implements Stringable
             }
         }
 
-        // sites move like pages; their paths follow (NodeSite::rebuildBranch)
-        $dataAttrs = $entry->edit ? '' : " data-drag_type='page'";
+        // what the user may change (PageAccess): a page they may not is not
+        // dragged, and nothing is dropped where it would land under it
+        $may = PageAccess::mayWrite($entry->node);
+        $mayBeside = PageAccess::mayWrite($entry->node->parentNode);
 
-        $grip = $entry->edit ? '' : "<i class='treeGrip fa-regular fa-grip-dots-vertical' title='Hold and drag to move'></i>";
+        // sites move like pages; their paths follow (NodeSite::rebuildBranch)
+        $dataAttrs = $entry->edit || !$may ? '' : " data-drag_type='page'";
+
+        $grip = $entry->edit || !$may ? '' : "<i class='treeGrip fa-regular fa-grip-dots-vertical' title='Hold and drag to move'></i>";
         $menu = ($entry->edit || $entry->isSite) ? ''
             : "<button type='button' class='treeMenu' data-on_click='getTreeContextmenu' onmousedown='event.stopPropagation()' title='Menu'><i class='fa-regular fa-ellipsis'></i></button>";
         $html = "<li data-node_id='$id' data-node_parent_node_id='$parentId'"
-              . " class='{$this->classNames($entry)}'>";
+              . " class='{$this->classNames($entry, $may)}'>";
         $html .= "<label$dataAttrs>";
-        $html .= self::sortHelpers();
+        $html .= self::sortHelpers($mayBeside, $may);
         $html .= $grip;
         $html .= $this->foldIcon($id, $hasChildren, $open);
         $html .= $this->aliasIcon($entry);
         $html .= $this->label($entry);
-        $html .= $this->referenceIcons($entry);
+        $html .= $this->aclIcons($entry, $may);
+        $html .= $this->referenceIcons($entry, $may);
         $html .= $menu;
         $html .= '</label>';
         $html .= "$below</li>";
         return $html;
     }
 
-    private function classNames(PageTreeNode $entry): string
+    private function classNames(PageTreeNode $entry, bool $may): string
     {
-        $names = [];
+        $names = $may ? [] : ['readonly'];
         if ($entry->isActive) {
             $names[] = 'active';
         }
@@ -366,14 +376,54 @@ final class PageTree implements Stringable
      * **To make them visible: hold `Shift` + `Ctrl` while dragging.**
      * `event.drag.js` then sets `body.debug` and freezes drag mode — the
      * strips get colour and stay put as long as the keys are held.
+     *
+     * Before and after land under the entry's parent, into under the entry:
+     * each only where the user may change that one.
      */
-    private static function sortHelpers(): string
+    private static function sortHelpers(bool $beside = true, bool $into = true): string
     {
-        return "<div class='sort v insertBefore' data-drop_accept='page' data-on_drop='insertBefore'></div>"
-            . "<div class='sort v insertAfter' data-drop_accept='page' data-on_drop='insertAfter'></div>"
-            . "<div class='sort v insertInto nosort' data-drop_accept='media' data-on_drop='mml/moveMediaToPage'></div>"
-            . "<div class='sort v insertInto nosort' data-drop_accept='mediaAlias' data-on_drop='mml/moveMediaAliasToPage'></div>"
-            . "<div class='sort v insertInto' data-drop_accept='page' data-on_drop='insertAsFirstChild' data-on_drop_alt='insertAliasAsFirstChild'></div>";
+        return ($beside
+                ? "<div class='sort v insertBefore' data-drop_accept='page' data-on_drop='insertBefore'></div>"
+                . "<div class='sort v insertAfter' data-drop_accept='page' data-on_drop='insertAfter'></div>"
+                : '')
+            . ($into
+                ? "<div class='sort v insertInto nosort' data-drop_accept='media' data-on_drop='mml/moveMediaToPage'></div>"
+                . "<div class='sort v insertInto nosort' data-drop_accept='mediaAlias' data-on_drop='mml/moveMediaAliasToPage'></div>"
+                . "<div class='sort v insertInto' data-drop_accept='page' data-on_drop='insertAsFirstChild' data-on_drop_alt='insertAliasAsFirstChild'></div>"
+                : '');
+    }
+
+    /** @var array<int, string>|null group id => name, for the titles of the ACL marks */
+    private ?array $groupNames = null;
+
+    /**
+     * Where the content groups change, for a superuser of a project that
+     * judges pages by them (`PAGE_ACL`): a page below the topmost level with
+     * groups of its own, a page with none (owner and superusers only). For everybody: a lock on a
+     * page they may read but not change.
+     */
+    private function aclIcons(PageTreeNode $entry, bool $may): string
+    {
+        $html = $may ? '' : "<i class='acl readonly fa-regular fa-lock' title='Read only: you may not change this page'></i>";
+        if ($entry->isSite || !defined('PAGE_ACL') || !\PAGE_ACL || !Session::isSuperuser()) {
+            return $html;
+        }
+        $node = $entry->node;
+        if ($node->relationId('acl') === null) {
+            return $html . "<i class='acl none fa-regular fa-user-lock' title='No content group: only the owner and superusers'></i>";
+        }
+        if ($node->aclInherit || $entry->parent === null) {
+            return $html;   // a topmost page has its own anyway: no news
+        }
+        if ($this->groupNames === null) {
+            $this->groupNames = [];
+            foreach (UserAdmin::of($this->scope)->groups as $group) {
+                $this->groupNames[(int) $group->id] = (string) $group->name;
+            }
+        }
+        $names = array_map(fn(int $id): string => $this->groupNames[$id] ?? "#$id", AclOperator::groupIds($node->acl));
+        $title = htmlspecialchars('Own content groups: ' . implode(', ', $names), ENT_QUOTES);
+        return $html . "<i class='acl own fa-regular fa-users' title='$title'></i>";
     }
 
     private function foldIcon(int $id, bool $hasChildren, bool $open): string
@@ -420,7 +470,7 @@ final class PageTree implements Stringable
             . '</a>';
     }
 
-    private function referenceIcons(PageTreeNode $entry): string
+    private function referenceIcons(PageTreeNode $entry, bool $may = true): string
     {
         $html = '';
         if ($entry->isSite) {
@@ -436,10 +486,12 @@ final class PageTree implements Stringable
             }
         }
         if (!$entry->isPublished) {
-            $html .= "<a class='unpublished' title='Hidden - click to publish' data-on_click='publish?id={$entry->id}'>"
-                . "<i class='fa-regular fa-eye-slash'></i></a>";
+            $html .= $may
+                ? "<a class='unpublished' title='Hidden - click to publish' data-on_click='publish?id={$entry->id}'>"
+                    . "<i class='fa-regular fa-eye-slash'></i></a>"
+                : "<i class='fa-regular fa-eye-slash' title='Hidden'></i>";
         }
-        if ($entry->isTrashed) {
+        if ($entry->isTrashed && $may) {
             $html .= "<a  data-action='recoverPage' data-on_click='userConfirm'"
                 . " data-confirm='All langauges, children and versions will be recoverd!'"
                 . " title='Recover Page' class='ajax'  data-node_id='{$entry->id}'>"

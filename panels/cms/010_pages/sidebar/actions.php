@@ -7,9 +7,13 @@
  * page panel's unit of work; the paths go through `Tables\Pages\Rewritepaths`,
  * which keeps its lists current so the sidebar redraws without loading again.
  *
+ * What writes the page asks `PageAccess` first; the tags and the permissions
+ * ask in their own files.
+ *
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Sidebar\Panel $this
  */
 
+use Systopic\Cms\Pages\PageAccess;
 use Systopic\Cms\Tables\Pages\Operator as PageOperator;
 use Systopic\Cms\Tables\Rewritepaths\Operator as PathOperator;
 use Systopic\Cms\Tables\Rewritepaths\Removal;
@@ -28,6 +32,13 @@ $save = static function (array $rows) use ($pages): void {
 	}
 	$uow->commit();
 };
+
+$writes = ['updateParam', 'updateTemplate', 'updateShareImage', 'resetShareImage', 'updateSelect', 'updateValue'];
+if ((in_array($this->action, $writes, true) || str_starts_with((string) $this->action, 'rewritePath_'))
+	&& PageAccess::refusesEdit($page)) {
+	$this->updateView('main');   // the field shows what is stored again
+	return;
+}
 
 switch ($this->action) {
 	case 'showGroup':

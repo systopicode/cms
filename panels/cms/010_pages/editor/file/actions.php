@@ -10,6 +10,7 @@
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Editor\File\Panel $this
  */
 
+use Systopic\Cms\Pages\PageAccess;
 use Systopic\System\Tables\Medias\Files as MediaFiles;
 use Systopic\System\Tables\Medias\Operator as MediaOperator;
 use Systopic\System\Tables\Medias\Removal as MediaRemoval;
@@ -27,6 +28,11 @@ if (in_array($this->action, ['addTag', 'addTagTo_page', 'removeTagFrom_page'], t
 		})->call($sidebar);
 	}
 	$this->updateView('tags');
+	return;
+}
+
+// Everything below but the format on screen changes the medium.
+if (!in_array($this->action, ['changeImageFormat', 'startCroping'], true) && $row !== NULL && PageAccess::refuses($row->node)) {
 	return;
 }
 

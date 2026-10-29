@@ -31,7 +31,11 @@ $title = $page?->label->plain ?? '';
 		</nav>
 		<div class="pageTitleRow">
 			<h1 class="pageTitle" contenteditable="false" data-on_blur="updateLabel"><?= $title !== '' ? $title : '- - - -' ?></h1>
-			<button type="button" class="pageTitleEdit" data-page-title-edit title="Edit title"><i class="fa-regular fa-pen"></i></button>
+			<?php if (\Systopic\Cms\Pages\PageAccess::mayEdit($page)) { ?>
+				<button type="button" class="pageTitleEdit" data-page-title-edit title="Edit title"><i class="fa-regular fa-pen"></i></button>
+			<?php } else { ?>
+				<i class="fa-regular fa-lock pageTitleLock" title="Read only: you may not change this page"></i>
+			<?php } ?>
 		</div>
 	<?php } else { ?>
 		<h1>Pages</h1>

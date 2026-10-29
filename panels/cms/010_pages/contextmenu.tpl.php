@@ -16,13 +16,24 @@
  * goes through the markup. Here it reads `$node->isTrashed`,
  * `$node->isPublished`, `$node->originalId`.
  *
+ * Only what the user may do (`PageAccess`): change the page itself, place
+ * something beside it (under its parent), or change the page on screen.
+ * The actions ask again.
+ *
  * @var \Systopic\Cms\Queries\PageTree\PageTreeNode      $node
  * @var \Systopic\Cms\Queries\PageTree\PageTree          $tree
  * @var \Systopic\Cms\Queries\PageTree\PageTreeNode|null $active
  */
+
+use Systopic\Cms\Pages\PageAccess;
+
+$may = PageAccess::mayWrite($node->node);
+$mayBeside = PageAccess::mayWrite($node->node->parentNode);
+$mayActive = $active !== null && PageAccess::mayWrite($active->node);
 ?>
 <ul class="contextmenu" data-id="<?= $node->id ?>">
 	<?php if ($node->isTrashed) { ?>
+		<?php if ($may) { ?>
 		<li title="Recover Page" class="iconOnly">
 			<a data-confirm="All langauges, children and versions will be recoverd!"
 			   data-on_click='userConfirm'
@@ -32,6 +43,7 @@
 			</a>
 		</li>
 		<li class="seperator"></li>
+		<?php } ?>
 		<li>
 			<a href='<?= http::$siteRoot ?>?id=<?= $node->id ?>&lang=<?= $node->language ?>&showtrashed'
 			   target='_blank'>
@@ -40,19 +52,24 @@
 			</a>
 		</li>
 	<?php } else { ?>
+		<?php if ($may || $mayBeside) { ?>
 		<li class="iconsonly">
 			<ul>
+				<?php if ($may) { ?>
 				<li title="Rename" class="iconOnly">
 					<a data-on_click="editLabel">
 						<i class="fa-regular fa-pen"></i>
 					</a>
 				</li>
+				<?php } ?>
+				<?php if ($mayBeside) { ?>
 				<li title="Duplicate" class="iconOnly">
 					<a data-on_click="duplicate?node_id=<?= $node->id ?>">
 						<i class="fa-regular fa-copy"></i>
 					</a>
 				</li>
-				<?php if ($node->isPublished) { ?>
+				<?php } ?>
+				<?php if ($may && $node->isPublished) { ?>
 					<li title="Hide" class="iconOnly">
 						<a data-on_click="unpublish?id=<?= $node->id ?>">
 							<i class="fa-regular fa-eye-slash"></i>
@@ -64,7 +81,7 @@
 							<i style='font-size: 12px; transform: translateX(-10px) translateY(2px);' class="fa-regular fa-eye-slash"></i>
 						</a>
 					</li>
-				<?php } else { ?>
+				<?php } elseif ($may) { ?>
 					<li title="Publish" class="iconOnly">
 						<a  data-on_click="publish?id=<?= $node->id ?>">
 							<i class="fa-regular fa-eye"></i>
@@ -77,12 +94,14 @@
 						</a>
 					</li>
 				<?php } ?>
+				<?php if ($may) { ?>
 				<li title="New subpage" class="iconOnly">
 					<a data-node_id="<?= $node->id ?>" data-on_click="newChild">
 						<i class="fa-regular fa-diagram-subtask"></i>
 					</a>
 				</li>
-				<?php if ($node->isAlias && !$node->hasChildren) { ?>
+				<?php } ?>
+				<?php if ($may && $node->isAlias && !$node->hasChildren) { ?>
 					<li style='margin-left: auto;' title="Delete Alias" class="iconOnly">
 						<a data-confirm="Do you really want to delete this Alias Page?"
 						   class='alias'
@@ -92,7 +111,7 @@
 						</a>
 					</li>
 				<?php } ?>
-				<?php if (!$node->isAlias && !$node->isTrashed) { ?>
+				<?php if ($may && !$node->isAlias && !$node->isTrashed) { ?>
 					<li style='margin-left: auto;' title="Delete Page" class="iconOnly">
 						<a data-confirm="All langauges, children and versions will be removed!"
 						   data-on_click='userConfirm'
@@ -105,8 +124,9 @@
 			</ul>
 		</li>
 		<li class="seperator"></li>
+		<?php } ?>
 		<?php if ($active !== null) { ?>
-			<?php if ($node->id !== $active->id) { ?>
+			<?php if ($mayActive && $node->id !== $active->id) { ?>
 				<li>
 					<a class=" redirect"
 					   data-on_click="redirectHere?node_id=<?= $active->id ?>&node_redirect_node_id=<?= $node->id ?>">
@@ -115,7 +135,7 @@
 					</a>
 				</li>
 			<?php } ?>
-			<?php if ($node->redirectId) { ?>
+			<?php if ($may && $node->redirectId) { ?>
 				<li>
 					<a class=" redirect" data-on_click="redirectHere?node_id=<?= $node->id ?>&node_redirect_node_id=0">
 						<i class="fa-regular fa-arrow-turn-down-right"></i>
@@ -123,6 +143,7 @@
 					</a>
 				</li>
 			<?php } ?>
+			<?php if ($mayBeside) { ?>
 			<li>
 				<a class=" alias"
 				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_parent_node_id=<?= $node->parent?->id ?>&node_original_node_id=<?= $active->contentId ?>">
@@ -130,6 +151,8 @@
 					<span>Alias of "<?= $active->label ?>" after this</span>
 				</a>
 			</li>
+			<?php } ?>
+			<?php if ($may) { ?>
 			<li>
 				<a class=" alias"
 				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_parent_node_id=<?= $node->id ?>&node_original_node_id=<?= $active->contentId ?>">
@@ -137,6 +160,7 @@
 					<span>Alias as child</span>
 				</a>
 			</li>
+			<?php } ?>
 		<?php } ?>
 		<?php if ($node->isPublished) { ?>
 			<li class="seperator"></li>

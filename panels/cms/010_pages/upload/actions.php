@@ -12,6 +12,7 @@
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Upload\Panel $this
  */
 
+use Systopic\Cms\Pages\PageAccess;
 use Systopic\System\Tables\Medias\Files as MediaFiles;
 use Systopic\System\Tables\Medias\Operator as MediaOperator;
 
@@ -42,11 +43,17 @@ $store = static function (string $tmpFileNative, string $fileName, string $label
 	$rows = [];
 	if ($replace > 0) {
 		$media = $pages->mediaOfNode($replace);
+		if ($media !== NULL && PageAccess::refuses($media->node)) {
+			return FALSE;
+		}
 	} else {
 		$parent = (int) http::get('node_parent_node_id');
 		if (http::put('editor')) {
 			// an editor shown through an alias writes the original page's text: its library
 			$parent = (int) ($pages->pageFor($parent)?->row?->relationId('node') ?: $parent);
+		}
+		if (PageAccess::refuses($pages->nodeFor($parent))) {
+			return FALSE;
 		}
 		[$media, $rows] = MediaOperator::create($pages->scope, $parent, (string) (http::get('group') ?: 'main'), $pages->userId());
 	}

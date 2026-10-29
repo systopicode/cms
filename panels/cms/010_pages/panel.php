@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Systopic\Cms\Panels\Root\Cms\Pages;
 
+use Systopic\Cms\Pages\PageAccess;
 use Systopic\Cms\Pages\Sites\SiteRegistry;
 use Systopic\Cms\Tables\Sites\Model as SiteRow;
 use Systopic\Db\Scope;
@@ -71,7 +72,7 @@ class Panel extends CmsPanel {
 			siteUrl:  (string) \http::$siteUrl,
 			inCms:    TRUE,
 			nodeType: 'page',
-			readAcls: \Systopic\Cms\Pages\Route\Route::viewerAcls(),
+			readAcls: PageAccess::readAcls(),
 			owner:    (int) \Systopic\System\Auth\Session::id(),
 		);
 	}
@@ -265,6 +266,14 @@ class Panel extends CmsPanel {
 	}
 
 	/**
+	 * The node of a page or of a medium — what a tag or a right is about,
+	 * loaded, so its groups can be asked.
+	 */
+	public function nodeFor(int $nodeId): ?\Systopic\System\Tables\Nodes\Model {
+		return $this->pageFor($nodeId)?->node ?? $this->mediaOfNode($nodeId)?->node;
+	}
+
+	/**
 	 * A page in a given language — the panel's parameters for its language,
 	 * the same in another one (the inline editors say which language they
 	 * edit). The scope is the same either way: one identity map.
@@ -442,6 +451,9 @@ class Panel extends CmsPanel {
 		if ($page?->row === NULL || $value === NULL) {
 			return FALSE;
 		}
+		if (PageAccess::refusesEdit($page)) {
+			return FALSE;
+		}
 		try {
 			// the editor sends urls with the reference beside them - store the reference
 			$value = \Systopic\Cms\Refs\Resolver::normalize(ltrim((string) $value, "\r\n"));
@@ -456,16 +468,27 @@ class Panel extends CmsPanel {
 	}
 
 	/**
-	 * Publish or hide a page with everything below it, in this language.
+	 * Publish or hide a page with everything below it, in this language —
+	 * the pages the user may change; the others stay as they are.
 	 *
-	 * @return int how many rows changed
+	 * @return array{int, int} how many rows changed, how many were left alone
 	 */
-	function publishBranch(int $nodeId, bool $published): int {
+	function publishBranch(int $nodeId, bool $published): array {
 		$branch = Branch::of($this->scope, $this->params, $nodeId);
+		$nodes = [];
+		foreach ($branch->nodes as $node) {
+			$nodes[$node->id] = $node;
+		}
 		$uow = $this->uow();
 		$count = 0;
-		foreach ($branch->rows as $row) {
-			if ((bool) $row->isPublished !== $published) {
+		$skipped = 0;
+		foreach ($branch->rows as $id => $row) {
+			if ((bool) $row->isPublished === $published) {
+				continue;
+			}
+			if (!PageAccess::mayWrite($nodes[$id] ?? NULL)) {
+				$skipped++;
+			} else {
 				$row->isPublished = $published;
 				PageOperator::touch($row, $this->userId());
 				$uow->persist($row);
@@ -473,17 +496,26 @@ class Panel extends CmsPanel {
 			}
 		}
 		$uow->commit();
-		return $count;
+		return [$count, $skipped];
 	}
 
 	/**
 	 * Into the trash with everything below it — pages and their media, all
 	 * languages (the trash is a property of the node).
 	 *
-	 * @return int how many nodes changed
+	 * All or nothing: a branch with a node the user may not change — maybe
+	 * one they do not even see — stays where it is.
+	 *
+	 * @return int|null how many nodes changed; NULL when refused
 	 */
-	function trashPage(int $nodeId, bool $trashed = TRUE): int {
+	function trashPage(int $nodeId, bool $trashed = TRUE): ?int {
 		$branch = Branch::of($this->scope, $this->params, $nodeId);
+		foreach ($branch->nodes as $node) {
+			if (!PageAccess::mayWrite($node)) {
+				\message::error('There are pages below you may not change (their content groups): nothing was ' . ($trashed ? 'deleted.' : 'recovered.'));
+				return NULL;
+			}
+		}
 		$changed = NodeOperator::trash($branch->nodes, $trashed);
 		$uow = $this->uow();
 		foreach ($changed as $node) {
@@ -499,7 +531,7 @@ class Panel extends CmsPanel {
 	 * Not called `recoverPage`: app.php runs a panel method of the action's
 	 * name before actions.php, and would call this one without an argument.
 	 */
-	function recoverBranch(int $nodeId): int {
+	function recoverBranch(int $nodeId): ?int {
 		return $this->trashPage($nodeId, FALSE);
 	}
 

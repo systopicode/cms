@@ -10,11 +10,17 @@
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Sidebar\Panel $this
  */
 
+use Systopic\Cms\Pages\PageAccess;
 use Systopic\System\Auth\Session;
 use Systopic\System\Tables\Acls\Operator as AclOperator;
 use Systopic\System\Tables\Nodes\Operator as NodeOperator;
 
 $node = $this->parent->page?->node;
+
+if (in_array($this->action, ['aclInherit', 'aclToggle'], true) && $node !== null && PageAccess::refuses($node)) {
+	$this->updateView('045_permissions');
+	return;
+}
 
 switch ($this->action) {
 	case 'aclInherit':

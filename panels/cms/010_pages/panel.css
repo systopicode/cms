@@ -337,3 +337,10 @@ aside.cms table.aclResolution.aclResolution .none{
 	color: var(--cmsMuted);
 	font-style: italic;
 }
+
+/* A page the user may not change (PageAccess): a lock where the title pencil was */
+header.cms .pageTitleLock{
+	align-self: center;
+	padding: 0 0.5rem;
+	color: var(--cmsMuted);
+}
