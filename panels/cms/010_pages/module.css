@@ -295,16 +295,13 @@ aside.cms table.aclResolution{
 }
 aside.cms table.aclResolution th,
 aside.cms table.aclResolution td{
-	padding: 0.25rem 0.35rem;
+	padding: 0;
 	border-bottom: 1px solid var(--cmsLine);
 	text-align: left;
 	vertical-align: top;
 }
 aside.cms table.aclResolution thead th{
-	font-size: 0.6875rem;
 	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
 	color: var(--cmsSubText);
 	border-bottom-color: var(--cmsLineStrong);
 }
