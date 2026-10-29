@@ -279,3 +279,9 @@ main > div.content > article {
 		grid-template-columns: 1fr;
 	}
 }
+
+/* sidebar permissions: inherited or not writable groups show, but do not toggle */
+aside.cms .aclGroups .tag.locked{
+	cursor: default;
+	opacity: .55;
+}

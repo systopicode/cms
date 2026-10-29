@@ -185,3 +185,4 @@ switch ($this->action) {
 
 include 'actions.settings.php';
 include 'actions.tags.php';
+include 'actions.permissions.php';
