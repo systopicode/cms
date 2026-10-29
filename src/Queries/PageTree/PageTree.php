@@ -393,7 +393,7 @@ final class PageTree implements Stringable
         if (!$entry->isAlias) {
             return '';
         }
-        return "<a title='show Original' class='ajax alias' href='./?id={$entry->originalId}'>"
+        return "<a title='show Original' class='ajax alias' href='./?id={$entry->originalId}&amp;reveal=tree'>"
             . self::ALIAS_ICON . '</a>';
     }
 
@@ -427,13 +427,11 @@ final class PageTree implements Stringable
             return $html; // no row: nothing published, nothing aliased
         }
         if ($entry->redirectId > 0 && !$entry->isTrashed) {
-            $html .= "<a title='show Alias' class='ajax alias' href='./?id={$entry->redirectId}'>"
-                . "<i class='fa-regular fa-arrow-turn-down-right'></i></a>";
+            $html .= "<a title='Show redirect target' class='ajax redirect' href='./?id={$entry->redirectId}&amp;reveal=tree'>"
+                . "<i class='fa-regular fa-route'></i></a>";
         }
-        if (!$entry->isTrashed) {
-            foreach ($entry->aliases as $alias) {
-                $html .= "<a title='show Alias' class='ajax' href='./?id={$alias->id}'>" . self::ALIAS_ICON . '</a>';
-            }
+        if (!$entry->isTrashed && $entry->aliases !== []) {
+            $html .= "<a title='Show aliases' aria-label='Show aliases' class='ajax aliasConnections' href='./?id={$entry->id}&amp;relations=aliases'>" . self::ALIAS_ICON . '</a>';
         }
         if (!$entry->isPublished) {
             $html .= "<a class='unpublished' title='Hidden - click to publish' data-on_click='publish?id={$entry->id}'>"

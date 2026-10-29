@@ -36,7 +36,6 @@ $savePage = function (PageRow $row): void {
 };
 
 switch ($this->action) {
-
     // ------------------------------------------------------------ the tree
 
     case 'getTreeContextmenu':
@@ -227,6 +226,8 @@ switch ($this->action) {
         $this->scope->save(...NodeOperator::placedBeside($this->scope, $drag->node, $drop->node, after: $this->action === 'insertAfter'));
         // multi-site: the paths of the moved branch follow it into its (maybe other) site
         \Systopic\Cms\Pages\Sites\NodeSite::rebuildBranch((int) $drag->node->id);
+        $this->updateView('controls');
+        $this->child('sidebar')?->updateView('main');
         $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
         break;
 
@@ -244,6 +245,8 @@ switch ($this->action) {
         $this->scope->save(...NodeOperator::placed($this->scope, $drag->node, $drop->node, 0));
         // multi-site: the paths of the moved branch follow it into its (maybe other) site
         \Systopic\Cms\Pages\Sites\NodeSite::rebuildBranch((int) $drag->node->id);
+        $this->updateView('controls');
+        $this->child('sidebar')?->updateView('main');
         $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
         break;
 
@@ -258,7 +261,13 @@ switch ($this->action) {
             message::error('A site cannot be aliased.');
             break;
         }
-        $this->scope->save(...NodeOperator::aliased($this->scope, $drag->node, $drop->node, 0));
+        try {
+            \Systopic\Cms\Pages\RelationRules::placement($drag->contentId, $drop->id, $this->relationNode(...));
+            $this->scope->save(...NodeOperator::aliased($this->scope, $drag->node, $drop->node, 0));
+        } catch (\DomainException $error) { message::error($error->getMessage()); }
+
+        $this->updateView('controls');
+        $this->child('sidebar')?->updateView('main');
         $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
         break;
 
@@ -277,9 +286,14 @@ switch ($this->action) {
             message::error("createAlias: no page at node $original");
             break;
         }
+        try {
+            \Systopic\Cms\Pages\RelationRules::placement($source->contentNodeId, $parentId, $this->relationNode(...));
+        } catch (\DomainException $error) { message::error($error->getMessage()); break; }
         $parent = $parentId > 1 ? Node::withId($parentId) : null;
         $index = $after !== $parentId ? NodeOperator::indexAfter($this->scope, $parent, $after, 'page') : 0;
         $this->scope->save(...NodeOperator::aliased($this->scope, $source->node, $parent, $index));
+        $this->updateView('controls');
+        $this->child('sidebar')?->updateView('main');
         $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
         break;
 
@@ -289,12 +303,15 @@ switch ($this->action) {
             message::error('only alias objects supported use hide function');
             break;
         }
+        if ($page->hasChildren) { message::error('Move or remove child pages before removing this alias.'); break; }
         $originalId = $page->contentNodeId;
         $this->uow()->remove($page->node)->commit();
         if ((int) $this->state->id === $page->id) {
             $this->state->id = $originalId;
-            $this->updateView('main');
+            $this->pageChanged();
         }
+        $this->updateView('controls');
+        $this->child('sidebar')?->updateView('main');
         $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
         break;
 
@@ -346,8 +363,9 @@ switch ($this->action) {
             }
         }
         $this->state->cmsPageSearchResults = $html;
-        client::replaceInner('ul#cmsSearchResults', $html);
-        client::callFunction('setFocus', ['#cmsSearchInput']);
+        client::callFunction('updatePageSearchResults', [$term, $html]);
+        \Systopic\System\Auth\Session::storeState();
+        $renderStyle = 'none'; // results only: never rebuild the focused search field
         break;
 
     // ------------------------------------------------------- page content
@@ -424,19 +442,17 @@ switch ($this->action) {
         $nodeId = (int) http::get('id', http::dataset('node_id', $this->state->id));
         $count = $this->publishBranch($nodeId, $this->action === 'publishAll');
         message::confirm("$count page(s) " . ($this->action === 'publishAll' ? 'published' : 'unpublished'));
-        $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
+        $this->updateView('controls');
         $this->child('sidebar')?->updateView('main');
+        $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
         break;
 
     case 'redirectHere':
-        $page = $this->pageFor((int) http::request('node_id'));
-        $target = (int) http::request('node_redirect_node_id');
-        if ($page === null) {
-            break;
-        }
-        $page->node->redirectNode = $target > 1 ? Node::withId($target) : null;
-        $this->uow()->persist($page->node)->commit();
-        $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
+        try {
+            $this->setPageRelation((int) http::request('node_id'), (int) http::request('node_redirect_node_id'), 'redirect');
+            $this->updateView('tree');
+            $this->child('sidebar')?->updateView('main');
+        } catch (\DomainException $error) { message::error($error->getMessage()); }
         break;
 
     // -------------------------------------------------------------- trash
@@ -449,6 +465,8 @@ switch ($this->action) {
         $page = $this->pageFor($nodeId);
         $parentId = $page?->node->relationId('parentNode');
         $this->trashPage($nodeId);
+        $this->updateView('controls');
+        $this->child('sidebar')?->updateView('main');
         $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
         if ($nodeId === (int) $this->state->id) {
             http::redirect('?id=' . (int) $parentId);
@@ -461,6 +479,8 @@ switch ($this->action) {
         if ($nodeId > 1) {
             $count = $this->recoverBranch($nodeId);
             message::confirm("$count node(s) recovered");
+            $this->updateView('controls');
+            $this->child('sidebar')?->updateView('main');
             $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
             $this->updateView('main');
         }

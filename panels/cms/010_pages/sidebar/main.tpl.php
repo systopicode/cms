@@ -4,6 +4,7 @@
  *
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Sidebar\Panel $this
  */
+if (!$this->parent->inPath()) return;
 $page = $this->parent->page ?? null;
 if ($page === null || $page->row === null || $this->groups === []) {
 	return;
@@ -48,7 +49,9 @@ $manage = [
 								<span class="sidebarTools">
 									<?php if ($templateName === 'meta') { ?>
 										<a class="ajax button transparent icononly small sidebarInfo" href="sidebar/defaultMeta/" title="Default values" aria-label="Default values"><i class="fa-regular fa-circle-info"></i></a>
-									<?php } elseif (isset($manage[$templateName])) { ?>
+									<?php } elseif ($templateName === 'relations') { ?>
+                                        <a class="ajax button transparent icononly small sidebarInfo" href="sidebar/relationsHelp/" title="About Aliases &amp; Redirects" aria-label="About Aliases &amp; Redirects"><i class="fa-regular fa-circle-info"></i></a>
+                                    <?php } elseif (isset($manage[$templateName])) { ?>
 										<a class="ajax button transparent icononly small sidebarInfo" href="<?= http::$root . $manage[$templateName][0] ?>" title="<?= $manage[$templateName][1] ?>" aria-label="<?= $manage[$templateName][1] ?>"><i class="fa-regular fa-pen"></i></a>
 									<?php } ?>
 									<i class="fa-regular fa-chevron-down sidebarFold" aria-hidden="true"></i>

@@ -1,7 +1,7 @@
 sys.onDocumentReady(function () {
-	scrollTree();
+    scrollTree();
+    if (new URLSearchParams(location.search).get('relations') === 'aliases') focusPageRelations('aliases');
 });
-
 // While the field has a word, its hits stand in for the tree.
 document.addEventListener('input', function (event) {
 	var field = event.target;
@@ -15,7 +15,7 @@ document.addEventListener('input', function (event) {
 });
 
 function onAfterHisotryPush(url) {
-
+    revealRequestedPageRelations();
 }
 
 /**
@@ -36,7 +36,7 @@ function scrollTree(running = 'instant', id = false, magick = true) {
 	if (!scroller) {
 		return;
 	}
-	var itemRect = activeElement.getBoundingClientRect();
+	var itemRect = (activeElement.querySelector(':scope > label') || activeElement).getBoundingClientRect();
 	var box = scroller.getBoundingClientRect();
 	var above = itemRect.top < box.top;
 	var below = itemRect.bottom > box.bottom;
@@ -50,6 +50,65 @@ function scrollTree(running = 'instant', id = false, magick = true) {
 	if (running === 'smooth' && scroller.scrollTo) {
 		scroller.scrollTo({top: top, behavior: 'smooth'});
 	} else {
-		scroller.scrollTop = top;
+        if (!magick && sys.core.server?.revealScroll) sys.core.server.revealScroll(scroller, top);
+        else scroller.scrollTop = top;
 	}
+}
+
+function focusPageRelations(part = '') {
+    // Let the updated panel and its flex layout settle before measuring.
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+        var editor = document.querySelector('main > .content');
+        if (editor) editor.dataset.cmsProperties = 'true';
+        var section = document.querySelector('aside.cms details[data-section="relations"]');
+        if (!section) return;
+        section.open = true;
+        var target = part === 'aliases' ? section.querySelector('[data-relation-section="aliases"]') || section : section;
+        var scroller = section.closest('.scrollContainer');
+        if (scroller) {
+            var top = scroller.scrollTop + target.getBoundingClientRect().top - scroller.getBoundingClientRect().top - 8;
+            if (sys.core.server?.revealScroll) sys.core.server.revealScroll(scroller, top);
+            else scroller.scrollTop = top;
+        }
+        section.querySelector('summary')?.focus({preventScroll: true});
+        scrollTree('instant', false, false);
+    }); });
+}
+
+
+// Ignore late search answers after further typing, a page change or leaving Pages.
+// Use the existing command handler to initialise result actions consistently.
+function updatePageSearchResults(term, html) {
+    var field = document.querySelector('#cmsSearchInput');
+    if (!field || field.value.trim() !== term) return;
+    new sys.core.server.command({response: {command: 'replaceInner', selector: 'ul#cmsSearchResults', html: html}});
+}
+function updatePageRelationResults(source, kind, term, html) {
+    var selector = '.scrollContainerContent[data-node_id="' + Number(source) + '"] .relationSearch[data-relation="' + CSS.escape(kind) + '"]';
+    var field = document.querySelector(selector + ' input');
+    if (!field || field.value.trim() !== term) return;
+    new sys.core.server.command({response: {command: 'replaceInner', selector: selector + ' .relationResults', html: html}});
+}
+
+function revealRequestedPageRelations() {
+    var params = new URLSearchParams(location.search);
+    if (params.get('relations') === 'aliases') focusPageRelations('aliases');
+    if (params.get('reveal') === 'tree' || params.get('relations') === 'aliases') {
+        requestAnimationFrame(function () { requestAnimationFrame(function () {
+            scrollTree('instant', false, false);
+        }); });
+    }
+}
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', revealRequestedPageRelations, {once: true});
+} else {
+    revealRequestedPageRelations();
+}
+document.addEventListener('cms:rendered', revealRequestedPageRelations);
+
+function clearPageRelationSearch(source) {
+    var root = document.querySelector('.scrollContainerContent[data-node_id="' + Number(source) + '"]');
+    if (!root) return;
+    root.querySelectorAll('.relationSearch input').forEach(function (field) { field.value = ''; });
+    root.querySelectorAll('.relationResults').forEach(function (list) { list.replaceChildren(); });
 }

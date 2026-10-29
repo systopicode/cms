@@ -1,6 +1,6 @@
 <?php
 /**
- * Preview link, label, who made it when.
+ * Page identity, who created and modified it, and when.
  *
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Sidebar\Panel $this
  */
@@ -11,25 +11,9 @@ $stamp = static fn(?DateTimeImmutable $d): string => \Systopic\System\Sys\LocalT
 ?>
 <h3>Info</h3>
 <ul>
-	<?php if ($page->node->isTrashed) { ?>
-		<li>
-			<a target="_blank" class="sideAction" href="<?= http::$siteRoot ?>?id=<?= $page->id ?>&lang=<?= $page->language ?>&preview&showtrashed"><i class="fa-regular fa-eye"></i>Preview</a>
-		</li>
-	<?php } else { ?>
-		<li>
-			<a target="_blank" class="sideAction" href="<?= http::$siteRoot ?>?id=<?= $page->id ?>&lang=<?= $page->language ?>&preview"><i class="fa-regular fa-eye"></i>Preview</a>
-		</li>
-	<?php } ?>
-
-	<li>
-		<div class="inputGroup">
-			<input autocomplete="off" type="text" data-on_change="sidebar/updateParam" name="label" value="<?= $e($row->label) ?>">
-			<span class="bar"></span>
-			<label>Label</label>
-		</div>
-	</li>
 	<li>
 		<dl class="cmsFacts">
+            <div><dt>Page ID</dt><dd><?= (int) $page->id ?></dd></div>
 			<div>
 				<dt>Created</dt>
 				<dd><?= $stamp($row->createdDate) ?><?php if ($row->createdUser?->fullname) { ?> · <?= $e($row->createdUser->fullname) ?><?php } ?></dd>

@@ -29,6 +29,15 @@ $save = static function (array $rows) use ($pages): void {
 	$uow->commit();
 };
 
+if (in_array($this->action, ['showRelations', 'searchRelations', 'chooseRelation', 'removeRedirect', 'removeIncomingRedirect'], true)) {
+    include __DIR__ . '/actions.relations.php';
+    if ($this->action === 'searchRelations') {
+        \Systopic\System\Auth\Session::storeState();
+        $renderStyle = 'none';
+    }
+    return;
+}
+
 switch ($this->action) {
 	case 'showGroup':
 		$this->state->sidebarGroup = http::dataset('group');

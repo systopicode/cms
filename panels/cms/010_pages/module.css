@@ -308,3 +308,105 @@ main > div.content > article {
 		grid-template-columns: 1fr;
 	}
 }
+
+.pageRelations .relationSearch { margin-top: 1rem; }
+.pageRelations .relationSearch label { display: block; }
+.pageRelations .relationSearch input { width: 100%; margin-top: 0.35rem; }
+.pageRelations .relationResults { margin: 0; padding: 0; }
+.pageRelations .relationResults button { display: flex; align-items: center; gap: 0.5rem; width: 100%; min-height: 2.5rem; padding: 0.45rem; text-align: left; border-radius: var(--cmsRadius); background: transparent; }
+.pageRelations .relationResults button:hover { background: var(--cmsHover); }
+.pageRelations .relationIncoming li { padding-block: 0.25rem; }
+
+.pageRelations .relationLink { display: flex; align-items: start; gap: .5rem; padding-block: .3rem; }
+.pageRelations .relationLink span { min-width: 0; overflow-wrap: anywhere; }
+.pageRelations .alias i { color: var(--cmsAlias); }
+.pageRelations .redirect i, .pageRelations .relationResults i { color: var(--cmsRedirect); }
+.pageRelations .relationIncoming { max-height: 12rem; overflow-y: auto; padding: 0; margin: .35rem 0; list-style: none; }
+.pageRelations .relationResults { list-style: none; }
+
+
+.contextmenu .iconOnly a { position: relative; }
+
+.pageRelations :is(i.alias, .alias > i) { color: var(--cmsAlias); }
+.pageRelations :is(i.redirect, .redirect > i) { color: var(--cmsRedirect); }
+.pageRelations .relationBlock { margin-top: 1rem; }
+.pageRelations .relationIncoming li { display: flex; align-items: center; gap: .4rem; border-bottom: 1px solid var(--cmsLine); }
+.pageRelations .relationIncoming .relationLink { flex: 1; min-width: 0; }
+.pageRelations .relationLink small { display: block; color: var(--cmsMuted); font-size: .7rem; overflow-wrap: anywhere; }
+
+.pageRelations .relationBlock h4 { font-size: .8rem; color: var(--cmsTextColor); margin-bottom: .4rem; }
+.pageRelations .relationIncoming .relationLink { text-decoration: none; margin: .2rem 0; padding: .5rem; }
+.pageRelations .relationLink small { text-decoration: none; font-weight: 400; }
+
+
+.cms .contextmenu a.removeAlias i { color: var(--cmsMainColor); }
+aside.cms .pageRelations .relationSearch { margin-top: .6rem; }
+aside.cms .pageRelations .relationSearch label { font-size: .75rem; color: var(--cmsMuted); }
+
+.cms .layerEyeIcon { position: relative; display: inline-block; flex: 0 0 auto; width: 1.25em; height: 1.2em; font-size: 1rem; line-height: 1; }
+.cms .layerEyeIcon > i:first-child { position: absolute; left: 0; top: 0; font-size: 1em; }
+.cms .layerEyeIcon > i:last-child { position: absolute; right: -.12em; bottom: -.12em; width: auto; font-size: .65em; padding: .08em; border-radius: .2em; }
+aside.cms .pageRelations .relationBlock { margin: 0; padding: .8rem 0; }
+aside.cms .pageRelations > .relationBlock + .relationBlock { border-top: 1px solid var(--cmsLine); }
+.pageRelations .relationSearchLabel > .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+
+body.cms .contextmenu .layerEyeIcon > i:last-child { width: auto; font-size: .65em; }
+
+/* The eye's knockout follows the surface of its action in every state. */
+.cms :is(.contextmenu, aside) a:is(:hover, :focus-visible, :active) .layerEyeIcon { --layerEyeBg: var(--cmsHover); }
+aside.cms .sideActions .sideAction { background: transparent; padding-inline: .3rem; }
+aside.cms .sideActions .sideAction .layerEyeIcon { --layerEyeBg: var(--cmsCanvas); }
+aside.cms .sideActions .sideAction:is(:hover, :focus-visible, :active) { background: var(--cmsHover); }
+aside.cms .sideActions .sideAction:is(:hover, :focus-visible, :active) .layerEyeIcon { --layerEyeBg: var(--cmsHover); }
+.cmsRelationNotice { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; cursor: pointer; font-size: .85rem; padding: .2rem; }
+.cmsRelationNotice.alias { color: var(--cmsAlias); }
+.cmsRelationNotice.redirect { color: var(--cmsRedirect); }
+
+/* Composite the translucent theme tint over an opaque canvas, never over layers. */
+.cms .layerEyeIcon > i:last-child {
+    background: linear-gradient(var(--layerEyeBg, var(--cmsCanvas)), var(--layerEyeBg, var(--cmsCanvas))), var(--cmsCanvas);
+}
+aside.cms .sideAction { background: transparent; }
+aside.cms .sideAction .layerEyeIcon { --layerEyeBg: var(--cmsCanvas); }
+aside.cms .sideAction:is(:hover, :focus-visible, :active) { background: var(--cmsHover); }
+aside.cms .sideAction:is(:hover, :focus-visible, :active) .layerEyeIcon { --layerEyeBg: var(--cmsHover); }
+.relationsHelp > section { width: min(36rem, 95vw); }
+.cmslightbox.relationsHelp main > h2 { margin-top: 0; }
+.cmslightbox.relationsHelp main > p + h2 { margin-top: 1.75rem; }
+.cmslightbox.relationsHelp h2 .fa-file-import { color: var(--cmsAlias); }
+.cmslightbox.relationsHelp h2 .fa-route { color: var(--cmsRedirect); }
+
+aside.cms :is(a, button).quietAction { display: flex; align-items: center; gap: .5rem; width: 100%; min-height: var(--cmsControl); margin: .35rem 0 0; padding: .35rem .3rem; border: 0; background: transparent; color: var(--cmsTextColor); font-size: .8125rem; font-weight: 500; text-decoration: none; }
+aside.cms .quietAction:hover { background: var(--cmsHover); }
+aside.cms .releaseFields > li { margin: 0 0 .75rem; }
+aside.cms .releaseFields > li:last-child { margin-bottom: 0; }
+aside.cms .releaseFields .sideActions { gap: .15rem; margin-top: .5rem; }
+aside.cms .releaseFields .sideActions .sideAction { margin: 0; }
+aside.cms .releaseFields .inputGroup + .inputGroup { margin-top: .65rem; }
+
+aside.cms a.previewAction { background: var(--cmsButtonBg); }
+.cms ul.tree label > a.aliasConnections, .cms ul.tree label > a.aliasConnections i { color: var(--cmsSubText); }
+.cms ul.tree li.active > label a.aliasConnections,
+.cms ul.tree li.active > label a.aliasConnections i { color: #46535a; color: contrast-color(var(--cmsActive)); opacity: .8; }
+aside.cms .pageRelations .relationResults button { border: 1px solid var(--cmsLine); padding: .55rem .6rem; margin-top: .35rem; white-space: normal; }
+aside.cms .pageRelations .relationIncoming li { background: var(--cmsButtonBg); border: 0; border-radius: var(--cmsRadius); margin-bottom: .35rem; padding: .2rem .25rem; gap: .2rem; }
+aside.cms .pageRelations .relationIncoming .relationLink { background: transparent; margin: 0; }
+aside.cms .pageRelations .relationIncoming > li > :is(a, button):last-child:not(.relationLink) { background: transparent; border: 0; border-radius: var(--cmsRadius); width: 2rem; min-height: 2rem; flex: 0 0 2rem; margin: 0; padding: .3rem; color: var(--cmsTextColor); }
+aside.cms .pageRelations .relationIncoming > li > :is(a, button):last-child:hover { background: var(--cmsHover); }
+
+aside.cms .pageRelations .relationResults .relationResultRow { display: flex; align-items: center; gap: .5rem; margin-top: .4rem; padding: .5rem .6rem; border: 1px solid var(--cmsLine); border-radius: var(--cmsRadius); }
+aside.cms .pageRelations .relationResultLabel { flex: 1; min-width: 0; font-size: .8125rem; overflow-wrap: anywhere; }
+aside.cms .pageRelations .relationResultLabel small { display: block; margin-top: .2rem; font-size: .7rem; color: var(--cmsMuted); }
+aside.cms .pageRelations .relationResults button.relationConnect { flex: 0 0 2rem; width: 2rem; min-height: 2rem; margin: 0; padding: .25rem; border: 0; justify-content: center; background: transparent; color: var(--cmsMainColor); }
+aside.cms .pageRelations .relationResults button.relationConnect:hover { background: var(--cmsHover); }
+aside.cms .pageRelations .relationResults .relationEmpty { font-size: .75rem; line-height: 1.4; text-align: center; color: var(--cmsTextColor); padding: .2rem 0 0; margin: 0; }
+aside.cms .pageRelations .relationSearch:has(.relationEmpty) + .relationNoRedirects { margin-top: 1.2rem; }
+aside.cms .pageRelations .relationIncoming li:has(.relationLink:is(:hover, :focus-visible)) { background: var(--cmsHover); }
+aside.cms .pageRelations .relationIncoming .relationLink:is(:hover, :focus-visible) { color: var(--cmsTextColor); }
+
+aside.cms .releaseFields, aside.cms .releaseFields > li, aside.cms .releaseFields .inputGroup { min-width: 0; max-width: 100%; }
+aside.cms .releaseFields input[type="datetime-local"] { display: block; width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; -webkit-appearance: none; }
+aside.cms .releaseFields input[type="datetime-local"]::-webkit-date-and-time-value { min-width: 0; text-align: left; }
+aside.cms .pageRelations .relationIncoming .relationLink { border: 0; outline: 0; box-shadow: none; }
+aside.cms .pageRelations .relationIncoming .relationLink:is(:hover, :focus-visible) span { text-decoration: none; }
+aside.cms .pageRelations .relationIncoming .relationLink:focus-visible { outline: 2px solid var(--cmsHighlightColor); outline-offset: -2px; }

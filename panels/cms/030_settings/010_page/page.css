@@ -130,3 +130,6 @@ body.settingDragging .pageSettings div.sort{
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+.cms .pageSettings td.pageSettingDrag { padding: 0.25rem; width: 2rem; min-width: 2rem; max-width: 2rem; text-align: center; }
+.cms .pageSettings td.pageSettingDrag > i { display: inline-flex; justify-content: center; align-items: center; width: 1.5rem; height: 2rem; margin: 0; }

@@ -12,7 +12,7 @@ class Panel extends CmsPanel {
 	public array $groups = [
 		'content' => ['label' => 'Content', 'templates' => ['templates', 'settings', 'tags']],
 		'seo' => ['label' => 'SEO & KI', 'templates' => ['urls', 'meta', 'search']],
-		'publishing' => ['label' => 'Publishing', 'templates' => ['publishing', 'info']],
+		'publishing' => ['label' => 'Publishing', 'templates' => ['publishing', 'relations', 'info']],
 	];
 
 	public array $templateLabels = [
@@ -21,6 +21,7 @@ class Panel extends CmsPanel {
 		'settings' => 'Settings',
 		'tags' => 'Tags',
 		'publishing' => 'Release',
+        'relations' => 'Aliases & Redirects',
 		'info' => 'Info',
 		'meta' => 'Meta',
 		'search' => 'Search and AI',
@@ -64,6 +65,13 @@ class Panel extends CmsPanel {
 		}
 		$this->groups = array_filter($this->groups, fn($group) => count($group->templates) > 0);
 	}
+
+    public function incomingRelations(): array {
+        $id = $this->parent->page?->id;
+        if (!$id) return [];
+        return $this->parent->scope->connection->all('SELECT node_id, node_original_node_id, node_redirect_node_id FROM cms_nodes WHERE node_type = :type AND !node_is_trashed AND (node_original_node_id = :original OR node_redirect_node_id = :redirect) ORDER BY node_id', [':type' => 'page', ':original' => $id, ':redirect' => $id]);
+    }
+
 
 	function activeGroup(): string {
 		$name = (string) ($this->state->sidebarGroup ?? '');

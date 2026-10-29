@@ -42,15 +42,15 @@
 	<label><span>Contrast</span><output>0</output><input type="range" min="0" max="200" value="100" data-adjust="contrast"></label>
 	<label><span>Saturation</span><output>0</output><input type="range" min="0" max="200" value="100" data-adjust="saturation"></label>
 	<div class="fileAdjustActions">
-		<button type="button" data-rotate="-90" title="Rotate left"><i class="fa-regular fa-rotate-left"></i></button>
-		<button type="button" data-rotate="90" title="Rotate right"><i class="fa-regular fa-rotate-right"></i></button>
-		<button type="button" data-flip title="Flip"><i class="fa-regular fa-reflect-horizontal"></i></button>
-		<button type="button" data-reset-adjust title="Reset adjustments"><i class="fa-regular fa-arrow-rotate-left"></i></button>
-		<button type="button" data-restore-original title="Restore original"><i class="fa-regular fa-clock-rotate-left"></i></button>
-		<button type="button" class="button cropButton" data-on_click="startCroping"><i class="fa-regular fa-crop-simple"></i>Crop</button>
+		<button type="button" data-rotate="-90" title="Rotate left" aria-label="Rotate left"><i class="fa-regular fa-rotate-left"></i></button>
+		<button type="button" data-rotate="90" title="Rotate right" aria-label="Rotate right"><i class="fa-regular fa-rotate-right"></i></button>
+		<button type="button" data-flip title="Flip horizontally" aria-label="Flip horizontally"><i class="fa-regular fa-reflect-horizontal"></i></button>
+		<button type="button" data-reset-adjust title="Discard unsaved adjustments" aria-label="Discard unsaved adjustments"><i class="fa-regular fa-eraser"></i></button>
+		<button type="button" data-restore-original title="Reset saved format to original" aria-label="Reset saved format to original"><i class="fa-regular fa-clock-rotate-left"></i></button>
+		<button type="button" class="button cropButton icononly" title="Crop image" aria-label="Crop image" data-on_click="startCroping"><i class="fa-regular fa-crop-simple"></i></button>
 		<div class="splitApply">
 			<button type="button" class="button submit" data-apply-adjust disabled><i class="fa-regular fa-check"></i>Apply</button>
-			<button type="button" class="button submit splitApplyMenu" title="Apply options" disabled><i class="fa-regular fa-chevron-down"></i></button>
+			<button type="button" class="button submit splitApplyMenu" title="Apply options" aria-label="Apply options" disabled><i class="fa-regular fa-chevron-down"></i></button>
 			<div class="splitApplyList" hidden>
 				<button type="button" data-apply-adjust data-apply-all="1" disabled><i class="fa-regular fa-layer-group"></i>Apply to all formats</button>
 			</div>

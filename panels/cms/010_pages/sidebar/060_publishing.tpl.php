@@ -10,7 +10,8 @@ $e = static fn($v): string => htmlspecialchars((string) ($v instanceof \Systopic
 $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:s') ?? '';
 ?>
 <h3>Publishing</h3>
-<ul>
+<ul class="releaseFields">
+    <li><a target="_blank" rel="noopener" class="sideAction previewAction" href="<?= http::$siteRoot ?>?id=<?= $page->id ?>&amp;lang=<?= $page->language ?>&amp;preview<?= $page->node->isTrashed ? '&amp;showtrashed' : '' ?>"><i class="fa-regular fa-user-hat-tie-magnifying-glass"></i>Preview</a></li>
 	<li>
 		<label class="checkbox">
 			<span>Navi element</span>
@@ -28,8 +29,8 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 			</div>
 		</label>
 		<div class="sideActions">
-			<a class="ajax put sideAction" href="../pages/publishAll"><i class="fa-regular fa-eye"></i>Publish with children</a>
-			<a class="ajax put sideAction" href="../pages/unPublishAll"><i class="fa-regular fa-eye-slash"></i>Unpublish with children</a>
+			<a class="ajax put sideAction" href="../pages/publishAll"><span class="layerEyeIcon" aria-hidden="true"><i class="fa-regular fa-layer-group"></i><i class="fa-regular fa-eye"></i></span>Publish with children</a>
+			<a class="ajax put sideAction" href="../pages/unPublishAll"><span class="layerEyeIcon" aria-hidden="true"><i class="fa-regular fa-layer-group"></i><i class="fa-regular fa-eye-slash"></i></span>Unpublish with children</a>
 		</div>
 	</li>
 	<li>
@@ -51,21 +52,10 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 			<label>Publishing end</label>
 		</div>
 	</li>
-	<?php if ($page->isAlias && !$page->hasChildren) { ?>
-		<li title="Delete Alias" >
-			<a data-confirm="Remove this alias?"
-			   class="alias sideAction danger"
-			   data-on_click="userConfirm"
-			   data-action="deleteAlias&node_id=<?= $page->id ?>&node_original_node_id=<?= $page->contentNodeId ?>">
-				<i class="fa-regular fa-trash"></i>
-				Remove alias
-			</a>
-		</li>
-	<?php } ?>
 	<?php if (!$page->isAlias && !$page->node->isTrashed) { ?>
 		<li title="Delete Page" >
 			<a data-confirm="Remove this page in every language, including children?"
-			   class="sideAction danger"
+			   class="sideAction quietAction"
 			   data-on_click="userConfirm"
 			   data-action="deletePage"
 			   data-node_id="<?= $page->id ?>">
@@ -73,10 +63,10 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 				Remove page
 			</a>
 		</li>
-	<?php } else { ?>
+	<?php } elseif ($page->node->isTrashed) { ?>
 		<li title="Recover Page" >
 			<a data-confirm="Restore this page in every language, including children?"
-			   class="sideAction"
+			   class="sideAction quietAction"
 			   data-on_click="userConfirm"
 			   data-action="recoverPage"
 			   data-node_id="<?= $page->id ?>">

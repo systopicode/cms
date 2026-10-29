@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Systopic\Cms\Panels\Root\Cms\Pages;
 
+use Systopic\System\Tables\Nodes\Model as Node;
+
 use Systopic\Cms\Pages\Sites\SiteRegistry;
 use Systopic\Cms\Tables\Sites\Model as SiteRow;
 use Systopic\Db\Scope;
@@ -318,12 +320,43 @@ class Panel extends CmsPanel {
 		return $id === NULL ? NULL : (int) $id;
 	}
 
-	/**
-	 * The context menu of a tree entry.
-	 *
-	 * Here and not in the model: every line of the template calls an action
-	 * from `actions.php` next door.
-	 */
+    /** Raw graph edges shared by context-menu and sidebar validation. */
+    public function relationNode(int $id): ?array {
+        $rows = $this->scope->connection->all('SELECT node_original_node_id AS original, node_redirect_node_id AS redirect, node_parent_node_id AS parent, node_type AS type, node_is_trashed AS trashed FROM cms_nodes WHERE node_id = :id', [':id' => $id]);
+        return $rows[0] ?? null;
+    }
+
+    public function setPageRelation(int $source, int $target, string $kind): void {
+        if (!in_array($kind, ['alias', 'redirect'], true)) throw new \DomainException('Unknown page relation.');
+        $page = $this->pageFor($source);
+        if ($page === null || $page->row === null || $page->node->isTrashed) throw new \DomainException('Choose a page outside the trash.');
+        if ($kind === 'alias' && !$page->isAlias) throw new \DomainException('Only an existing alias can change its original.');
+        if ($target > 1) {
+            \Systopic\Cms\Pages\RelationRules::target($source, $target, $this->relationNode(...));
+            if ($kind === 'alias') {
+                $target = $this->pageFor($target)?->contentNodeId ?? 0;
+                \Systopic\Cms\Pages\RelationRules::target($source, $target, $this->relationNode(...));
+                \Systopic\Cms\Pages\RelationRules::placement($target, (int) $page->node->relationId('parentNode'), $this->relationNode(...));
+            }
+        } elseif ($kind === 'alias') throw new \DomainException('An alias needs an original page.');
+        if ($kind === 'alias') $page->node->originalNode = Node::withId($target);
+        else $page->node->redirectNode = $target > 1 ? Node::withId($target) : null;
+        $this->uow()->persist($page->node)->commit();
+        if ($kind === 'alias') \Systopic\Cms\Pages\Sites\NodeSite::rebuildBranch($source);
+    }
+
+    /** A public address checked with public visibility, not preview parameters. */
+    public function liveHref(int $id, ?string $lang = null): ?string {
+        $page = Page::load($this->scope, new Params(lang: $lang ?? $this->params->lang,
+            root: (string) \http::$siteRoot, siteUrl: (string) \http::$siteUrl), $id);
+        if ($page === null || $page->row === null || !$page->meta->published) return null;
+        foreach ($page->ancestors as $ancestor) {
+            if ($ancestor->node->type === 'page' && !$ancestor->meta->published) return null;
+        }
+        return $page->rewritepaths->href;
+    }
+
+    /** Render the existing tree actions next to their Pages panel handlers. */
 	public function printTreeContextmenu($nodeId): string {
 		$node = $this->tree->getNode($nodeId === NULL ? NULL : (int) $nodeId);
 		if ($node === NULL) {
@@ -380,8 +413,15 @@ class Panel extends CmsPanel {
 
 	function onLoadThisClass() {
 		if (!$this->inPath()) {
+            if (!empty($this->state->pagesUiActive)) {
+                $this->state->pagesUiActive = false;
+                $this->child('sidebar')?->updateView('main');
+                $this->updateView('controls');
+            }
 			return;
 		}
+        $this->state->pagesUiActive = true;
+        if ($this->action === 'cmsPageSearch') return;
 		if (\http::method() !== 'GET') {
 			return;
 		}
@@ -390,6 +430,16 @@ class Panel extends CmsPanel {
 		$hadSearch = trim((string) ($this->state->cmsPageSearchstring ?? '')) !== '';
 		$idBefore = $this->state->id;
 		$this->checkIfPageChanged();
+        if (\http::get('relations') === 'aliases') {
+            $sidebar = $this->child('sidebar');
+            if ($sidebar !== null) {
+                $sidebar->state->sidebarGroup = 'publishing';
+                $sidebar->state->sidebarCollapsed = false;
+                $sidebar->updateView('main');
+            }
+            \client::callFunction('focusPageRelations', ['aliases']);
+        }
+
 		if ($hadSearch && (string) ($this->action ?? '') === '' && $this->state->id === $idBefore && trim((string) ($this->state->cmsPageSearchstring ?? '')) !== '') {
 			$this->state->cmsPageSearchstring = '';
 			$this->state->cmsPageSearchResults = '';

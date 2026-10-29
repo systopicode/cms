@@ -7,6 +7,8 @@
 use Systopic\Cms\Tables\Pages\Languages;
 use Systopic\Cms\Pages\PreviewWidths;
 
+if (!$this->inPath()) return;
+
 if (($this->state->id ?? null) === null) {
 	echo '<!-- controls: no page selected -->';
 	return;
@@ -29,9 +31,16 @@ $title = $page?->label->plain ?? '';
 				<i class="fa-regular fa-chevron-right"></i>
 			<?php } ?>
 		</nav>
-		<div class="pageTitleRow">
+        <div class="pageTitleRow">
 			<h1 class="pageTitle" contenteditable="false" data-on_blur="updateLabel"><?= $title !== '' ? $title : '- - - -' ?></h1>
 			<button type="button" class="pageTitleEdit" data-page-title-edit title="Edit title"><i class="fa-regular fa-pen"></i></button>
+            <?php if ($page->isAlias) { ?>
+                <a class="cmsRelationNotice alias" data-on_click="sidebar/showRelations" title="Alias: open original and connections" aria-label="Alias: open original and connections"><i class="fa-regular fa-file-import"></i></a>
+            <?php } ?>
+            <?php if ((int) $page->node->relationId('redirectNode') > 1) { ?>
+                <a class="cmsRelationNotice redirect" data-on_click="sidebar/showRelations" title="Redirect: open target and connections" aria-label="Redirect: open target and connections"><i class="fa-regular fa-route"></i></a>
+            <?php } ?>
+
 		</div>
 	<?php } else { ?>
 		<h1>Pages</h1>
