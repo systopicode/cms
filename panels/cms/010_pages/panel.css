@@ -317,6 +317,12 @@ aside.cms table.aclResolution.aclResolution tbody th{
 aside.cms table.aclResolution.aclResolution tr.groupStart > *{
 	border-top: 1px solid var(--cmsLineStrong);
 }
+aside.cms table.aclResolution.aclResolution tfoot tr.groupStart > *{
+	border-top: 2px solid var(--cmsLineStrong);
+}
+aside.cms table.aclResolution.aclResolution tfoot th{
+	font-weight: 700;
+}
 aside.cms table.aclResolution.aclResolution .rw{
 	width: 1.5rem;
 	text-align: center;

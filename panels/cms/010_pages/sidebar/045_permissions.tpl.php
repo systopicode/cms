@@ -8,6 +8,10 @@
  * switch first gives the page the same groups as its own, then they toggle.
  * A user who is not a superuser toggles only the groups they may write.
  *
+ * Below, for everybody: what the groups mean — per group the roles with a
+ * right on it, and in the summary what each role may do on the page all in
+ * all (read on any group is read, write on any group is write).
+ *
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Sidebar\Panel $this
  */
 
@@ -69,9 +73,11 @@ $writable = Session::current()->writeGroupIds;
 <?php if (!defined('PAGE_ACL') || !PAGE_ACL) { ?>
 	<p class="hint">Not switched on for this project yet (PAGE_ACL in the global settings): the groups are kept, but every page shows to everyone.</p>
 <?php } ?>
-<?php if ($superuser && $active !== []) {
-	// who that means: each group of the page, the roles with a right on it
+<?php if ($active !== []) {
+	// who that means: each group of the page, the roles with a right on it,
+	// and below what each role may do on the page all in all
 	$admin = UserAdmin::of($this->parent->scope);
+	$sum = [];
 	?>
 	<table class="aclResolution">
 		<thead>
@@ -85,6 +91,9 @@ $writable = Session::current()->writeGroupIds;
 					$link = $group === null ? null : $admin->permission($group, $role);
 					if ($link !== null && ($link->read || $link->write)) {
 						$rows[] = [$role, (bool) $link->read, (bool) $link->write];
+						$sum[(int) $role->id] ??= [$role, false, false];
+						$sum[(int) $role->id][1] = $sum[(int) $role->id][1] || $link->read;
+						$sum[(int) $role->id][2] = $sum[(int) $role->id][2] || $link->write;
 					}
 				}
 				$span = max(1, count($rows));
@@ -102,5 +111,21 @@ $writable = Session::current()->writeGroupIds;
 				<?php }
 			} ?>
 		</tbody>
+		<tfoot>
+			<?php
+			$check = static fn(bool $on, string $title): string => $on ? '<i class="fa-regular fa-check" title="' . $title . '"></i>' : '';
+			if ($sum === []) { ?>
+				<tr class="groupStart"><th scope="row">Summary</th><td colspan="3" class="none">nobody but the owner and superusers</td></tr>
+			<?php }
+			$i = 0;
+			foreach ($sum as [$role, $read, $write]) { ?>
+				<tr<?= $i === 0 ? ' class="groupStart"' : '' ?>>
+					<?php if ($i++ === 0) { ?><th scope="row" rowspan="<?= count($sum) ?>">Summary</th><?php } ?>
+					<td><?= $e($role->name) ?></td>
+					<td class="rw"><?= $check($read, 'Read') ?></td>
+					<td class="rw"><?= $check($write, 'Write') ?></td>
+				</tr>
+			<?php } ?>
+		</tfoot>
 	</table>
 <?php } ?>
