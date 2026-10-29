@@ -10,6 +10,7 @@ use Systopic\Db\Rows;
 use Systopic\System\Tables\Nodes\Model as Node;
 use Systopic\Cms\Tables\Pages\Model as PageRow;
 use Systopic\Cms\Tables\Rewritepaths\Model as Rewritepath;
+use Systopic\Db\Schema\Provisioner;
 use Systopic\Db\Schema\Registry;
 use Systopic\Db\Scope;
 use Systopic\Cms\Queries\Params;
@@ -375,7 +376,9 @@ final class PageTreeLevel
     private static function run(Scope $scope, Params $params, string $path, array $placeholders): array
     {
         self::register();
-        $rows = $scope->rows($path, $params->params($placeholders), $params->completion);
+        // the provisioner: a project whose nodes have no `node_acl_id` yet gets it here
+        $rows = $scope->rows($path, $params->params($placeholders), $params->completion,
+            provisioner: new Provisioner($scope->connection));
 
         [$nodes, $pages] = self::split($rows->records());
         return [$nodes, $pages, self::looseByNode($rows)];
@@ -473,7 +476,8 @@ final class PageTreeLevel
     public static function chainTo(Scope $scope, Params $params, int $nodeId): array
     {
         self::register();
-        $rows = $scope->rows(self::queryFile('ancestors'), $params->params(['node_id' => $nodeId]), $params->completion);
+        $rows = $scope->rows(self::queryFile('ancestors'), $params->params(['node_id' => $nodeId]), $params->completion,
+            provisioner: new Provisioner($scope->connection));
 
         [$nodes, $pages] = self::split($rows->records());
         if ($nodes === []) {

@@ -64,4 +64,8 @@ $writable = Session::current()->writeGroupIds;
 	if ($active === []) {
 		echo ' Without a group only the owner and superusers have access.';
 	}
+	echo ' Visitors of the site see a page through a group the role Everyone may read.';
 ?></p>
+<?php if (!defined('PAGE_ACL') || !PAGE_ACL) { ?>
+	<p class="hint">Not switched on for this project yet (PAGE_ACL in the global settings): the groups are kept, but every page shows to everyone.</p>
+<?php } ?>

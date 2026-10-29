@@ -71,6 +71,8 @@ class Panel extends CmsPanel {
 			siteUrl:  (string) \http::$siteUrl,
 			inCms:    TRUE,
 			nodeType: 'page',
+			readAcls: \Systopic\Cms\Pages\Route\Route::viewerAcls(),
+			owner:    (int) \Systopic\System\Auth\Session::id(),
 		);
 	}
 
