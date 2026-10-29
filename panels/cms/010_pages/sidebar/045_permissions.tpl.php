@@ -69,3 +69,38 @@ $writable = Session::current()->writeGroupIds;
 <?php if (!defined('PAGE_ACL') || !PAGE_ACL) { ?>
 	<p class="hint">Not switched on for this project yet (PAGE_ACL in the global settings): the groups are kept, but every page shows to everyone.</p>
 <?php } ?>
+<?php if ($superuser && $active !== []) {
+	// who that means: each group of the page, the roles with a right on it
+	$admin = UserAdmin::of($this->parent->scope);
+	?>
+	<table class="aclResolution">
+		<thead>
+			<tr><th>Group</th><th>Role</th><th title="Read">R</th><th title="Write">W</th></tr>
+		</thead>
+		<tbody>
+			<?php foreach ($active as $groupId) {
+				$group = $admin->group($groupId);
+				$rows = [];
+				foreach ($admin->roles as $role) {
+					$link = $group === null ? null : $admin->permission($group, $role);
+					if ($link !== null && ($link->read || $link->write)) {
+						$rows[] = [$role, (bool) $link->read, (bool) $link->write];
+					}
+				}
+				$span = max(1, count($rows));
+				$groupCell = '<th scope="row" rowspan="' . $span . '">' . $e($group?->name ?? "#$groupId") . '</th>';
+				if ($rows === []) { ?>
+					<tr><?= $groupCell ?><td colspan="3" class="none">no role</td></tr>
+				<?php }
+				foreach ($rows as $i => [$role, $read, $write]) { ?>
+					<tr<?= $i === 0 ? ' class="groupStart"' : '' ?>>
+						<?= $i === 0 ? $groupCell : '' ?>
+						<td><?= $e($role->name) ?></td>
+						<td class="rw"><?= $read ? '<i class="fa-regular fa-check" title="Read"></i>' : '' ?></td>
+						<td class="rw"><?= $write ? '<i class="fa-regular fa-check" title="Write"></i>' : '' ?></td>
+					</tr>
+				<?php }
+			} ?>
+		</tbody>
+	</table>
+<?php } ?>
