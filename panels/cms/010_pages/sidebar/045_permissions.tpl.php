@@ -90,7 +90,7 @@ $writable = Session::current()->writeGroupIds;
 				$span = max(1, count($rows));
 				$groupCell = '<th scope="row" rowspan="' . $span . '">' . $e($group?->name ?? "#$groupId") . '</th>';
 				if ($rows === []) { ?>
-					<tr><?= $groupCell ?><td colspan="3" class="none">no role</td></tr>
+					<tr class="groupStart"><?= $groupCell ?><td colspan="3" class="none">no role</td></tr>
 				<?php }
 				foreach ($rows as $i => [$role, $read, $write]) { ?>
 					<tr<?= $i === 0 ? ' class="groupStart"' : '' ?>>
