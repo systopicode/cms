@@ -34,26 +34,26 @@
 	<label><span>Contrast</span><output>0</output><input type="range" min="0" max="200" value="100" data-adjust="contrast"></label>
 	<label><span>Saturation</span><output>0</output><input type="range" min="0" max="200" value="100" data-adjust="saturation"></label>
 	<div class="fileAdjustActions">
-		<button type="button" data-rotate="-90" title="Rotate left" aria-label="Rotate left"><i class="fa-regular fa-rotate-left"></i></button>
-		<button type="button" data-rotate="90" title="Rotate right" aria-label="Rotate right"><i class="fa-regular fa-rotate-right"></i></button>
-		<button type="button" data-flip title="Flip horizontally" aria-label="Flip horizontally"><i class="fa-regular fa-reflect-horizontal"></i></button>
-		<button type="button" data-reset-adjust title="Discard unsaved adjustments" aria-label="Discard unsaved adjustments"><i class="fa-regular fa-eraser"></i></button>
-		<button type="button" data-restore-original title="Reset saved format to original" aria-label="Reset saved format to original"><i class="fa-regular fa-clock-rotate-left"></i></button>
-		<button type="button" class="button cropButton icononly" title="Crop image" aria-label="Crop image" data-on_click="startCroping"><i class="fa-regular fa-crop-simple"></i></button>
+		<button type="button" data-rotate="-90" title="Rotate left" aria-label="Rotate left"><i class="cmsIcon cmsIcon-rotate-left"></i></button>
+		<button type="button" data-rotate="90" title="Rotate right" aria-label="Rotate right"><i class="cmsIcon cmsIcon-rotate-right"></i></button>
+		<button type="button" data-flip title="Flip horizontally" aria-label="Flip horizontally"><i class="cmsIcon cmsIcon-reflect-horizontal"></i></button>
+		<button type="button" data-reset-adjust title="Discard unsaved adjustments" aria-label="Discard unsaved adjustments"><i class="cmsIcon cmsIcon-eraser"></i></button>
+		<button type="button" data-restore-original title="Reset saved format to original" aria-label="Reset saved format to original"><i class="cmsIcon cmsIcon-clock-rotate-left"></i></button>
+		<button type="button" class="button cropButton icononly" title="Crop image" aria-label="Crop image" data-on_click="startCroping"><i class="cmsIcon cmsIcon-crop-simple"></i></button>
 		<div class="splitApply">
-			<button type="button" class="button submit" data-apply-adjust disabled><i class="fa-regular fa-check"></i>Apply</button>
-			<button type="button" class="button submit splitApplyMenu" title="Apply options" aria-label="Apply options" disabled><i class="fa-regular fa-chevron-down"></i></button>
+			<button type="button" class="button submit" data-apply-adjust disabled><i class="cmsIcon cmsIcon-check"></i>Apply</button>
+			<button type="button" class="button submit splitApplyMenu" title="Apply options" aria-label="Apply options" disabled><i class="cmsIcon cmsIcon-chevron-down"></i></button>
 			<div class="splitApplyList" hidden>
-				<button type="button" data-apply-adjust data-apply-all="1" disabled><i class="fa-regular fa-layer-group"></i>Apply to all formats</button>
+				<button type="button" data-apply-adjust data-apply-all="1" disabled><i class="cmsIcon cmsIcon-layer-group"></i>Apply to all formats</button>
 			</div>
 		</div>
 	</div>
 </div>
 <div class="fileFrame imageCropAlignContainer">
 	<div class="frameZoom">
-		<button type="button" data-view-zoom="0.8" title="Zoom out"><i class="fa-regular fa-minus"></i></button>
-		<button type="button" data-view-zoom="reset" title="Reset zoom"><i class="fa-regular fa-expand"></i></button>
-		<button type="button" data-view-zoom="1.25" title="Zoom in"><i class="fa-regular fa-plus"></i></button>
+		<button type="button" data-view-zoom="0.8" title="Zoom out"><i class="cmsIcon cmsIcon-minus"></i></button>
+		<button type="button" data-view-zoom="reset" title="Reset zoom"><i class="cmsIcon cmsIcon-expand"></i></button>
+		<button type="button" data-view-zoom="1.25" title="Zoom in"><i class="cmsIcon cmsIcon-plus"></i></button>
 	</div>
 	<div class="frameView">
 		<img class="srcToChange" data-on_click="startCroping" alt="" src="<?= htmlspecialchars($media->setFormat($selectedFormat)->src, ENT_QUOTES, 'UTF-8') ?>">

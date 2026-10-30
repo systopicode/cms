@@ -60,7 +60,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 			<h1><?= $title ?></h1>
 			<ul class="barmenu">
 				<li>
-					<a class="ajax" onclick="wysiwyg.cancelLink()" data-history="false" href="<?= $e($returnUrl) ?>" aria-label="Close"><i class="fa-regular fa-xmark"></i></a>
+					<a class="ajax" onclick="wysiwyg.cancelLink()" data-history="false" href="<?= $e($returnUrl) ?>" aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></a>
 				</li>
 			</ul>
 		</header>
@@ -126,7 +126,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 									?>
 									<li>
 										<button type="button" class="<?= $fileHrefs[$i] === $href ? 'selected' : '' ?>" data-file-inline="<?= \Systopic\System\Media\Presentation::opensInline((string) $file->mimetype) ? '1' : '0' ?>" data-href="<?= $e($fileHrefs[$i]) ?>" data-label="<?= $e($file->label) ?>" onclick="linkPicked(this)" title="<?= $e($file->label) ?>">
-											<i class="fa-regular fa-<?= $icon ?>"></i>
+											<i class="cmsIcon cmsIcon-<?= $icon ?>"></i>
 											<?php if ($thumbs[$i] !== '') { ?><img src="<?= $e($thumbs[$i]) ?>" alt="" loading="lazy" onerror="this.remove()"><?php } ?>
 											<span><?= $e($file->label) ?></span>
 										</button>
@@ -154,7 +154,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 			</div>
 		</main>
 		<footer>
-			<a class="button submit" onclick="applyHTMLeditorLink(this)"><i class="fa-regular fa-link"></i><?= $href === '' ? 'Insert link' : 'Save' ?></a>
+			<a class="button submit" onclick="applyHTMLeditorLink(this)"><i class="cmsIcon cmsIcon-link"></i><?= $href === '' ? 'Insert link' : 'Save' ?></a>
 		</footer>
 	</section>
 </div>

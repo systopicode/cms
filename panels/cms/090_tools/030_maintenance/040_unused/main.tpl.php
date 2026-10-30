@@ -35,7 +35,7 @@ $unused = $this->unused;
 							<td class="icons">
 								<ul>
 									<li>
-										<a class="button icononly" title="Delete for good" data-on_click="userConfirm" data-action="deleteOne" data-node_id="<?= (int) $row['node'] ?>" data-confirm="<?= $e('Delete “' . ($row['filename'] !== '' ? $row['filename'] : 'Untitled') . '” for good? This cannot be undone.') ?>"><i class="fa-regular fa-trash-xmark"></i></a>
+										<a class="button icononly" title="Delete for good" data-on_click="userConfirm" data-action="deleteOne" data-node_id="<?= (int) $row['node'] ?>" data-confirm="<?= $e('Delete “' . ($row['filename'] !== '' ? $row['filename'] : 'Untitled') . '” for good? This cannot be undone.') ?>"><i class="cmsIcon cmsIcon-trash-xmark"></i></a>
 									</li>
 								</ul>
 							</td>
@@ -44,6 +44,6 @@ $unused = $this->unused;
 				</tbody>
 			</table>
 		</div>
-		<footer><a class="button" data-on_click="userConfirm" data-action="deleteAll" data-confirm="<?= $e('Delete all ' . count($unused) . ' unused files for good? This cannot be undone.') ?>"><i class="fa-regular fa-trash-xmark"></i><span>Delete all</span></a></footer>
+		<footer><a class="button" data-on_click="userConfirm" data-action="deleteAll" data-confirm="<?= $e('Delete all ' . count($unused) . ' unused files for good? This cannot be undone.') ?>"><i class="cmsIcon cmsIcon-trash-xmark"></i><span>Delete all</span></a></footer>
 	<?php } ?>
 </section>

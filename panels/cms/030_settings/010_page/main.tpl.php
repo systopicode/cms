@@ -56,10 +56,10 @@ $addLabel = match ($parentType) {
 <?php if ($selected !== null) { ?>
 	<nav class="crumbs settingCrumbs">
 		<a class="ajax" href="?">Template Settings</a>
-		<i class="fa-regular fa-chevron-right"></i>
+		<i class="cmsIcon cmsIcon-chevron-right"></i>
 		<?php foreach ($ancestors as $crumb) { ?>
 			<a class="ajax" href="?id=<?= (int) $crumb->nodeId ?>"><?= $e($crumb->label !== '' ? $crumb->label : 'Untitled') ?></a>
-			<i class="fa-regular fa-chevron-right"></i>
+			<i class="cmsIcon cmsIcon-chevron-right"></i>
 		<?php } ?>
 	</nav>
 <?php } ?>
@@ -69,7 +69,7 @@ $addLabel = match ($parentType) {
 	<header>
 		<h2><?= $e($card) ?></h2>
 		<a class="button submit" data-on_click="add" data-id="<?= $addId ?>">
-			<i class="fa-regular fa-plus"></i><span><?= $e($addLabel) ?></span>
+			<i class="cmsIcon cmsIcon-plus"></i><span><?= $e($addLabel) ?></span>
 		</a>
 	</header>
 	<?php if ($this->rows === []) { ?>
@@ -117,7 +117,7 @@ $addLabel = match ($parentType) {
 						?>
 						<tr>
 							<td class="pageSettingDrag">
-								<i class="fa-regular fa-grip-dots-vertical" aria-label="Drag to reorder"
+								<i class="cmsIcon cmsIcon-grip-dots-vertical" aria-label="Drag to reorder"
 									data-drag_type="setting" data-id="<?= $id ?>"></i>
 								<div class="sort v insertBefore" data-drop_accept="setting" data-on_drop="insertBefore" data-id="<?= $id ?>"></div>
 								<div class="sort v insertAfter" data-drop_accept="setting" data-on_drop="insertAfter" data-id="<?= $id ?>"></div>
@@ -147,11 +147,11 @@ $addLabel = match ($parentType) {
 							<td class="icons">
 								<ul>
 									<?php if ($opens) { ?>
-										<li><a class="ajax button icononly" title="Open" href="?id=<?= $id ?>"><i class="fa-regular fa-folder-open"></i></a></li>
+										<li><a class="ajax button icononly" title="Open" href="?id=<?= $id ?>"><i class="cmsIcon cmsIcon-folder-open"></i></a></li>
 									<?php } ?>
-									<li><a class="ajax button icononly" title="Edit" href="edit/?id=<?= $id ?>"><i class="fa-regular fa-pen"></i></a></li>
+									<li><a class="ajax button icononly" title="Edit" href="edit/?id=<?= $id ?>"><i class="cmsIcon cmsIcon-pen"></i></a></li>
 									<?php if (!is_array($row->options) || $row->options === []) { ?>
-										<li><button type="button" class="button transparent icononly" title="Delete" data-on_click="userConfirm" data-action="delete" data-id="<?= $id ?>" data-confirm="Delete this setting?"><i class="fa-regular fa-trash"></i></button></li>
+										<li><button type="button" class="button transparent icononly" title="Delete" data-on_click="userConfirm" data-action="delete" data-id="<?= $id ?>" data-confirm="Delete this setting?"><i class="cmsIcon cmsIcon-trash"></i></button></li>
 									<?php } ?>
 								</ul>
 							</td>

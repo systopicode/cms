@@ -39,12 +39,12 @@ $formatBase = rtrim((string) http::$root, '/') . '/';
 <?php } else { ?>
 	<div class="fileFrame">
 		<video id="videosnapshot" data-node_id="<?= (int) $this->targetId ?>" controls playsinline src="<?= $e($original->src) ?>"<?php if ($hasPoster) { ?> poster="<?= $e($posterSrc . '?v=' . filemtime($posterPath)) ?>"<?php } ?>></video>
-		<button type="button" class="button submit formatCreate" hidden><i class="fa-regular fa-film"></i><span>Create format</span></button>
+		<button type="button" class="button submit formatCreate" hidden><i class="cmsIcon cmsIcon-film"></i><span>Create format</span></button>
 	</div>
 	<div class="fileFrame posterPane">
 		<canvas id="snapshotpreview" hidden></canvas>
 		<img id="videoPosterPreview" alt="" data-src="<?= $e($posterSrc) ?>"<?php if ($hasPoster) { ?> src="<?= $e($posterSrc . '?v=' . filemtime($posterPath)) ?>"<?php } else { ?> hidden<?php } ?>>
-		<button type="button" id="snap" class="button submit posterButton" title="Use the current frame as the poster"><i class="fa-regular fa-image"></i>Poster from this frame</button>
+		<button type="button" id="snap" class="button submit posterButton" title="Use the current frame as the poster"><i class="cmsIcon cmsIcon-image"></i>Poster from this frame</button>
 	</div>
 <?php } ?>
 <script>

@@ -47,10 +47,10 @@ $pages = $this->pages;
 							<td class="icons">
 								<ul>
 									<li>
-										<a class="button icononly" title="Send to this page" data-on_click="redirectMiss" data-miss_id="<?= (int) $miss->id ?>"><i class="fa-regular fa-diamond-turn-right"></i></a>
+										<a class="button icononly" title="Send to this page" data-on_click="redirectMiss" data-miss_id="<?= (int) $miss->id ?>"><i class="cmsIcon cmsIcon-diamond-turn-right"></i></a>
 									</li>
 									<li>
-										<a class="button icononly" title="Forget" data-on_click="userConfirm" data-action="dismiss" data-miss_id="<?= (int) $miss->id ?>" data-confirm="<?= $e('Forget “/' . $miss->path . '”?') ?>"><i class="fa-regular fa-xmark"></i></a>
+										<a class="button icononly" title="Forget" data-on_click="userConfirm" data-action="dismiss" data-miss_id="<?= (int) $miss->id ?>" data-confirm="<?= $e('Forget “/' . $miss->path . '”?') ?>"><i class="cmsIcon cmsIcon-xmark"></i></a>
 									</li>
 								</ul>
 							</td>

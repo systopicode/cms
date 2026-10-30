@@ -63,7 +63,7 @@ usort($crops, static function ($a, $b): int {
 							<td class="icons">
 								<ul>
 									<li>
-										<a class="button icononly" title="Delete" data-on_click="userConfirm" data-action="deletePage" data-page_id="<?= (int) $page->id ?>" data-confirm="<?= $e('Delete this copy of “' . $title . '”?') ?>"><i class="fa-regular fa-trash"></i></a>
+										<a class="button icononly" title="Delete" data-on_click="userConfirm" data-action="deletePage" data-page_id="<?= (int) $page->id ?>" data-confirm="<?= $e('Delete this copy of “' . $title . '”?') ?>"><i class="cmsIcon cmsIcon-trash"></i></a>
 									</li>
 								</ul>
 							</td>
@@ -105,7 +105,7 @@ usort($crops, static function ($a, $b): int {
 							<td class="icons">
 								<ul>
 									<li>
-										<a class="button icononly" title="Delete" data-on_click="userConfirm" data-action="deleteCrop" data-crop_id="<?= (int) $crop->id ?>" data-confirm="<?= $e('Delete this copy of “' . $title . '”?') ?>"><i class="fa-regular fa-trash"></i></a>
+										<a class="button icononly" title="Delete" data-on_click="userConfirm" data-action="deleteCrop" data-crop_id="<?= (int) $crop->id ?>" data-confirm="<?= $e('Delete this copy of “' . $title . '”?') ?>"><i class="cmsIcon cmsIcon-trash"></i></a>
 									</li>
 								</ul>
 							</td>

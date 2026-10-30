@@ -123,8 +123,8 @@ class Panel extends CmsPanel {
 		}
 		$src = htmlspecialchars((string) $media->setFormat('shareImage')->src, ENT_QUOTES);
 		return "<img src='$src' alt=''><div class='dropActions'>"
-			. "<a class='ajax' href='editor/file/?target_id=$id&format=shareImage' title='Crop and adjust'><i class='fa-regular fa-pen'></i></a>"
-			. "<button type='button' data-on_click='sidebar/resetShareImage' title='Use the site image' aria-label='Use the site image' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='fa-regular fa-trash'></i></button>"
+			. "<a class='ajax' href='editor/file/?target_id=$id&format=shareImage' title='Crop and adjust'><i class='cmsIcon cmsIcon-pen'></i></a>"
+			. "<button type='button' data-on_click='sidebar/resetShareImage' title='Use the site image' aria-label='Use the site image' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-trash'></i></button>"
 			. "</div>";
 	}
 

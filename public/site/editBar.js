@@ -9,12 +9,7 @@
 	if (!config || customElements.get('fluxo-edit-bar')) {
 		return;
 	}
-	var icon = {
-		pen: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>',
-		fold: '<path d="M15 6l-6 6 6 6"/>',
-	};
-	var fa = name => '<i class="fa-regular fa-' + name + '" aria-hidden="true"></i>';
-	var svg = name => '<svg viewBox="0 0 24 24" aria-hidden="true">' + icon[name] + '</svg>';
+	var iconMarkup = name => '<i class="cmsIcon cmsIcon-' + name + '" aria-hidden="true"></i>';
 	var blank = ' target="_blank" rel="noopener"';
 	var esc = text => String(text).replace(/[&<>"]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'})[c]);
 
@@ -48,13 +43,13 @@
 				'</style>' +
 				'<div class="bar">' +
 				'<button class="brand" type="button" aria-expanded="false" aria-label="fluxo menu" title="fluxo"><img referrerpolicy="no-referrer" src="' + esc(config.signet) + '" alt=""></button>' +
-				'<a class="edit" href="#"' + blank + '>' + svg('pen') + '<span>Edit page</span></a>' +
-				'<button class="fold" type="button" title="Fold the bar">' + svg('fold') + '</button>' +
+				'<a class="edit" href="#"' + blank + '>' + iconMarkup('pen') + '<span>Edit page</span></a>' +
+				'<button class="fold" type="button" title="Fold the bar">' + iconMarkup('chevron-left') + '</button>' +
 				'<div class="menu" hidden>' +
 				'<a class="who" href="' + esc(config.cms) + 'user/"' + blank + '><img referrerpolicy="no-referrer" src="' + esc(config.portrait) + '" alt=""><span>' + esc(config.name) + '<small>Your account</small></span></a>' +
-				'<a href="' + esc(config.cms) + '"' + blank + '>' + fa('grid-2') + 'Dashboard</a>' +
+				'<a href="' + esc(config.cms) + '"' + blank + '>' + iconMarkup('grid-2') + 'Dashboard</a>' +
 				'<div class="sections"></div>' +
-				'<hr><a class="out" href="#">' + fa('arrow-right-from-bracket') + 'Log out</a>' +
+				'<hr><a class="out" href="#">' + iconMarkup('arrow-right-from-bracket') + 'Log out</a>' +
 				'</div></div>';
 
 			var brand = root.querySelector('.brand');
@@ -75,7 +70,7 @@
 						.then(response => response.ok ? response.text() : '[]')
 						.then(text => JSON.parse(window.sysdebug ? window.sysdebug.trimXhrResponse(text) : text))
 						.then(items => {
-							sections.innerHTML = items.map(item => '<a href="' + esc(item.href) + '"' + blank + '><i class="' + esc(item.icon || 'fa-regular fa-square') + '" aria-hidden="true"></i>' + esc(item.label) + '</a>').join('');
+							sections.innerHTML = items.map(item => '<a href="' + esc(item.href) + '"' + blank + '><i class="' + esc(item.icon || 'cmsIcon cmsIcon-square') + '" aria-hidden="true"></i>' + esc(item.label) + '</a>').join('');
 						})
 						.catch(() => { loaded = false; });
 				}

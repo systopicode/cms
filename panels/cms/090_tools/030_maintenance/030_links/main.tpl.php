@@ -25,7 +25,7 @@ $failed = array_intersect_key($last['failed'], $external);
 	</header>
 	<p class="tagsHint">Links to pages, files and media of this website. Checked every time this page opens.</p>
 	<?php if ($broken === []) { ?>
-		<main><p><i class="fa-regular fa-circle-check"></i> Every link leads somewhere.</p></main>
+		<main><p><i class="cmsIcon cmsIcon-circle-check"></i> Every link leads somewhere.</p></main>
 	<?php } else { ?>
 		<div class="tableScroll">
 			<table>
@@ -53,7 +53,7 @@ $failed = array_intersect_key($last['failed'], $external);
 <section class="widget is-list">
 	<header>
 		<h2>Other websites</h2>
-		<button type="button" class="button" data-on_click="checkExternal" <?= $running || $external === [] ? 'disabled' : '' ?>><i class="fa-regular fa-arrows-rotate"></i><span>Check now</span></button>
+		<button type="button" class="button" data-on_click="checkExternal" <?= $running || $external === [] ? 'disabled' : '' ?>><i class="cmsIcon cmsIcon-arrows-rotate"></i><span>Check now</span></button>
 	</header>
 	<p class="tagsHint">
 		<?= count($external) ?> address<?= count($external) === 1 ? '' : 'es' ?> on other websites.
@@ -66,7 +66,7 @@ $failed = array_intersect_key($last['failed'], $external);
 		<?php } ?>
 	</p>
 	<?php if ($last['checked'] !== null && !$running && $failed === []) { ?>
-		<main><p><i class="fa-regular fa-circle-check"></i> Every address answered.</p></main>
+		<main><p><i class="cmsIcon cmsIcon-circle-check"></i> Every address answered.</p></main>
 	<?php } elseif ($failed !== []) { ?>
 		<div class="tableScroll">
 			<table>

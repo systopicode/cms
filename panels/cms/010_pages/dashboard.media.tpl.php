@@ -28,7 +28,7 @@ $badge = static function (object $media): string {
 	return $type !== '' ? $type : 'file';
 };
 ?>
-<header><h2><i class="fa-regular fa-images"></i>Recent media</h2></header>
+<header><h2><i class="cmsIcon cmsIcon-images"></i>Recent media</h2></header>
 <?php if ($recent === []) { ?>
 	<main><p class="hint">No media yet.</p></main>
 <?php } else { ?>
@@ -48,7 +48,7 @@ $badge = static function (object $media): string {
 				<?php if (!$face['mark']) { ?>
 				<img src="<?= $e($src) ?>" alt="" loading="lazy" data-broken="<?= $e($this->brokenIcon($media)) ?>">
 				<?php } ?>
-				<i class="fa-regular fa-<?= $e($face['mark'] ? $face['icon'] : $badge($media)) ?> thumbType"></i>
+				<i class="cmsIcon cmsIcon-<?= $e($face['mark'] ? $face['icon'] : $badge($media)) ?> thumbType"></i>
 			</a>
 		<?php } ?>
 	</div>

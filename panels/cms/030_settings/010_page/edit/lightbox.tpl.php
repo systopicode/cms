@@ -66,7 +66,7 @@ $choice = static function (string $name, string $label, string $value, array $op
 		<header class="tagEditTitle">
 			<h1><?= $d ? $e($d->label !== '' ? $d->label : 'Untitled') : 'Setting' ?></h1>
 			<?php if ($d) { ?>
-                <button type="button" class="tagGroupRename" onclick="renameUserAdminTitle(this)" data-rename-field="label" data-rename-url="<?= $e($this->href . 'updateSetting?id=' . (int) $d->nodeId) ?>" title="Rename" aria-label="Rename"><i class="fa-regular fa-pen"></i></button>
+                <button type="button" class="tagGroupRename" onclick="renameUserAdminTitle(this)" data-rename-field="label" data-rename-url="<?= $e($this->href . 'updateSetting?id=' . (int) $d->nodeId) ?>" title="Rename" aria-label="Rename"><i class="cmsIcon cmsIcon-pen"></i></button>
             <?php } ?>
 			<?php
 			$back = '../';
@@ -75,8 +75,8 @@ $choice = static function (string $name, string $label, string $value, array $op
 			}
 			?>
             <ul class="barmenu">
-                <?php if ($d && $d->options === []) { ?><li><button type="button" class="button icononly" data-on_click="userConfirm" data-action="removeSetting?id=<?= (int) $d->nodeId ?>" data-confirm="Delete this setting?" title="Delete" aria-label="Delete"><i class="fa-regular fa-trash"></i></button></li><?php } ?>
-                <li><a class="ajax" href="<?= $e($back) ?>" aria-label="Close"><i class="fa-regular fa-xmark-large"></i></a></li>
+                <?php if ($d && $d->options === []) { ?><li><button type="button" class="button icononly" data-on_click="userConfirm" data-action="removeSetting?id=<?= (int) $d->nodeId ?>" data-confirm="Delete this setting?" title="Delete" aria-label="Delete"><i class="cmsIcon cmsIcon-trash"></i></button></li><?php } ?>
+                <li><a class="ajax" href="<?= $e($back) ?>" aria-label="Close"><i class="cmsIcon cmsIcon-xmark-large"></i></a></li>
             </ul>
 		</header>
 		<?php if ($d) { ?>

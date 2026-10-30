@@ -66,14 +66,14 @@ uasort($entries, function (array $a, array $b): int {
 								<ul>
 									<?php if ($preview !== '') { ?>
 										<li>
-											<a class="button icononly" target="_blank" rel="noopener" href="<?= $e($preview) ?>" title="Preview"><i class="fa-regular fa-eye"></i></a>
+											<a class="button icononly" target="_blank" rel="noopener" href="<?= $e($preview) ?>" title="Preview"><i class="cmsIcon cmsIcon-eye"></i></a>
 										</li>
 									<?php } ?>
 									<li>
-										<a class="button icononly" title="Restore" data-on_click="userConfirm" data-action="restoreNode" data-node_id="<?= (int) $nodeId ?>" data-confirm="<?= $e('Restore “' . $title . '”?') ?>"><i class="fa-regular fa-arrow-rotate-left"></i></a>
+										<a class="button icononly" title="Restore" data-on_click="userConfirm" data-action="restoreNode" data-node_id="<?= (int) $nodeId ?>" data-confirm="<?= $e('Restore “' . $title . '”?') ?>"><i class="cmsIcon cmsIcon-arrow-rotate-left"></i></a>
 									</li>
 									<li>
-										<a class="button icononly" title="Delete for good" data-on_click="userConfirm" data-action="deleteNode" data-node_id="<?= (int) $nodeId ?>" data-confirm="<?= $e('Delete “' . $title . '” for good? Its media and the pages under it go too. This cannot be undone.') ?>"><i class="fa-regular fa-trash-xmark"></i></a>
+										<a class="button icononly" title="Delete for good" data-on_click="userConfirm" data-action="deleteNode" data-node_id="<?= (int) $nodeId ?>" data-confirm="<?= $e('Delete “' . $title . '” for good? Its media and the pages under it go too. This cannot be undone.') ?>"><i class="cmsIcon cmsIcon-trash-xmark"></i></a>
 									</li>
 								</ul>
 							</td>
@@ -82,6 +82,6 @@ uasort($entries, function (array $a, array $b): int {
 				</tbody>
 			</table>
 		</div>
-		<footer><a class="button" data-on_click="userConfirm" data-action="emptyTrash" data-confirm="<?= $e('Delete all ' . count($entries) . ' pages in the trash for good, with their media? This cannot be undone.') ?>"><i class="fa-regular fa-trash-xmark"></i><span>Empty trash</span></a></footer>
+		<footer><a class="button" data-on_click="userConfirm" data-action="emptyTrash" data-confirm="<?= $e('Delete all ' . count($entries) . ' pages in the trash for good, with their media? This cannot be undone.') ?>"><i class="cmsIcon cmsIcon-trash-xmark"></i><span>Empty trash</span></a></footer>
 	<?php } ?>
 </section>

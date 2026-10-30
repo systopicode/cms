@@ -28,17 +28,17 @@ $title = $page?->label->plain ?? '';
 		<nav class="crumbs"<?= $crumbs === [] ? ' aria-hidden="true"' : '' ?>>
 			<?php foreach ($crumbs as $crumb) { ?>
 				<a class="ajax" href="./?id=<?= (int) $crumb->id ?>"><?= $crumb->label->plain ?></a>
-				<i class="fa-regular fa-chevron-right"></i>
+				<i class="cmsIcon cmsIcon-chevron-right"></i>
 			<?php } ?>
 		</nav>
         <div class="pageTitleRow">
 			<h1 class="pageTitle" contenteditable="false" data-on_blur="updateLabel"><?= $title !== '' ? $title : '- - - -' ?></h1>
-			<button type="button" class="pageTitleEdit" data-page-title-edit title="Edit title"><i class="fa-regular fa-pen"></i></button>
+			<button type="button" class="pageTitleEdit" data-page-title-edit title="Edit title"><i class="cmsIcon cmsIcon-pen"></i></button>
             <?php if ($page->isAlias) { ?>
-                <a class="cmsRelationNotice alias" data-on_click="sidebar/showRelations" title="Alias: open original and connections" aria-label="Alias: open original and connections"><i class="fa-regular fa-file-import"></i></a>
+                <a class="cmsRelationNotice alias" data-on_click="sidebar/showRelations" title="Alias: open original and connections" aria-label="Alias: open original and connections"><i class="cmsIcon cmsIcon-file-import"></i></a>
             <?php } ?>
             <?php if ((int) $page->node->relationId('redirectNode') > 1) { ?>
-                <a class="cmsRelationNotice redirect" data-on_click="sidebar/showRelations" title="Redirect: open target and connections" aria-label="Redirect: open target and connections"><i class="fa-regular fa-route"></i></a>
+                <a class="cmsRelationNotice redirect" data-on_click="sidebar/showRelations" title="Redirect: open target and connections" aria-label="Redirect: open target and connections"><i class="cmsIcon cmsIcon-route"></i></a>
             <?php } ?>
 
 		</div>
@@ -61,7 +61,7 @@ $current = Languages::activated()[$this->state->lang] ?? null;
 		<button type="button" class="splitApplyMenu" aria-label="<?= htmlspecialchars((string) ($current['label'] ?? 'Language'), ENT_QUOTES) ?>">
 			<?php if ($current) { echo $flag($current); } ?>
 			<span><?= strtoupper((string) $this->state->lang) ?></span>
-			<i class="fa-regular fa-chevron-down"></i>
+			<i class="cmsIcon cmsIcon-chevron-down"></i>
 		</button>
 		<div class="splitApplyList langMenu" hidden>
 			<?php foreach (Languages::activated() as $languageIso => $languageSetting) { ?>
@@ -77,18 +77,18 @@ $current = Languages::activated()[$this->state->lang] ?? null;
 <?php if ($desktopWidth) { ?>
 <style>body{--cms-desktop-width:<?= (int) $desktopWidth ?>px;<?= $tabletWidth ? '--cms-tablet-width:' . (int) $tabletWidth . 'px;' : '' ?><?= $mobileWidth ? '--cms-mobile-width:' . (int) $mobileWidth . 'px;' : '' ?>}</style>
 <div class="deviceSwitch" role="group" aria-label="Preview width">
-	<button type="button" data-cms-device="fit" title="Fit: the width there is"><i class="fa-regular fa-arrows-left-right-to-line"></i></button>
-	<button type="button" data-cms-device="desktop" title="Desktop (from <?= (int) $desktopWidth ?>px)"><i class="fa-regular fa-desktop"></i></button>
+	<button type="button" data-cms-device="fit" title="Fit: the width there is"><i class="cmsIcon cmsIcon-arrows-left-right-to-line"></i></button>
+	<button type="button" data-cms-device="desktop" title="Desktop (from <?= (int) $desktopWidth ?>px)"><i class="cmsIcon cmsIcon-desktop"></i></button>
 	<?php if ($tabletWidth) { ?>
-		<button type="button" data-cms-device="tablet" title="Tablet (<?= (int) $tabletWidth ?>px)"><i class="fa-regular fa-tablet-screen-button"></i></button>
+		<button type="button" data-cms-device="tablet" title="Tablet (<?= (int) $tabletWidth ?>px)"><i class="cmsIcon cmsIcon-tablet-screen-button"></i></button>
 	<?php } ?>
 	<?php if ($mobileWidth) { ?>
-		<button type="button" data-cms-device="mobile" title="Mobile (<?= (int) $mobileWidth ?>px)"><i class="fa-regular fa-mobile-screen-button"></i></button>
+		<button type="button" data-cms-device="mobile" title="Mobile (<?= (int) $mobileWidth ?>px)"><i class="cmsIcon cmsIcon-mobile-screen-button"></i></button>
 	<?php } ?>
 </div>
 <?php } ?>
 
-		<button type="button" class="cmsMobileOnly" data-cms-properties><i class="fa-regular fa-sliders"></i> Properties</button>
-		<button type="button" class="cmsMobileOnly" data-cms-window="media"><i class="fa-regular fa-images"></i> Media Library</button>
+		<button type="button" class="cmsMobileOnly" data-cms-properties><i class="cmsIcon cmsIcon-sliders"></i> Properties</button>
+		<button type="button" class="cmsMobileOnly" data-cms-window="media"><i class="cmsIcon cmsIcon-images"></i> Media Library</button>
 	</div>
 </div>

@@ -19,12 +19,12 @@ $manage = [
 ?>
 <aside class="cms<?= $collapsed ? ' collapsed' : '' ?>" style="flex: 0 0 <?= $width ?>px" data-cols="1" data-items="1">
 	<a class="sidebarFlag put ajax" href="sidebar/toggleSidebar" draggable="false" title="<?= $collapsed ? 'Show sidebar' : 'Hide sidebar' ?>">
-		<i class="fa-regular fa-chevron-<?= $collapsed ? 'left' : 'right' ?>"></i>
+		<i class="cmsIcon cmsIcon-chevron-<?= $collapsed ? 'left' : 'right' ?>"></i>
 	</a>
 	<?php if (!$collapsed) { ?>
 		<nav class="sidebarTabs" role="tablist">
-			<button type="button" class="tabScroll prev" data-tab-scroll="-1" title="Back" hidden><i class="fa-regular fa-chevron-left"></i></button>
-			<button type="button" class="tabScroll next" data-tab-scroll="1" title="Forward" hidden><i class="fa-regular fa-chevron-right"></i></button>
+			<button type="button" class="tabScroll prev" data-tab-scroll="-1" title="Back" hidden><i class="cmsIcon cmsIcon-chevron-left"></i></button>
+			<button type="button" class="tabScroll next" data-tab-scroll="1" title="Forward" hidden><i class="cmsIcon cmsIcon-chevron-right"></i></button>
 			<ul>
 				<?php foreach ($this->groups as $groupName => $group) { ?>
 					<li><a role="tab" aria-selected="<?= $groupName === $activeGroup ? 'true' : 'false' ?>" class="put ajax<?= $groupName === $activeGroup ? ' selected' : '' ?>" href="sidebar/showGroup" data-group="<?= htmlspecialchars((string) $groupName, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) $group->label, ENT_QUOTES, 'UTF-8') ?></a></li>
@@ -48,13 +48,13 @@ $manage = [
 								<span class="sidebarLabel"><?= htmlspecialchars((string) $sideBarItem->label, ENT_QUOTES, 'UTF-8') ?></span>
 								<span class="sidebarTools">
 									<?php if ($templateName === 'meta') { ?>
-										<a class="ajax button transparent icononly small sidebarInfo" data-history="false" href="<?= htmlspecialchars($this->parent->href . 'sidebar/defaultMeta/', ENT_QUOTES) ?>" title="Default values" aria-label="Default values"><i class="fa-regular fa-circle-info"></i></a>
+										<a class="ajax button transparent icononly small sidebarInfo" data-history="false" href="<?= htmlspecialchars($this->parent->href . 'sidebar/defaultMeta/', ENT_QUOTES) ?>" title="Default values" aria-label="Default values"><i class="cmsIcon cmsIcon-circle-info"></i></a>
 									<?php } elseif ($templateName === 'relations') { ?>
-                                        <a class="ajax button transparent icononly small sidebarInfo" data-history="false" href="<?= htmlspecialchars($this->parent->href . 'sidebar/relationsHelp/', ENT_QUOTES) ?>" title="About Aliases &amp; Redirects" aria-label="About Aliases &amp; Redirects"><i class="fa-regular fa-circle-info"></i></a>
+                                        <a class="ajax button transparent icononly small sidebarInfo" data-history="false" href="<?= htmlspecialchars($this->parent->href . 'sidebar/relationsHelp/', ENT_QUOTES) ?>" title="About Aliases &amp; Redirects" aria-label="About Aliases &amp; Redirects"><i class="cmsIcon cmsIcon-circle-info"></i></a>
                                     <?php } elseif (isset($manage[$templateName])) { ?>
-										<a class="ajax button transparent icononly small sidebarInfo" href="<?= http::$root . $manage[$templateName][0] ?>" title="<?= $manage[$templateName][1] ?>" aria-label="<?= $manage[$templateName][1] ?>"><i class="fa-regular fa-pen"></i></a>
+										<a class="ajax button transparent icononly small sidebarInfo" href="<?= http::$root . $manage[$templateName][0] ?>" title="<?= $manage[$templateName][1] ?>" aria-label="<?= $manage[$templateName][1] ?>"><i class="cmsIcon cmsIcon-pen"></i></a>
 									<?php } ?>
-									<i class="fa-regular fa-chevron-down sidebarFold" aria-hidden="true"></i>
+									<i class="cmsIcon cmsIcon-chevron-down sidebarFold" aria-hidden="true"></i>
 								</span>
 							</summary>
 							<div class="sidebarItem">

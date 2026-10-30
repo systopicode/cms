@@ -11,7 +11,7 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 ?>
 <h3>Publishing</h3>
 <ul class="releaseFields">
-    <li><a target="_blank" rel="noopener" class="sideAction previewAction" href="<?= http::$siteRoot ?>?id=<?= $page->id ?>&amp;lang=<?= $page->language ?>&amp;preview<?= $page->node->isTrashed ? '&amp;showtrashed' : '' ?>"><i class="fa-regular fa-user-hat-tie-magnifying-glass"></i>Preview</a></li>
+    <li><a target="_blank" rel="noopener" class="sideAction previewAction" href="<?= http::$siteRoot ?>?id=<?= $page->id ?>&amp;lang=<?= $page->language ?>&amp;preview<?= $page->node->isTrashed ? '&amp;showtrashed' : '' ?>"><i class="cmsIcon cmsIcon-user-hat-tie-magnifying-glass"></i>Preview</a></li>
 	<li>
 		<label class="checkbox">
 			<span>Navi element</span>
@@ -29,8 +29,8 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 			</div>
 		</label>
 		<div class="sideActions">
-			<a class="ajax put sideAction" href="../pages/publishAll"><span class="layerEyeIcon" aria-hidden="true"><i class="fa-regular fa-layer-group"></i><i class="fa-regular fa-eye"></i></span>Publish with children</a>
-			<a class="ajax put sideAction" href="../pages/unPublishAll"><span class="layerEyeIcon" aria-hidden="true"><i class="fa-regular fa-layer-group"></i><i class="fa-regular fa-eye-slash"></i></span>Unpublish with children</a>
+			<a class="ajax put sideAction" href="../pages/publishAll"><span class="layerEyeIcon" aria-hidden="true"><i class="cmsIcon cmsIcon-layer-group"></i><i class="cmsIcon cmsIcon-eye"></i></span>Publish with children</a>
+			<a class="ajax put sideAction" href="../pages/unPublishAll"><span class="layerEyeIcon" aria-hidden="true"><i class="cmsIcon cmsIcon-layer-group"></i><i class="cmsIcon cmsIcon-eye-slash"></i></span>Unpublish with children</a>
 		</div>
 	</li>
 	<li>
@@ -59,7 +59,7 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 			   data-on_click="userConfirm"
 			   data-action="deletePage"
 			   data-node_id="<?= $page->id ?>">
-				<i class="fa-regular fa-trash"></i>
+				<i class="cmsIcon cmsIcon-trash"></i>
 				Remove page
 			</a>
 		</li>
@@ -70,7 +70,7 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 			   data-on_click="userConfirm"
 			   data-action="recoverPage"
 			   data-node_id="<?= $page->id ?>">
-				<i class="fa-regular fa-arrow-rotate-left"></i>
+				<i class="cmsIcon cmsIcon-arrow-rotate-left"></i>
 				Restore page
 			</a>
 		</li>

@@ -16,7 +16,7 @@ use Systopic\Cms\Queries\SettingTree\SettingTree;
  */
 class Panel extends SettingsPanel {
 
-	public $icon = 'fa-regular fa-sliders';
+	public $icon = 'cmsIcon cmsIcon-sliders';
 
 	public function __construct($name, $parent = NULL) {
 		parent::__construct($name, $parent);

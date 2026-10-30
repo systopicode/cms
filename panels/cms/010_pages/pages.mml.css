@@ -274,7 +274,7 @@ body.mediaDragging:has(.mmlContent li.title.dropTarget) .draghelper{
 .cms div.mmlContent ul li ul li.thumbMissing > i.thumbBroken {
     position: absolute;
     inset: 0;
-    width: 100%;   /* Font Awesome gives icons a fixed width */
+    width: 100%;   /* Keep thumbnail fallback icons centred in their existing slot */
     height: 100%;
     display: flex;
     justify-content: center;
@@ -505,7 +505,7 @@ div.mmlContent input {
 
 .cms div.mmlContent ul li:not(.title).locked:before {
     left: 2px;
-    content: "\e81c";
+    content: ""; width: 1em; height: 1em; background-color: currentColor; -webkit-mask: var(--icon-lock) center / contain no-repeat; mask: var(--icon-lock) center / contain no-repeat;
 }
 
 .cms div.mmlContent ul li.upload {
@@ -809,8 +809,8 @@ body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > button:hover{
 .mediaDrop:empty:after{
 	font-size: 20px;
 	margin-top:-40px;
-	content:'\f03e';
-	font-family: "CMS Font Awesome 7 Pro";
+	content: ""; width: 1em; height: 1em; background-color: currentColor; -webkit-mask: var(--icon-photo) center / contain no-repeat; mask: var(--icon-photo) center / contain no-repeat;
+	font-family: inherit;
 }
 
 /* Finger sized: bigger tiles, buttons far enough apart to hit the right one */
@@ -859,3 +859,15 @@ body.mediaDragging .mediaDrop.dropRejected { border: 2px solid var(--cmsError); 
 body.mediaDragging .dropRejected { cursor: not-allowed; }
 
 body.mediaDragging .mediaDrop.dropRejected::after { content: ""; position: absolute; inset: 0; background: color-mix(in srgb, var(--cmsError) 14%, transparent); pointer-events: none; }
+
+/* SVG glyph dimensions follow the declared font size, never the thumbnail box. */
+.cms div.mmlContent ul li ul li:not(.upload) .thumbActions i.cmsIcon:not(.thumbGrip) {
+    position: relative;
+    width: 1.25em;
+    height: 1em;
+    flex: 0 0 auto;
+}
+.cms div.mmlContent ul li ul li.is-mark > i.cmsIcon.thumbType::before {
+    width: 1.1em;
+    height: 1.1em;
+}

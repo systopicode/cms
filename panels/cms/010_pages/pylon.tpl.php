@@ -25,15 +25,15 @@ if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
 			</div>
 			<ul class="treeNavi">
 				<?php if ($this->state->treeMode === 'trash') { ?>
-					<li><a class="ajax put" href="closeAllFolds" title="Close all folders"><i class="fa-regular fa-folder-minus"></i></a></li>
-					<li><a class='ajax put' href='hideTrash' title="Hide Trash"><i class="fa-regular fa-trash-slash"></i></a></li>
+					<li><a class="ajax put" href="closeAllFolds" title="Close all folders"><i class="cmsIcon cmsIcon-folder-minus"></i></a></li>
+					<li><a class='ajax put' href='hideTrash' title="Hide Trash"><i class="cmsIcon cmsIcon-trash-slash"></i></a></li>
 				<?php } else { ?>
-					<li><a class="ajax put" href="closeAllFolds" title="Close all folders"><i class="fa-regular fa-folder-minus"></i></a></li>
-					<li><a onclick='scrollTree("smooth", false, false)' title="Show the open page"><i class="fa-regular fa-crosshairs"></i></a></li>
-					<li><a href='../tools/maintenance/trash/' title="Show Trash"><i class="fa-regular fa-trash"></i></a></li>
+					<li><a class="ajax put" href="closeAllFolds" title="Close all folders"><i class="cmsIcon cmsIcon-folder-minus"></i></a></li>
+					<li><a onclick='scrollTree("smooth", false, false)' title="Show the open page"><i class="cmsIcon cmsIcon-crosshairs"></i></a></li>
+					<li><a href='../tools/maintenance/trash/' title="Show Trash"><i class="cmsIcon cmsIcon-trash"></i></a></li>
 				<?php } ?>
 			</ul>
-			<a class="button submit icononly" data-on_click="new" title="Add Page"><i class="fa-regular fa-plus"></i></a>
+			<a class="button submit icononly" data-on_click="new" title="Add Page"><i class="cmsIcon cmsIcon-plus"></i></a>
 		</div>
 		<?php $searching = trim((string) $this->state->cmsPageSearchstring) !== ''; ?>
 		<div class="tree<?= $searching ? ' is-results' : '' ?>">
@@ -46,7 +46,7 @@ if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
 				<div class="mmlContent">
 					<label data-drag_type='none' data-on_draginit="draginitFooterHeight">
 						<b>Media Library</b>
-						<i class="mmlResize fa-regular fa-grip-lines" title="Resize"></i>
+						<i class="mmlResize cmsIcon cmsIcon-grip-lines" title="Resize"></i>
 					</label>
 					<div>
 						<?php $this->withView('mml'); ?>

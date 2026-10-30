@@ -10,7 +10,7 @@ if ($text || $imageSrc) {
 				<h1>Insert Page Link</h1>
 				<ul class="barmenu">
 					<li>
-						<a class="ajax" onclick='closeLinkLightbox()' href="../../"><i class="fa-regular fa-xmark"></i></a>
+						<a class="ajax" onclick='closeLinkLightbox()' href="../../"><i class="cmsIcon cmsIcon-xmark"></i></a>
 					</li>
 				</ul>
 			</header>

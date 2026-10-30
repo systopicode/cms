@@ -1113,7 +1113,7 @@
             var name = upload.fileInfo.name || 'File';
             var icons = JSON.parse(upload.doc.fileFallback.dataset.icons || '{}');
             var extension = name.split('.').pop().toLowerCase();
-            upload.doc.fileFallbackIcon.className = 'fa-regular fa-' + (icons[extension] || 'file');
+            upload.doc.fileFallbackIcon.className = 'cmsIcon cmsIcon-' + (icons[extension] || 'file');
             upload.doc.fileFallbackName.textContent = name;
             upload.doc.fileFallback.hidden = false;
         };

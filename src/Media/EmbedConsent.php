@@ -120,7 +120,7 @@ final class EmbedConsent
         $html .= '<span class="extVideo__brand" aria-hidden="true"></span>';
         $html .= '<p class="extVideo__hint">' . self::hint($copy['hint']) . '</p>';
         $html .= '<button type="button" class="extVideo__btn" data-ext-activate="' . $e($provider) . '">'
-            . ($perView ? '<i class="fa-regular fa-play" aria-hidden="true"></i>' : '') . $e($copy['activate']) . '</button>';
+            . ($perView ? '<i class="cmsIcon cmsIcon-play" aria-hidden="true"></i>' : '') . $e($copy['activate']) . '</button>';
         $html .= '</div></div></div>';
         return $html;
     }

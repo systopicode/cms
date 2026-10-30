@@ -27,7 +27,7 @@ $value = $value instanceof Text ? $value->value : (string) $value;
                 <h1>HTML</h1>
                 <ul class="barmenu">
                     <li>
-                        <a class="ajax" href="../../" aria-label="Close"><i class="fa-regular fa-xmark"></i></a>
+                        <a class="ajax" href="../../" aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></a>
                     </li>
                 </ul>
             </header>
@@ -35,7 +35,7 @@ $value = $value instanceof Text ? $value->value : (string) $value;
                 <textarea class="htmlSource" spellcheck="false" autocapitalize="off" autocomplete="off" name="html" autofocus><?= htmlspecialchars(HtmlSource::pretty($value)) ?></textarea>
             </main>
             <footer>
-                <button type="submit" onclick="this.classList.add('loading')" class="submit"><i class="fa-regular fa-check"></i>Save</button>
+                <button type="submit" onclick="this.classList.add('loading')" class="submit"><i class="cmsIcon cmsIcon-check"></i>Save</button>
             </footer>
         </section>
     </div>

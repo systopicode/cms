@@ -35,7 +35,7 @@ class Panel extends CmsPanel {
 	/** Media group of files dropped or pasted into a text editor. */
 	public const TEXT_GROUP = 'text';
 
-	public $icon = 'fa-duotone fa-regular fa-files';
+	public $icon = 'cmsIcon cmsIcon-duotone cmsIcon-files';
 
 	public function buildGranted() {
 		return \Systopic\System\Auth\Session::hasOneRole('editor', 'textEditor');
@@ -608,18 +608,18 @@ class Panel extends CmsPanel {
 	public function searchHits(\Systopic\System\Sys\Search $search): void {
 		$pages = \http::$root . 'cms/pages/?id=';
 		foreach (\Systopic\Cms\Queries\PageSearch\PageSearch::everywhere($search->scope, $search->query) as $page) {
-			$search->add('Pages', 'fa-file-lines', $page['label'] !== '' ? $page['label'] : 'Untitled', strtoupper($page['lang']), $pages . $page['node'] . '&lang=' . $page['lang']);
+			$search->add('Pages', 'cmsIcon-file-lines', $page['label'] !== '' ? $page['label'] : 'Untitled', strtoupper($page['lang']), $pages . $page['node'] . '&lang=' . $page['lang']);
 		}
 		foreach (\Systopic\Cms\Queries\PageSearch\PageSearch::media($search->scope, $search->query) as $media) {
 			$file = strtolower($media['file']);
 			$icon = match (true) {
-				$media['type'] === 'image' => 'fa-image',
-				$media['type'] === 'video' => 'fa-film',
-				$media['type'] === 'audio' => 'fa-music',
-				$media['type'] === 'pdf' || str_ends_with($file, '.pdf') => 'fa-file-pdf',
-				in_array($media['type'], ['youtube', 'vimeo'], true) => 'fa-circle-play',
-				$media['type'] === 'sketchup' || str_ends_with($file, '.skp') => 'fa-cube',
-				default => 'fa-file',
+				$media['type'] === 'image' => 'cmsIcon-image',
+				$media['type'] === 'video' => 'cmsIcon-film',
+				$media['type'] === 'audio' => 'cmsIcon-music',
+				$media['type'] === 'pdf' || str_ends_with($file, '.pdf') => 'cmsIcon-file-pdf',
+				in_array($media['type'], ['youtube', 'vimeo'], true) => 'cmsIcon-circle-play',
+				$media['type'] === 'sketchup' || str_ends_with($file, '.skp') => 'cmsIcon-cube',
+				default => 'cmsIcon-file',
 			};
 			$title = $media['label'] !== '' ? $media['label'] : $media['file'];
 			$search->add('Media', $icon, $title, $title === $media['file'] ? '' : $media['file'], $pages . $media['page']);

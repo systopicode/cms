@@ -27,7 +27,7 @@ if ($this->action === 'searchRelations') {
         $targetPage = $pages->pageFor($id);
         $address = $targetPage !== null && $targetPage->rewritepaths->path !== '' ? '/' . ltrim($targetPage->rewritepaths->path . $targetPage->rewritepaths->appendix, '/') : 'Page #' . $id;
         $label = html_entity_decode((string) $candidate->label, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        $html .= '<li class="relationResultRow"><span class="relationResultLabel"><b>' . $e($label) . '</b><small>' . $e($address) . '</small></span><button type="button" class="relationConnect" title="Redirect this page here" aria-label="Redirect ' . $e($label) . ' here" data-on_click="' . $e(\http::$root . 'cms/pages/sidebar/chooseRelation') . '" data-kind="' . $e($kind) . '" data-source="' . $page->id . '" data-target="' . $id . '"><i class="fa-regular fa-link"></i></button></li>';
+        $html .= '<li class="relationResultRow"><span class="relationResultLabel"><b>' . $e($label) . '</b><small>' . $e($address) . '</small></span><button type="button" class="relationConnect" title="Redirect this page here" aria-label="Redirect ' . $e($label) . ' here" data-on_click="' . $e(\http::$root . 'cms/pages/sidebar/chooseRelation') . '" data-kind="' . $e($kind) . '" data-source="' . $page->id . '" data-target="' . $id . '"><i class="cmsIcon cmsIcon-link"></i></button></li>';
     }
     if ($html === '' && mb_strlen($term) >= 2) $html = '<li class="hint relationEmpty">No matching pages.</li>';
     client::callFunction('updatePageRelationResults', [$page->id, $kind, $term, $html]);

@@ -323,9 +323,9 @@ final class PageTree implements Stringable
         // sites move like pages; their paths follow (NodeSite::rebuildBranch)
         $dataAttrs = $entry->edit ? '' : " data-drag_type='page'";
 
-        $grip = $entry->edit ? '' : "<i class='treeGrip fa-regular fa-grip-dots-vertical' title='Hold and drag to move'></i>";
+        $grip = $entry->edit ? '' : "<i class='treeGrip cmsIcon cmsIcon-grip-dots-vertical' title='Hold and drag to move'></i>";
         $menu = ($entry->edit || $entry->isSite) ? ''
-            : "<button type='button' class='treeMenu' data-on_click='getTreeContextmenu' onmousedown='event.stopPropagation()' title='Menu'><i class='fa-regular fa-ellipsis'></i></button>";
+            : "<button type='button' class='treeMenu' data-on_click='getTreeContextmenu' onmousedown='event.stopPropagation()' title='Menu'><i class='cmsIcon cmsIcon-ellipsis'></i></button>";
         $html = "<li data-node_id='$id' data-node_parent_node_id='$parentId'"
               . " class='{$this->classNames($entry)}'>";
         $html .= "<label$dataAttrs>";
@@ -381,12 +381,12 @@ final class PageTree implements Stringable
         if (!$hasChildren) {
             return "<a class='fold leaf'></a>";
         }
-        $icon = $open ? 'fa-chevron-down' : 'fa-chevron-right';
+        $icon = $open ? 'cmsIcon-chevron-down' : 'cmsIcon-chevron-right';
         $openClass = $open ? ' open' : '';
-        return "<a data-on_click=fold data-id=$id class='fold$openClass'><i class='fa-regular $icon'></i></a>";
+        return "<a data-on_click=fold data-id=$id class='fold$openClass'><i class='cmsIcon $icon'></i></a>";
     }
 
-    private const ALIAS_ICON = '<i class="fal fa-file-import"></i>';
+    private const ALIAS_ICON = '<i class="cmsIcon cmsIcon-file-import"></i>';
 
     private function aliasIcon(PageTreeNode $entry): string
     {
@@ -404,10 +404,10 @@ final class PageTree implements Stringable
         if ($entry->isSite) {
             // a site opens its editor in main (site.tpl.php); no context menu
             return "<a class='label site ajax' href='./?id={$entry->id}' title='Site " . htmlentities($text) . "'>"
-                . "<i class='fa-regular fa-globe'></i> " . htmlentities($text) . '</a>';
+                . "<i class='cmsIcon cmsIcon-globe'></i> " . htmlentities($text) . '</a>';
         }
-        $typeIcon = $entry->hasChildren ? 'fa-folder' : 'fa-file';
-        $icon = "<i class='type fa-regular $typeIcon'></i>";
+        $typeIcon = $entry->hasChildren ? 'cmsIcon-folder' : 'cmsIcon-file';
+        $icon = "<i class='type cmsIcon $typeIcon'></i>";
         if ($entry->edit) {
             return $icon
                 . "<span class='label' data-on_blur='updateLabel' data-on_keypress='checkKey' contenteditable='plaintext-only'>"
@@ -428,20 +428,20 @@ final class PageTree implements Stringable
         }
         if ($entry->redirectId > 0 && !$entry->isTrashed) {
             $html .= "<a title='Show redirect target' class='ajax redirect' href='./?id={$entry->redirectId}&amp;reveal=tree'>"
-                . "<i class='fa-regular fa-route'></i></a>";
+                . "<i class='cmsIcon cmsIcon-route'></i></a>";
         }
         if (!$entry->isTrashed && $entry->aliases !== []) {
             $html .= "<a title='Show aliases' aria-label='Show aliases' class='ajax aliasConnections' href='./?id={$entry->id}&amp;relations=aliases'>" . self::ALIAS_ICON . '</a>';
         }
         if (!$entry->isPublished) {
             $html .= "<a class='unpublished' title='Hidden - click to publish' data-on_click='publish?id={$entry->id}'>"
-                . "<i class='fa-regular fa-eye-slash'></i></a>";
+                . "<i class='cmsIcon cmsIcon-eye-slash'></i></a>";
         }
         if ($entry->isTrashed) {
             $html .= "<a  data-action='recoverPage' data-on_click='userConfirm'"
                 . " data-confirm='All langauges, children and versions will be recoverd!'"
                 . " title='Recover Page' class='ajax'  data-node_id='{$entry->id}'>"
-                . "<i class='fa-regular fa-arrow-rotate-left'></i></a>";
+                . "<i class='cmsIcon cmsIcon-arrow-rotate-left'></i></a>";
         }
         return $html;
     }

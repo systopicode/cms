@@ -24,10 +24,10 @@ $siteRoot = (string) http::$siteRoot;
 	};
 	?>
 	<li class='title notselectable' <?= html::arrayToDataAttr(['media_group' => $groupName, 'drop_accept' => 'media', 'on_drop' => 'mml/updateMediaGroup', 'media-accept' => GroupPolicy::accept($groupInfo, $groupName)]) ?>>
-		<h4><span><?= $e($label) ?></span><a class="ajax button transparent icononly small mediaGroupInfo" data-history="false" href="<?= $e($this->href . 'mml/groupInfo/?group=' . rawurlencode($groupName)) ?>" title="Allowed file types" aria-label="Allowed file types for <?= $e($label) ?>"><i class="fa-regular fa-circle-info"></i></a></h4>
+		<h4><span><?= $e($label) ?></span><a class="ajax button transparent icononly small mediaGroupInfo" data-history="false" href="<?= $e($this->href . 'mml/groupInfo/?group=' . rawurlencode($groupName)) ?>" title="Allowed file types" aria-label="Allowed file types for <?= $e($label) ?>"><i class="cmsIcon cmsIcon-circle-info"></i></a></h4>
 		<ul>
 			<li class="upload" data-upload-many>
-				<i class='fa-regular fa-plus'></i>
+				<i class='cmsIcon cmsIcon-plus'></i>
 			</li>
 			<?php foreach ($entries as $entry) {
 				$media = $entry['media'];
@@ -56,7 +56,7 @@ $siteRoot = (string) http::$siteRoot;
 						?>
 						<a class='ajax' href='./?id=<?= (int) $entry['originalParentId'] ?>'>
 							<img src='<?= $e("{$siteRoot}var/formats/mmlThumb/$folders$filename$ext") ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
-							<i class='fa-regular fa-file-import'></i>
+							<i class='cmsIcon cmsIcon-file-import'></i>
 						</a>
 					<?php } else {
 						$face = $this->tileFace($media);
@@ -65,13 +65,13 @@ $siteRoot = (string) http::$siteRoot;
 						<?php if (!$face['mark']) { ?>
 						<img src='<?= $e($src) ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
 						<?php } ?>
-						<i class='fa-regular fa-<?= $e($face['icon']) ?> thumbType'></i>
+						<i class='cmsIcon cmsIcon-<?= $e($face['icon']) ?> thumbType'></i>
 						<div class='thumbActions'>
 							<span class='thumbGrip' title='Drag'><span></span><span></span><span></span><span></span><span></span><span></span></span>
 							<div class='thumbButtons'>
-								<a class='ajax' href='editor/file/?target_id=<?= $id ?>' title='Edit' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='fa-regular fa-pen'></i></a>
+								<a class='ajax' href='editor/file/?target_id=<?= $id ?>' title='Edit' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-pen'></i></a>
 								<label title='Replace' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'>
-									<i class='fa-regular fa-arrows-rotate'></i>
+									<i class='cmsIcon cmsIcon-arrows-rotate'></i>
 									<input type=file accept="<?= $e(GroupPolicy::accept($groupInfo, $groupName)) ?>" data-on_change='upload/open'>
 								</label>
 							</div>

@@ -8,7 +8,7 @@
 			if ($this->definition?->parent) {
 				$back = '../?id=' . (int) $this->definition->parent->nodeId;
 			}
-			echo \menu::create('barmenu')->link($back)->icon('fa-regular fa-xmark-large');
+			echo \menu::create('barmenu')->link($back)->icon('cmsIcon cmsIcon-xmark-large');
 			?>
 		</header>
 		<main>
@@ -19,9 +19,9 @@
 		</main>
 		<footer>
 			<?php if ($this->done) { ?>
-				<a class="ajax button" href="<?= htmlspecialchars($back, ENT_QUOTES) ?>"><i class="fa-regular fa-check"></i>Ok</a>
+				<a class="ajax button" href="<?= htmlspecialchars($back, ENT_QUOTES) ?>"><i class="cmsIcon cmsIcon-check"></i>Ok</a>
 			<?php } else { ?>
-				<a class='button submit' data-on_click='delete'><i class="fa-regular fa-trash"></i>Delete Setting</a>
+				<a class='button submit' data-on_click='delete'><i class="cmsIcon cmsIcon-trash"></i>Delete Setting</a>
 			<?php } ?>
 		</footer>
 	</section>

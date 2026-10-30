@@ -21,16 +21,16 @@ $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/
 			<h1><?= htmlspecialchars($this->lightboxTitle, ENT_QUOTES, 'UTF-8') ?></h1>
 			<ul class="barmenu">
 				<li>
-					<a href="<?= htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') ?>" target="_self" download title="Download original"><i class="fa-regular fa-arrow-down-to-line"></i></a>
+					<a href="<?= htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') ?>" target="_self" download title="Download original"><i class="cmsIcon cmsIcon-arrow-down-to-line"></i></a>
 				</li>
 				<li>
-					<a href="<?= htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') ?>" target="_blank" title="Open original"><i class="fa-regular fa-eye"></i></a>
+					<a href="<?= htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') ?>" target="_blank" title="Open original"><i class="cmsIcon cmsIcon-eye"></i></a>
 				</li>
 				<li>
-					<a class="put" data-confirm="Do you really want to delete this File?" data-on_click="userConfirm" data-action="deleteMedia" title="Delete"><i class="fa-regular fa-trash"></i></a>
+					<a class="put" data-confirm="Do you really want to delete this File?" data-on_click="userConfirm" data-action="deleteMedia" title="Delete"><i class="cmsIcon cmsIcon-trash"></i></a>
 				</li>
 				<li>
-					<a class="ajax" href="../../" aria-label="Close"><i class="fa-regular fa-xmark"></i></a>
+					<a class="ajax" href="../../" aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></a>
 				</li>
 			</ul>
 		</header>
@@ -77,7 +77,7 @@ $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/
 							include 'video.tpl.php';
 							break;
                         default:
-                            echo '<div class="filePreviewFallback"><i class="fa-regular fa-' . htmlspecialchars(\Systopic\System\Media\Presentation::icon((string) $media->filename), ENT_QUOTES, 'UTF-8') . '" aria-hidden="true"></i><strong>' . htmlspecialchars((string) $media->filename, ENT_QUOTES, 'UTF-8') . '</strong><p>A browser preview is not available for this file type.</p><a href="' . htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') . '" download>Download file</a></div>';
+                            echo '<div class="filePreviewFallback"><i class="cmsIcon cmsIcon-' . htmlspecialchars(\Systopic\System\Media\Presentation::icon((string) $media->filename), ENT_QUOTES, 'UTF-8') . '" aria-hidden="true"></i><strong>' . htmlspecialchars((string) $media->filename, ENT_QUOTES, 'UTF-8') . '</strong><p>A browser preview is not available for this file type.</p><a href="' . htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') . '" download>Download file</a></div>';
                             break;
 					}
 					}

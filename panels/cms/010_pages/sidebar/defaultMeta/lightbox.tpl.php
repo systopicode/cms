@@ -28,7 +28,7 @@ $settings = http::$root . 'cms/settings/pagesettings/';
 		<header>
 			<h1>Site defaults</h1>
 			<ul class="barmenu">
-				<li><a class="ajax" data-history="false" aria-label="Close" href="<?= $e($pages->currentViewHref()) ?>"><i class="fa-regular fa-xmark"></i></a></li>
+				<li><a class="ajax" data-history="false" aria-label="Close" href="<?= $e($pages->currentViewHref()) ?>"><i class="cmsIcon cmsIcon-xmark"></i></a></li>
 			</ul>
 		</header>
 		<main>
@@ -56,7 +56,7 @@ $settings = http::$root . 'cms/settings/pagesettings/';
 			</div>
 		</main>
 		<footer>
-			<a class="button submit ajax" href="<?= $e($settings) ?>"><i class="fa-regular fa-pen"></i> Edit defaults</a>
+			<a class="button submit ajax" href="<?= $e($settings) ?>"><i class="cmsIcon cmsIcon-pen"></i> Edit defaults</a>
 		</footer>
 	</section>
 </div>

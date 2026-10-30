@@ -377,7 +377,7 @@ switch ($this->action) {
                 $text = $text === '' ? '- - - -' : htmlentities($text);
                 $html .= "<li data-node_id='$nodeId'" . ($nodeId === $active ? " class='active'" : '') . '>'
                     . "<label><a class='fold leaf'></a>"
-                    . "<a class='label ajax' href='./?id=$nodeId'><i class='type fa-regular fa-file'></i>$text</a>"
+                    . "<a class='label ajax' href='./?id=$nodeId'><i class='type cmsIcon cmsIcon-file'></i>$text</a>"
                     . '</label></li>';
             }
             if ($html === '') {

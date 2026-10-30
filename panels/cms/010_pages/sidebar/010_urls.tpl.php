@@ -38,7 +38,7 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 	} else {
 		$html .= "<input type='text' name='rewritePath' data-on_input='sidebar/rewritePath_update' value='$string'/>";
 	}
-	$html .= "<button type='button' class='button transparent icononly small' data-on_click='sidebar/rewritePath_delete' title='Remove address' aria-label='Remove address'><i class='fa-regular fa-trash'></i></button>";
+	$html .= "<button type='button' class='button transparent icononly small' data-on_click='sidebar/rewritePath_delete' title='Remove address' aria-label='Remove address'><i class='cmsIcon cmsIcon-trash'></i></button>";
 	$html .= '</div>';
 	$when = static fn(?DateTimeImmutable $d): string => ($d ? \Systopic\System\Sys\LocalTime::format($d, 'd.m.Y H:i') : '—');
 	$site = $siteOf($path->siteNodeId);
@@ -66,7 +66,7 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 		   title="Rebuild from the page name"
 		   aria-label="Rebuild from the page name"
 		   data-page_id="<?= $page->row->id ?>">
-			<i class="fa-regular fa-arrow-rotate-left"></i>
+			<i class="cmsIcon cmsIcon-arrow-rotate-left"></i>
 		</button>
     </li>
 	<li>
@@ -92,7 +92,7 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 	   title="Add an address"
 	   aria-label="Add an address"
 	   data-page_id="<?= $page->row->id ?>">
-		<i class="fa-regular fa-plus"></i>
+		<i class="cmsIcon cmsIcon-plus"></i>
 	</button>
 </li>
 <?php

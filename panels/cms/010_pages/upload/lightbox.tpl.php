@@ -23,7 +23,7 @@ $currentFormat = $replacement && (int) $media->width > 0
 			<h1><?= $replacement ? 'Replace file' : 'Upload file' ?></h1>
 			<ul class="barmenu">
 				<li>
-					<a class="ajax" href="../" aria-label="Close"><i class="fa-regular fa-xmark"></i></a>
+					<a class="ajax" href="../" aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></a>
 				</li>
 			</ul>
 		</header>
@@ -33,7 +33,7 @@ $currentFormat = $replacement && (int) $media->width > 0
 					<?php if ($replacement) { ?><p class="paneLabel">New file</p><?php } ?>
 					<div data-doc="box" class="idle">
 						<div class="uploader">
-							<p class="dropHint"><i class="fa-regular fa-cloud-arrow-up"></i>Drop a file here, or click to choose</p>
+							<p class="dropHint"><i class="cmsIcon cmsIcon-cloud-arrow-up"></i>Drop a file here, or click to choose</p>
 							<input type="file" accept="<?= $e($accept) ?>" data-doc="input">
 							<img data-doc="img" alt="">
 							<iframe data-doc="pdf" title="Preview"></iframe>
@@ -41,7 +41,7 @@ $currentFormat = $replacement && (int) $media->width > 0
 							<audio data-doc="audio" controls></audio>
 							<div data-doc="skp" class="cmsSkpStage" hidden data-skp-module="<?= $e(\Systopic\Cms\Media\SkpViewer::moduleUrl()) ?>"></div>
                             <div class="filePreviewFallback" data-doc="fileFallback" data-icons="<?= $e(json_encode(\Systopic\System\Media\Presentation::ICONS)) ?>" hidden>
-                                <i class="fa-regular fa-file" data-doc="fileFallbackIcon" aria-hidden="true"></i>
+                                <i class="cmsIcon cmsIcon-file" data-doc="fileFallbackIcon" aria-hidden="true"></i>
                                 <strong data-doc="fileFallbackName"></strong>
                                 <p>Ready to upload. A browser preview is not available for this file type.</p>
                             </div>
@@ -77,7 +77,7 @@ $currentFormat = $replacement && (int) $media->width > 0
 									break;
                                 default:
                                     if (!str_contains((string) $media->mimetype, 'sketchup') && !str_ends_with(strtolower((string) $media->filename), '.skp')) {
-                                        echo '<div class="filePreviewFallback"><i class="fa-regular fa-' . $e(\Systopic\System\Media\Presentation::icon((string) $media->filename)) . '" aria-hidden="true"></i><strong>' . $e($media->filename) . '</strong><p>A browser preview is not available for this file type.</p><a href="' . $e($media->src) . '" download>Download file</a></div>';
+                                        echo '<div class="filePreviewFallback"><i class="cmsIcon cmsIcon-' . $e(\Systopic\System\Media\Presentation::icon((string) $media->filename)) . '" aria-hidden="true"></i><strong>' . $e($media->filename) . '</strong><p>A browser preview is not available for this file type.</p><a href="' . $e($media->src) . '" download>Download file</a></div>';
                                     }
                             }
 							$skpNow = str_contains((string) $media->mimetype, 'sketchup') || str_ends_with(strtolower((string) $media->filename), '.skp');
@@ -163,7 +163,7 @@ $currentFormat = $replacement && (int) $media->width > 0
 			</aside>
 		</div>
 		<footer data-doc="footer" class="idle">
-			<button class="submit" data-doc="upload"><i class="fa-regular <?= $replacement ? 'fa-arrows-rotate' : 'fa-arrow-up-from-bracket' ?>"></i><?= $replacement ? 'Replace' : 'Upload' ?></button>
+			<button class="submit" data-doc="upload"><i class="cmsIcon <?= $replacement ? 'cmsIcon-arrows-rotate' : 'cmsIcon-arrow-up-from-bracket' ?>"></i><?= $replacement ? 'Replace' : 'Upload' ?></button>
 			<div class="bar"><b data-doc="barinfo1"></b><div data-doc="bar"><b data-doc="barinfo2"></b></div></div>
 		</footer>
 	</section>

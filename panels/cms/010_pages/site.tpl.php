@@ -23,7 +23,7 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 <section class="cms siteEditor">
 	<?= message::flush() ?>
 	<?php if ($site === null) { ?>
-		<h1><i class="fa-regular fa-globe"></i> Neue Site</h1>
+		<h1><i class="cmsIcon cmsIcon-globe"></i> Neue Site</h1>
 		<?php if (($this->state->editSite ?? NULL) === 'default') { ?>
 			<p>Es gibt noch keine Default-Site. Die erste angelegte Site wird zur Default-Site (ohne Knoten, ihre Seiten sind die obersten Seiten).</p>
 		<?php } ?>
@@ -44,11 +44,11 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 		?>
 		<div data-site_id="<?= (int) $site->id ?>">
 			<h1>
-				<i class="fa-regular fa-globe"></i> <?= $e($site->name) ?>
+				<i class="cmsIcon cmsIcon-globe"></i> <?= $e($site->name) ?>
 				<small><?= $nodeId === NULL ? 'Default-Site' : 'Site-Knoten ' . $nodeId ?></small>
 				<?php if (($url = $this->siteUrl($site)) !== NULL) { ?>
 					<a class="right" href="<?= $e($url) ?>" target="_blank" rel="noopener" title="<?= $e($url) ?> in neuem Fenster öffnen">
-						<i class="fa-regular fa-arrow-up-right-from-square"></i>
+						<i class="cmsIcon cmsIcon-arrow-up-right-from-square"></i>
 					</a>
 				<?php } ?>
 			</h1>
@@ -72,20 +72,20 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 				<?php if (!$hasFolder) { ?>
 					<a class="button submit" data-on_click="createSiteFolder" data-site_id="<?= (int) $site->id ?>"
 					   title="sites/<?= $e($site->name) ?>/templates/{document,components,pages,layout}/ anlegen">
-						<i class="fa-regular fa-folder-plus"></i> Site-Ordner erstellen
+						<i class="cmsIcon cmsIcon-folder-plus"></i> Site-Ordner erstellen
 					</a>
 				<?php } ?>
 				<?php if ($missingRules) { ?>
 					<a class="button submit" data-on_click="addSiteHostRules" data-site_id="<?= (int) $site->id ?>"
 					   title="Keine Regel für <?= $e($site->name) ?> in <?= $e(implode(', ', $missingRules)) ?> — eintragen als Kopie der Pfad-Regel einer anderen Site">
-						<i class="fa-regular fa-route"></i> Host-Regel eintragen
+						<i class="cmsIcon cmsIcon-route"></i> Host-Regel eintragen
 					</a>
 				<?php } ?>
 				<?php if ($nodeId !== NULL) { ?>
 					<a class="button submit" data-on_click="userConfirm" data-action="removeSite"
 					   data-site_id="<?= (int) $site->id ?>"
 					   data-confirm="Site <?= $e($site->name) ?> löschen? Nur möglich, wenn keine Seiten mehr darunter hängen. Der Ordner sites/<?= $e($site->name) ?>/ bleibt bestehen.">
-						<i class="fa-regular fa-trash"></i> Site löschen
+						<i class="cmsIcon cmsIcon-trash"></i> Site löschen
 					</a>
 				<?php } ?>
 				</p>
