@@ -528,8 +528,7 @@ class Panel extends CmsPanel {
 	/**
 	 * Out of the trash with everything below it.
 	 *
-	 * Not called `recoverPage`: app.php runs a panel method of the action's
-	 * name before actions.php, and would call this one without an argument.
+	 * Not called `recoverPage`, the name of the action that calls it.
 	 */
 	function recoverBranch(int $nodeId): ?int {
 		return $this->trashPage($nodeId, FALSE);
