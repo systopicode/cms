@@ -29,11 +29,11 @@ if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
 					<li><a class='ajax put' href='hideTrash' title="Hide Trash"><i class="cmsIcon cmsIcon-trash-slash"></i></a></li>
 				<?php } else { ?>
 					<li><a class="ajax put" href="closeAllFolds" title="Close all folders"><i class="cmsIcon cmsIcon-folder-minus"></i></a></li>
-					<li><a onclick='scrollTree("smooth", false, false)' title="Show the open page"><i class="cmsIcon cmsIcon-crosshairs"></i></a></li>
-					<li><a href='../tools/maintenance/trash/' title="Show Trash"><i class="cmsIcon cmsIcon-trash"></i></a></li>
+					<li><button type="button" data-cms-action onclick='scrollTree("smooth", false, false)' title="Show the open page"><i class="cmsIcon cmsIcon-crosshairs"></i></button></li>
+					<li><a href='../tools/cleanup/trash/' title="Show Trash"><i class="cmsIcon cmsIcon-trash"></i></a></li>
 				<?php } ?>
 			</ul>
-			<a class="button submit icononly" data-on_click="new" title="Add Page"><i class="cmsIcon cmsIcon-plus"></i></a>
+			<button type="button" data-cms-action class="button submit icononly" data-on_click="new" title="Add Page"><i class="cmsIcon cmsIcon-plus"></i></button>
 		</div>
 		<?php $searching = trim((string) $this->state->cmsPageSearchstring) !== ''; ?>
 		<div class="tree<?= $searching ? ' is-results' : '' ?>">
@@ -41,7 +41,7 @@ if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
 			<?php $this->withView('tree'); ?>
 		</div>
 	</nav>
-	<footer class="resizeMML" style="max-height:<?= (int) $this->state->pylonFooterHeight ?: 300 ?>px; ">
+	<footer class="resizeMML<?= ($this->page?->id ?? 0) ? '' : ' is-empty' ?>" style="max-height:<?= (int) $this->state->pylonFooterHeight ?: 300 ?>px; ">
 			<div class="cms mml <?= ($this->page?->id ?? 0) ? '' : 'mml-empty' ?>">
 				<div class="mmlContent">
 					<label data-drag_type='none' data-on_draginit="draginitFooterHeight">

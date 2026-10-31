@@ -35,10 +35,10 @@ $title = $page?->label->plain ?? '';
 			<h1 class="pageTitle" contenteditable="false" data-on_blur="updateLabel"><?= $title !== '' ? $title : '- - - -' ?></h1>
 			<button type="button" class="pageTitleEdit" data-page-title-edit title="Edit title"><i class="cmsIcon cmsIcon-pen"></i></button>
             <?php if ($page->isAlias) { ?>
-                <a class="cmsRelationNotice alias" data-on_click="sidebar/showRelations" title="Alias: open original and connections" aria-label="Alias: open original and connections"><i class="cmsIcon cmsIcon-file-import"></i></a>
+                <button type="button" class="button transparent icononly cmsRelationNotice alias" data-on_click="sidebar/showRelations" title="Alias: open original and connections" aria-label="Alias: open original and connections"><i class="cmsIcon cmsIcon-file-import"></i></button>
             <?php } ?>
             <?php if ((int) $page->node->relationId('redirectNode') > 1) { ?>
-                <a class="cmsRelationNotice redirect" data-on_click="sidebar/showRelations" title="Redirect: open target and connections" aria-label="Redirect: open target and connections"><i class="cmsIcon cmsIcon-route"></i></a>
+                <button type="button" class="button transparent icononly cmsRelationNotice redirect" data-on_click="sidebar/showRelations" title="Redirect: open target and connections" aria-label="Redirect: open target and connections"><i class="cmsIcon cmsIcon-route"></i></button>
             <?php } ?>
 
 		</div>
@@ -47,10 +47,7 @@ $title = $page?->label->plain ?? '';
 	<?php } ?>
 </div>
 <?php
-$flag = static function (array $language) {
-	$code = htmlspecialchars(strtolower((string) ($language['code'] ?? '')), ENT_QUOTES);
-	return '<img referrerpolicy="no-referrer" alt="" src="https://flagcdn.com/' . $code . '.svg">';
-};
+$flag = static fn(array $language, string $key): string => \Systopic\System\Settings\LanguageFlags::html(trim((string) ($language['code'] ?? '')) ?: $key);
 $current = Languages::activated()[$this->state->lang] ?? null;
 ?>
 <div class="cmsPageTools">
@@ -58,15 +55,15 @@ $current = Languages::activated()[$this->state->lang] ?? null;
 	<div class="cmsPageToolsMenu">
 <div class="leftAlign">
 	<div class="splitApply langSwitch">
-		<button type="button" class="splitApplyMenu" aria-label="<?= htmlspecialchars((string) ($current['label'] ?? 'Language'), ENT_QUOTES) ?>">
-			<?php if ($current) { echo $flag($current); } ?>
+		<button type="button" class="splitApplyMenu" aria-expanded="false" aria-label="<?= htmlspecialchars((string) ($current['label'] ?? 'Language'), ENT_QUOTES) ?>">
+			<?php if ($current) { echo $flag($current, (string) $this->state->lang); } ?>
 			<span><?= strtoupper((string) $this->state->lang) ?></span>
 			<i class="cmsIcon cmsIcon-chevron-down"></i>
 		</button>
 		<div class="splitApplyList langMenu" hidden>
 			<?php foreach (Languages::activated() as $languageIso => $languageSetting) { ?>
 				<a class="ajax<?= $this->state->lang === $languageIso ? ' is-current' : '' ?>" href="./?lang=<?= htmlspecialchars((string) $languageIso, ENT_QUOTES) ?>">
-					<?= $flag($languageSetting) ?>
+					<?= $flag($languageSetting, (string) $languageIso) ?>
 					<span><?= htmlspecialchars((string) $languageSetting['label'], ENT_QUOTES) ?></span>
 				</a>
 			<?php } ?>

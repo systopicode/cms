@@ -36,6 +36,43 @@ $savePage = function (PageRow $row): void {
 };
 
 switch ($this->action) {
+    case 'editorPresence':
+        $renderStyle = 'none';
+        $id = (int) http::put('id');
+        $lang = (string) http::put('lang');
+        $token = (string) http::put('client');
+        $page = $this->pageIn($id, $lang);
+        if ($page?->row === null || !preg_match('/^[a-zA-Z0-9-]{16,80}$/D', $token)) {
+            client::done(['available' => false]);
+            break;
+        }
+        $previousToken = (string) http::put('previousClient');
+        if ($previousToken !== $token && preg_match('/^[a-zA-Z0-9-]{16,80}$/D', $previousToken)) {
+            \Systopic\Cms\Pages\EditorPresence::touch(
+                \fs::toNative(\fs::$projectRoot . 'var/tmp/page-editors.json'), '', hash('sha256', session_id() . ':' . $previousToken), time()
+            );
+        }
+        $peerIds = []; $peerSessions = [];
+        $peers = \Systopic\Cms\Pages\EditorPresence::touch(
+            \fs::toNative(\fs::$projectRoot . 'var/tmp/page-editors.json'),
+            http::put('leave') ? '' : $page->row->id . ':' . $lang, hash('sha256', session_id() . ':' . $token), time(), $this->userId(), $peerIds, \Systopic\System\Auth\DeviceName::from(\Systopic\System\Auth\DeviceName::requestAgent()), $peerSessions
+        );
+        $peerNames = []; $namesById = [];
+        $peerIds = array_values(array_unique(array_column($peerSessions, 'user')));
+        if ($peerIds) {
+            $rows = $this->scope->connection->all('SELECT user_id, user_name, user_fullname FROM usm_users WHERE user_id IN (' . implode(',', array_fill(0, count($peerIds), '?')) . ')', $peerIds);
+            foreach ($rows as $peer) $namesById[(int) $peer['user_id']] = trim((string) ($peer['user_fullname'] ?: $peer['user_name']));
+            foreach ($peerSessions as $peer) {
+                $name = (int) $peer['user'] === $this->userId() ? 'Another session' : ($namesById[$peer['user']] ?? 'Another session');
+                $peerNames[] = $name . ($peer['device'] !== '' ? ' · ' . $peer['device'] : '');
+            }
+            $peerNames = array_values(array_unique($peerNames));
+        }
+        $record = $this->scope->connection->all('SELECT * FROM cms_pages WHERE page_id = ?', [$page->row->id]);
+        client::done(['available' => $peers !== null, 'others' => $peers ?? 0, 'names' => $peerNames,
+            'revision' => hash('sha256', json_encode([$record, $this->scope->connection->all('SELECT junction_setting_node_id, junction_varchar, junction_int, junction_decimal FROM cms_junctions WHERE junction_node_id = ? ORDER BY junction_setting_node_id', [$id])], JSON_THROW_ON_ERROR))]);
+        break;
+
     case 'resolveEditorLink':
         $renderStyle = 'none';
         $reference = preg_replace('~^(media|page)::(?=\d)~', '$1:', trim((string) http::put('ref')));
@@ -127,7 +164,7 @@ switch ($this->action) {
         try {
             $site = \Systopic\Cms\Pages\Sites\SiteRegistry::create($this->scope, $name, null, $configLog);
             $nodeId = $site->relationId('node');
-            message::confirm("Site $name angelegt, Ordner sites/$name/ erstellt.");
+            message::confirm("Site $name created; folder sites/$name/ created.");
             foreach ($configLog ?? [] as $line) {
                 message::confirm("config/$line");
             }
@@ -355,6 +392,7 @@ switch ($this->action) {
         $label = html_entity_decode($label, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         PageOperator::assign($page->row, 'label', $label);
         $savePage($page->row);
+        client::callFunction('pageEditorOwnSave', [$page->id, (string) $page->language]);
         $entry = $this->tree->getNode($page->id);
         if ($entry !== null) {
             $entry->edit = false;

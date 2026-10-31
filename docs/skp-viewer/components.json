@@ -1,0 +1,122 @@
+{
+  "checked": "2026-10-30",
+  "components": [
+    {
+      "name": "three",
+      "version": "0.185.0",
+      "license": "MIT",
+      "tarball": "https://registry.npmjs.org/three/-/three-0.185.0.tgz",
+      "integrity": "sha512-+yRrcRO2iZa8uzvNNl0d7cL4huhgKgBvVJ0njcTe8xFqZ6DMAFZdCKDP91SEAuj25bNAj7k1QQdf+srZywVK6w=="
+    },
+    {
+      "name": "openskp",
+      "version": "1.0.0",
+      "license": "MIT",
+      "tarball": "https://registry.npmjs.org/openskp/-/openskp-1.0.0.tgz",
+      "integrity": "sha512-aTKJ1M9AUXrC5B1SPwDXMEepVWlsDIPd5eU+R+sqgAa2cyEOd2E00ytdip6zj9N4NI6ipwprEvMVS2ru8q0PEA=="
+    },
+    {
+      "name": "earcut",
+      "version": "3.2.3",
+      "license": "ISC",
+      "tarball": "https://registry.npmjs.org/earcut/-/earcut-3.2.3.tgz",
+      "integrity": "sha512-vnS4AVwp1KHAF13i1vp1/2D5evWy3k5u/iW/B81QVsUZtV8cv2tU0b2VNFlqvh4kYwrFMDdjPCfAmfyJW9y14Q=="
+    },
+    {
+      "name": "fflate",
+      "version": "0.8.3",
+      "license": "MIT",
+      "tarball": "https://registry.npmjs.org/fflate/-/fflate-0.8.3.tgz",
+      "integrity": "sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA=="
+    }
+  ],
+  "verification": {
+    "method": "Compare function AST structure against builds from exact npm packages; normalize minified identifier names. No original build lock was available; this is source fingerprint evidence, not a byte-identical rebuild claim.",
+    "functionMatches": {
+      "three/build/three.core.js": {
+        "total": 1123,
+        "cms": 1123,
+        "spaceticker": 1123
+      },
+      "three/build/three.module.js": {
+        "total": 543,
+        "cms": 543,
+        "spaceticker": 543
+      },
+      "three/examples/jsm/controls/OrbitControls.js": {
+        "total": 66,
+        "cms": 66,
+        "spaceticker": 66
+      },
+      "three/examples/jsm/utils/BufferGeometryUtils.js": {
+        "total": 1,
+        "cms": 1,
+        "spaceticker": 1
+      },
+      "three/examples/jsm/utils/SkeletonUtils.js": {
+        "total": 5,
+        "cms": 5,
+        "spaceticker": 5
+      },
+      "three/examples/jsm/loaders/GLTFLoader.js": {
+        "total": 207,
+        "cms": 206,
+        "spaceticker": 206
+      },
+      "fflate/esm/browser.js": {
+        "total": 20,
+        "cms": 20,
+        "spaceticker": 20
+      },
+      "earcut/src/earcut.js": {
+        "total": 37,
+        "cms": 37,
+        "spaceticker": 37
+      },
+      "openskp/dist/index.mjs": {
+        "total": 132,
+        "cms": 132,
+        "spaceticker": 132
+      }
+    },
+    "openskpGitHead": "318eb474096ea3dd02bb16cc6c2cb3f56e597fc0"
+  },
+  "bundles": [
+    {
+      "repository": "systopic/cms",
+      "path": "public/modules/skp-viewer.js",
+      "sha256": "37879c2ccd7dd4b417eb013d90c389d869c52438ec5bd6ed98770f12b45b3842",
+      "bytes": 688707,
+      "gzipBytes": 180863,
+      "executableCodeUnchanged": true,
+      "beforeNoticeSha256": "fe91bdafd7649cea834de963ee6d3ec67e4cbabbeb493de00ae0f7e17c9b1690"
+    },
+    {
+      "repository": "spaceticker",
+      "path": "public/js/skp-viewer.mjs",
+      "sha256": "4f01d872d4542efe3f9eea8ec72ab8d7a6d853dabf9647e4fa3bf459703965cc",
+      "bytes": 688620,
+      "gzipBytes": 180885,
+      "executableCodeUnchanged": true,
+      "beforeNoticeSha256": "221862bc261c8a2e66d481f208f9cb28cfa039915b17db65eb10554d5c37dcea"
+    }
+  ],
+  "licenseFiles": [
+    {
+      "file": "Three-MIT.txt",
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
+    },
+    {
+      "file": "OpenSKP-MIT.txt",
+      "sha256": "7c70ac0b7916390744a5f6361c59008cada08149a54348530b767953e050dbc6"
+    },
+    {
+      "file": "earcut-ISC.txt",
+      "sha256": "0b348fff56384b43dbb37593906904e56d0f9deb51eae590d4dc6d427fbf1808"
+    },
+    {
+      "file": "fflate-MIT.txt",
+      "sha256": "0a1df3a083d0c010560aa342e87959c8c1070e6fd54545741f083f22d0c8b551"
+    }
+  ]
+}

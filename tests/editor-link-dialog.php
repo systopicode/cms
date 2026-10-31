@@ -3,6 +3,7 @@ declare(strict_types=1);
 require dirname(__DIR__,2).'/system/tests/bootstrap.php';
 class http {
  public static string $method='POST';
+ public static string $siteUrl='/public/';
  public static array $post=['return_url'=>'/public/cms/pages/?id=10&lang=de'];
  public static function post($key,$default=null){return self::$post[$key]??$default;}
 }

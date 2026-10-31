@@ -91,7 +91,7 @@ $choice = static function (string $name, string $label, string $value, array $op
 				?></p>
 				<div class="fieldGrid">
 					<?php
-					$field('updateSetting', 'name', 'Key', $feld($d, 'name'), 'Template key');
+					$field('updateSetting', 'name', 'Key', $feld($d, 'name'), 'Used by templates and stored settings. Renaming does not update references automatically.');
 					$parentKind = (string) ($d->parent?->type ?? '');
 					$kind = $feld($d, 'type');
 					$kinds = match ($parentKind) {

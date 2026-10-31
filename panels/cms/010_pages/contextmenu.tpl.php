@@ -29,12 +29,12 @@ if ($active !== null) {
 <ul class="contextmenu" data-id="<?= $node->id ?>">
 	<?php if ($node->isTrashed) { ?>
 		<li title="Recover Page" class="iconOnly">
-			<a title="Recover Page" aria-label="Recover Page" data-confirm="All langauges, children and versions will be recoverd!"
+			<button type="button" data-cms-action title="Recover Page" aria-label="Recover Page" data-confirm="All langauges, children and versions will be recoverd!"
 			   data-on_click='userConfirm'
 			   data-action="recoverPage"
 			   data-node_id="<?= $node->id ?>">
 				<i class="cmsIcon cmsIcon-arrow-rotate-left"></i>
-			</a>
+			</button>
 		</li>
 		<li class="seperator"></li>
 		<li>
@@ -48,65 +48,65 @@ if ($active !== null) {
 		<li class="iconsonly">
 			<ul>
 				<li title="Rename" class="iconOnly">
-					<a title="Rename" aria-label="Rename" data-on_click="editLabel">
+					<button type="button" data-cms-action title="Rename" aria-label="Rename" data-on_click="editLabel">
 						<i class="cmsIcon cmsIcon-pen"></i>
-					</a>
+					</button>
 				</li>
 				<li title="Duplicate" class="iconOnly">
-					<a title="Duplicate" aria-label="Duplicate" data-on_click="duplicate?node_id=<?= $node->id ?>">
+					<button type="button" data-cms-action title="Duplicate" aria-label="Duplicate" data-on_click="duplicate?node_id=<?= $node->id ?>">
 						<i class="cmsIcon cmsIcon-copy"></i>
-					</a>
+					</button>
 				</li>
 				<?php if ($node->isPublished) { ?>
 					<li title="Hide" class="iconOnly">
-						<a title="Hide" aria-label="Hide" data-on_click="unpublish?id=<?= $node->id ?>">
+						<button type="button" data-cms-action title="Hide" aria-label="Hide" data-on_click="unpublish?id=<?= $node->id ?>">
 							<i class="cmsIcon cmsIcon-eye-slash"></i>
-						</a>
+						</button>
 					</li>
                     <?php if ($node->hasChildren) { ?>
 					<li title="Hide with children" class="iconOnly">
-						<a title="Hide with children" aria-label="Hide with children"  data-on_click="unPublishAll?id=<?= $node->id ?>">
+						<button type="button" data-cms-action title="Hide with children" aria-label="Hide with children"  data-on_click="unPublishAll?id=<?= $node->id ?>">
 							<span class="layerEyeIcon" aria-hidden="true"><i class="cmsIcon cmsIcon-layer-group"></i><i class="cmsIcon cmsIcon-eye-slash"></i></span>
-						</a>
+						</button>
 					</li>
                     <?php } ?>
 				<?php } else { ?>
 					<li title="Publish" class="iconOnly">
-						<a title="Publish" aria-label="Publish"  data-on_click="publish?id=<?= $node->id ?>">
+						<button type="button" data-cms-action title="Publish" aria-label="Publish"  data-on_click="publish?id=<?= $node->id ?>">
 							<i class="cmsIcon cmsIcon-eye"></i>
-						</a>
+						</button>
 					</li>
                     <?php if ($node->hasChildren) { ?>
 					<li title="Publish with children" class="iconOnly">
-						<a title="Publish with children" aria-label="Publish with children"  data-on_click="publishAll?id=<?= $node->id ?>">
+						<button type="button" data-cms-action title="Publish with children" aria-label="Publish with children"  data-on_click="publishAll?id=<?= $node->id ?>">
 							<span class="layerEyeIcon" aria-hidden="true"><i class="cmsIcon cmsIcon-layer-group"></i><i class="cmsIcon cmsIcon-eye"></i></span>
-						</a>
+						</button>
 					</li>
                     <?php } ?>
 				<?php } ?>
 				<li title="New subpage" class="iconOnly">
-					<a title="New subpage" aria-label="New subpage" data-node_id="<?= $node->id ?>" data-on_click="newChild">
+					<button type="button" data-cms-action title="New subpage" aria-label="New subpage" data-node_id="<?= $node->id ?>" data-on_click="newChild">
 						<i class="cmsIcon cmsIcon-layer-plus"></i>
-					</a>
+					</button>
 				</li>
 				<?php if ($node->isAlias && !$node->hasChildren) { ?>
 					<li style='margin-left: auto;' title="Delete Alias" class="iconOnly">
-						<a title="Delete Alias" aria-label="Delete Alias" data-confirm="Do you really want to delete this Alias Page?"
+						<button type="button" data-cms-action title="Delete Alias" aria-label="Delete Alias" data-confirm="Do you really want to delete this Alias Page?"
 						   class='removeAlias'
 						   data-on_click='userConfirm'
 						   data-action="deleteAlias&node_id=<?= $node->id ?>&node_original_node_id=<?= $node->originalId ?>">
 							<i class="cmsIcon cmsIcon-trash"></i>
-						</a>
+						</button>
 					</li>
 				<?php } ?>
 				<?php if (!$node->isAlias && !$node->isTrashed) { ?>
 					<li style='margin-left: auto;' title="Delete Page" class="iconOnly">
-						<a title="Delete Page" aria-label="Delete Page" data-confirm="All langauges, children and versions will be removed!"
+						<button type="button" data-cms-action title="Delete Page" aria-label="Delete Page" data-confirm="All langauges, children and versions will be removed!"
 						   data-on_click='userConfirm'
 						   data-action="deletePage"
 						   data-node_id="<?= $node->id ?>">
 							<i class="cmsIcon cmsIcon-trash"></i>
-						</a>
+						</button>
 					</li>
 				<?php } ?>
 			</ul>
@@ -115,36 +115,36 @@ if ($active !== null) {
 		<?php if ($active !== null) { ?>
 			<?php if ($node->id !== $active->id) { ?>
 				<li>
-					<a class=" redirect"
+					<button type="button" data-cms-action class=" redirect"
 					   data-on_click="redirectHere?node_id=<?= $active->id ?>&node_redirect_node_id=<?= $node->id ?>">
 						<i class="cmsIcon cmsIcon-route"></i>
 						<span>"<?= $active->label ?>" redirect here</span>
-					</a>
+					</button>
 				</li>
 			<?php } ?>
 			<?php if ($node->redirectId) { ?>
 				<li>
-					<a class=" redirect" data-on_click="redirectHere?node_id=<?= $node->id ?>&node_redirect_node_id=0">
+					<button type="button" data-cms-action class=" redirect" data-on_click="redirectHere?node_id=<?= $node->id ?>&node_redirect_node_id=0">
 						<i class="cmsIcon cmsIcon-route"></i>
 						<span>Remove redirect</span>
-					</a>
+					</button>
 				</li>
 			<?php } ?>
             <?php if ($canAliasAfter) { ?>
 			<li>
-				<a class=" alias"
+				<button type="button" data-cms-action class=" alias"
 				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_parent_node_id=<?= $node->parent?->id ?>&node_original_node_id=<?= $active->contentId ?>">
 					<i class="cmsIcon cmsIcon-file-import"></i>
 					<span>Alias of "<?= $active->label ?>" after this</span>
-				</a>
+				</button>
 			</li>
             <?php } if ($canAliasChild) { ?>
 			<li>
-				<a class=" alias"
+				<button type="button" data-cms-action class=" alias"
 				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_parent_node_id=<?= $node->id ?>&node_original_node_id=<?= $active->contentId ?>">
 					<i class="cmsIcon cmsIcon-file-import"></i>
 					<span>Alias as child</span>
-				</a>
+				</button>
 			</li>
             <?php } ?>
 		<?php } ?>
@@ -158,7 +158,7 @@ if ($active !== null) {
 			</a>
 		</li>
         <?php $live = $this->liveHref($node->id, $node->language); if ($live !== null) { ?>
-        <li><a href="<?= htmlspecialchars($live, ENT_QUOTES) ?>" target="_blank" rel="noopener"><i class="cmsIcon cmsIcon-arrow-up-right-from-square"></i><span>Show live</span></a></li>
+        <li><a class="cmsExternalLink" href="<?= htmlspecialchars($live, ENT_QUOTES) ?>" target="_blank" rel="noopener"><span>Show live</span><i class="cmsIcon cmsIcon-arrow-up-right-from-square" aria-hidden="true"></i></a></li>
         <?php } ?>
 	<?php } ?>
 

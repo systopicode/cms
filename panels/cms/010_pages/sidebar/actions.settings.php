@@ -27,19 +27,38 @@ use Systopic\Cms\Queries\SettingValues\SettingValues;
 
 /** @var \Systopic\Cms\Panels\Root\Cms\Pages\Sidebar\Panel $this */
 
+$settingGuard = static function (int $pageNodeId, array $optionIds): callable {
+    $expected = (string) http::dataset('field_version');
+    return static function ($connection) use ($pageNodeId, $optionIds, $expected): void {
+        $connection->value('SELECT node_id FROM cms_nodes WHERE node_id = ? FOR UPDATE', [$pageNodeId]);
+        $actual = \Systopic\Cms\Pages\SettingVersion::hash($connection, $pageNodeId, $optionIds);
+        if ($expected !== '' && !hash_equals($actual, $expected)) throw new \Systopic\Cms\Pages\EditConflict($actual);
+    };
+};
+$commitSetting = function ($uow, int $pageNodeId, int $field, array $ids) use ($settingGuard): void {
+    try {
+        $uow->commit($settingGuard($pageNodeId, $ids));
+        $version = \Systopic\Cms\Pages\SettingVersion::hash($this->parent->scope->connection, $pageNodeId, $ids);
+        client::callFunction('pageEditorVersion', [$pageNodeId, (string) http::dataset('language_iso'), 'setting:' . $field, $version, true]);
+    } catch (\Systopic\Cms\Pages\EditConflict $conflict) {
+        client::callFunction('pageEditConflict', [$pageNodeId, (string) http::dataset('language_iso'), 'setting:' . $field, $conflict->getMessage()]);
+        message::error('This setting was changed in another session. Your change has not been saved.');
+    }
+};
+
 switch ($this->action) {
 	case 'updateSelect':
 		$pageNodeId = (int) http::dataset('node_id');
 		$settingNodeId = (int) http::dataset('node_parent_node_id');
 		if ($pageNodeId === 0 || $settingNodeId === 0) {
-			p('updateSelect ohne Knoten — nichts zu tun');
+			message::error('This setting is not available. Reload the page and try again.');
 			break;
 		}
 
 		$scope = $this->parent->scope;
 		$definition = SettingTree::byNodeId($scope, $settingNodeId);
 		if ($definition === null) {
-			p("keine Einstellung am Knoten $settingNodeId");
+			message::error('This setting no longer exists. Reload the page.');
 			break;
 		}
 
@@ -66,21 +85,21 @@ switch ($this->action) {
 			$uow->persist($junction);
 		}
 
-		$uow->commit();
+        $commitSetting($uow, $pageNodeId, $settingNodeId, array_map(static fn($option)=>(int) $option->nodeId, $definition->options));
 		break;
 
 	case 'updateValue':
 		$pageNodeId = (int) http::dataset('node_id');
 		$optionNodeId = (int) http::dataset('setting_node_id');
 		if ($pageNodeId === 0 || $optionNodeId === 0) {
-			p('updateValue ohne Knoten — nichts zu tun');
+			message::error('This setting is not available. Reload the page and try again.');
 			break;
 		}
 
 		$scope = $this->parent->scope;
 		$option = SettingTree::byNodeId($scope, $optionNodeId);
 		if ($option === null) {
-			p("keine Einstellung am Knoten $optionNodeId");
+			message::error('This setting no longer exists. Reload the page.');
 			break;
 		}
 
@@ -112,6 +131,7 @@ switch ($this->action) {
 			};
 		}
 
-		$uow->persist($junction)->commit();
+        $uow->persist($junction);
+        $commitSetting($uow, $pageNodeId, $optionNodeId, [$optionNodeId]);
 		break;
 }

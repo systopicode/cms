@@ -34,9 +34,9 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 	$html .= "<div><input $checked title='Set as primary' data-on_change='sidebar/rewritePath_setPrimary' class='custom' type='radio' name='rewritepath_is_primary' id='rewritepath_is_primary_$id'>";
 	$html .= "<label for='rewritepath_is_primary_$id'></label></div>";
 	if ($path->autoIndex !== null) {
-		$html .= "<input type='text' style='background:transparent;' readonly='readonly'  name='rewritePath' class='ajax disabled'  value='$string'/>";
+		$html .= "<input aria-label='Automatic page address' type='text' style='background:transparent;' readonly='readonly'  name='rewritePath' class='ajax disabled'  value='$string'/>";
 	} else {
-		$html .= "<input type='text' name='rewritePath' data-on_input='sidebar/rewritePath_update' value='$string'/>";
+		$html .= "<input aria-label='Custom page address' type='text' name='rewritePath' data-on_blur='sidebar/rewritePath_update' value='$string'/>";
 	}
 	$html .= "<button type='button' class='button transparent icononly small' data-on_click='sidebar/rewritePath_delete' title='Remove address' aria-label='Remove address'><i class='cmsIcon cmsIcon-trash'></i></button>";
 	$html .= '</div>';
@@ -66,7 +66,7 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 		   title="Rebuild from the page name"
 		   aria-label="Rebuild from the page name"
 		   data-page_id="<?= $page->row->id ?>">
-			<i class="cmsIcon cmsIcon-arrow-rotate-left"></i>
+			<i class="cmsIcon cmsIcon-arrows-rotate"></i>
 		</button>
     </li>
 	<li>

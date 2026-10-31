@@ -29,7 +29,7 @@ echo '# ' . ($title !== '' ? $title : 'Website') . "\n\n";
 if ($description !== '') {
 	echo '> ' . oneLine($description) . "\n\n";
 }
-echo "Written by fluxo cms from the published pages of this website.\n\n";
+echo "Written by fluxo from the published pages of this website.\n\n";
 echo "## Pages\n\n";
 echo $lines === [] ? '' : implode("\n", $lines) . "\n";
 echo "\n## Optional\n\n";

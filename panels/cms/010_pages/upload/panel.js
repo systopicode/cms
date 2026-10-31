@@ -11,11 +11,11 @@
 		var upload = this;
         upload.showError = (text) => {
             var list = document.querySelector('.mmlContent > div > ul');
-            var host = list || document.querySelector('.cmslightbox.upload main') || document.querySelector('section.cms');
+            var host = document.querySelector('.cmslightbox.upload main') || list || document.querySelector('section.cms');
             if (!host) return;
             var holder = host.querySelector('.mmlUploadMessages');
             if (!holder) {
-                holder = document.createElement(list ? 'li' : 'div');
+                holder = document.createElement(host === list ? 'li' : 'div');
                 holder.className = 'mmlUploadMessages';
                 var messages = document.createElement('div');
                 messages.className = 'cms message';
@@ -37,7 +37,7 @@
                 if (!holder.firstChild.children.length) holder.remove();
             });
             holder.firstChild.appendChild(error);
-            if (list) list.scrollTo({top: 0, behavior: 'auto'});
+            if (host === list) list.scrollTo({top: 0, behavior: 'auto'});
             else holder.scrollIntoView({block: 'nearest'});
         };
         upload.accepts = (file, accept, onReject) => {
@@ -220,7 +220,7 @@
 			img.src = bare + (bare.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
 		};
 
-		upload.reportQueue = (done, total, el, part) => {
+		upload.reportQueue = (done, total, el, part, open) => {
 			if (!window.cmsJobs) {
 				return;
 			}
@@ -228,7 +228,7 @@
 				cmsJobs.clear('upload');
 				return;
 			}
-			cmsJobs.update('upload', {title: 'Uploading', done: done, total: total, el: el, progress: (done + (part || 0)) / total});
+			cmsJobs.update('upload', {title: 'Uploading', done: done, total: total, el: el, progress: (done + (part || 0)) / total, open: open});
 		};
 
 		/**
@@ -263,7 +263,7 @@
 				call.send(new URL('upload/fetch', location.origin + (target.from || location.pathname)).pathname).done((data) => {
 					if (data && data.error) {
 						upload.showError(data.error);
-						reject();
+						reject(new Error(data.error));
 						return;
 					}
 					resolve(data);
@@ -277,41 +277,86 @@
 				: upload.fetchUrl(item.url, target, queue, extra);
 		};
 
-		upload.queueDirect = (files, target, spinner) => {
-			var rejected = [];
-            var list = Array.prototype.slice.call(files).filter(file => !(file instanceof Blob) || upload.accepts(file, target.accept, text => rejected.push(text)));
-			if (!list.length || !spinner) {
-				return;
-			}
-			spinner.classList.add('loading');
-			upload.reportQueue(0, list.length, spinner);
-			var from = target.from = location.pathname + location.search;
-			var step = (index) => {
-				var last = index === list.length - 1;
-				var item = list[index];
-				var sent = item instanceof Blob
-					? upload.sendFileDirect(item, target, true, false, null, (part) => upload.reportQueue(index, list.length, spinner, part))
-					: upload.fetchUrl(item.url, target, true);
-				sent.then(() => {
-					// Redraw once, then keep skipped-file feedback visible in the new library.
-					if (last) {
-						upload.refreshLibrary(from, () => rejected.forEach(text => upload.showError(text)));
-					}
-					upload.reportQueue(index + 1, list.length, spinner);
-					if (!last) {
-						step(index + 1);
-						return;
-					}
-					spinner.classList.remove('loading');
-				}).catch(() => {
-					spinner.classList.remove('loading');
-					if (window.cmsJobs) {
-						cmsJobs.clear('upload');
-					}
-				});
-			};
-			step(0);
-		};
+        // File objects stay in this tab only. Completed entries are never replayed.
+        upload.queues = [];
+        upload.showQueue = batch => {
+            let box = document.querySelector('.uploadSummary');
+            if (box) box.remove();
+            box = document.createElement('div');
+            box.className = 'cmslightbox cms uploadSummary';
+            box.dataset.size = '2';
+            box.innerHTML = '<section><header><h1>Uploads</h1><ul class="barmenu"><li><button type="button" class="button transparent icononly" data-box-close data-lightbox-close title="Close" aria-label="Close"><i class="cmsIcon cmsIcon-xmark" aria-hidden="true"></i></button></li></ul></header><main><p class="uploadQueueHint">Results remain available until this page is reloaded. Closing this overview does not stop uploads.</p><label>Upload batch<select class="uploadBatchPicker"></select></label><p class="uploadQueueStatus" role="status" aria-live="polite"></p><ul class="uploadQueueFiles"></ul></main><footer><button type="button" class="button uploadQueueRetry">Retry failed and pending files</button></footer></section>';
+            box.querySelector('[data-box-close]').onclick = () => box.remove();
+            const picker = box.querySelector('select');
+            upload.queues.forEach((b, index) => { const o = document.createElement('option');o.value = index;o.textContent = 'Batch ' + (index + 1) + ' · ' + b.entries.length + ' files';o.selected = b === batch;picker.append(o); });
+            picker.onchange = () => upload.showQueue(upload.queues[Number(picker.value)]);
+            box.querySelector('.uploadQueueRetry').onclick = () => upload.runQueue(batch);
+            box.batch = batch;
+            document.body.append(box);
+            upload.paintQueue(batch);
+        };
+        upload.paintQueue = batch => {
+            const box = document.querySelector('.uploadSummary');
+            if (!box || box.batch !== batch) return;
+            const labels = {pending:'Pending',uploading:'Uploading',success:'Uploaded',failed:'Failed',rejected:'Not allowed'};
+            const list = box.querySelector('.uploadQueueFiles');
+            if (list.children.length !== batch.entries.length) {
+                list.replaceChildren(...batch.entries.map(() => { const li=document.createElement('li');li.innerHTML='<strong></strong><span></span><small></small>';return li; }));
+            }
+            batch.entries.forEach((entry,index) => {
+                const li=list.children[index];li.dataset.state=entry.state;
+                li.querySelector('strong').textContent=entry.name;
+                li.querySelector('span').textContent=labels[entry.state];
+                li.querySelector('small').textContent=entry.error || '';
+            });
+            const done=batch.entries.filter(e=>e.state==='success').length;
+            const failed=batch.entries.filter(e=>e.state==='failed'||e.state==='rejected').length;
+            const text=done+' / '+batch.entries.length+' uploaded'+(failed?' · '+failed+' failed':'')+(batch.running?' · Uploading':'');
+            const status=box.querySelector('.uploadQueueStatus');if(status.textContent!==text)status.textContent=text;
+            const retry=box.querySelector('.uploadQueueRetry');retry.disabled=upload.queues.some(b=>b.running) || !batch.entries.some(e=>e.state==='pending'||e.state==='failed');
+        };
+        upload.runQueue = async batch => {
+            if (batch.running || upload.queues.some(b=>b.running)) return;
+            batch.running = true;
+            batch.spinner.classList.add('loading');
+            const completed=()=>batch.entries.filter(e=>e.state==='success'||e.state==='rejected').length;
+            for (const entry of batch.entries) {
+                if (entry.state==='success'||entry.state==='rejected') continue;
+                entry.state='uploading';entry.error='';upload.paintQueue(batch);
+                upload.reportQueue(completed(),batch.entries.length,batch.spinner,0,()=>upload.showQueue(batch));
+                try {
+                    await upload.send(entry.item,batch.target,true,false,{uploadKey:entry.key},part=>upload.reportQueue(completed(),batch.entries.length,batch.spinner,part,()=>upload.showQueue(batch)));
+                    entry.state='success';
+                } catch (error) {
+                    entry.state='failed';entry.error=error?.message || 'Upload interrupted. Check your connection and retry.';
+                    // Keep later files pending. An explicit retry uses the same server receipt.
+                    break;
+                }
+                upload.paintQueue(batch);
+            }
+            batch.running=false;batch.spinner.classList.remove('loading');
+            if(window.cmsJobs) cmsJobs.clear('upload');
+            upload.paintQueue(batch);
+            upload.refreshLibrary(batch.target.from,()=>batch.entries.filter(e=>e.state==='rejected').forEach(e=>upload.showError(e.error)));
+            if(batch.entries.some(e=>e.state==='failed')) upload.showQueue(batch);
+            const next=upload.queues.find(b=>b!==batch && !b.entries.some(e=>e.state==='failed') && b.entries.some(e=>e.state==='pending'));
+            if(next) upload.runQueue(next);
+        };
+        upload.queueDirect = (files, target, spinner) => {
+            if (!files.length || !spinner) return;
+            const batch={target:Object.assign({},target,{from:location.pathname+location.search}),spinner,running:false,entries:[]};
+            Array.from(files).forEach(item=>{
+                let reason='';
+                const allowed=!(item instanceof Blob)||upload.accepts(item,target.accept,text=>reason=text);
+                batch.entries.push({item,name:item.name||item.url||'File',key:crypto.randomUUID(),state:allowed?'pending':'rejected',error:reason});
+            });
+            upload.queues.push(batch);
+            let button=document.querySelector('.uploadQueueOpen');
+            if(!button){button=document.createElement('button');button.type='button';button.className='button uploadQueueOpen';button.textContent='Upload results';document.body.append(button);}
+            button.onclick=()=>upload.showQueue(batch);
+            if (batch.entries.length > 1) upload.showQueue(batch);
+            upload.runQueue(batch);
+        };
 
 		// One slice in memory at a time: a whole video read at once stalls the page.
 		upload.sendFileDirect = (file, target, queue, queueLast, extra, onPart) => {
@@ -339,6 +384,7 @@
 							info: {},
 							size: size,
 							spanIndex: spanIndex,
+                            spanStart: start,
 							spanSize: end - start,
 							lastSpan: last,
 							queue: !!queue,
@@ -355,6 +401,7 @@
 						call.binary = reader.result;
 						call.send(address).done((data) => {
                             if (data && data.error) { upload.showError(data.error); reject(new Error(data.error)); return; }
+                            if (data && data.uploadComplete) { resolve(data); return; }
 							onPart && onPart((spanIndex + 1) / spanCount);
 							if (!last) {
 								spanIndex++;
@@ -409,6 +456,9 @@
 				event.stopPropagation();
 				var picker = document.createElement('input');
 				picker.type = 'file';
+                picker.setAttribute('aria-label', li.querySelector('button')?.getAttribute('aria-label') || 'Add media files');
+                picker.tabIndex = -1;
+                picker.addEventListener('cancel', () => picker.remove());
                 picker.accept = upload.targetOf(li).accept || '';
 				picker.multiple = true;
 				picker.style.cssText = 'position:fixed;left:-100px;top:0;width:1px;height:1px;opacity:0';
@@ -528,7 +578,7 @@
 
 			// Into a text: on window, ahead of the editor's own drop and paste
 			// handling, which drops images (HTMLeditor.format.js).
-			var editorOf = (el) => el && el.closest && el.closest('article.cmsContent [contenteditable="true"][data-on_drop="insertMediaInEditor"]');
+			var editorOf = (el) => el && el.closest && el.closest('article.cmsContent .editor.mediaDroppable[contenteditable="true"]');
 			var showable = (item) => !(item instanceof Blob) || upload.accepts(item, document.querySelector('.mmlContent [data-all-media-accept]')?.getAttribute('data-all-media-accept'));
 			var aimed = null;
 			document.addEventListener('dragover', (event) => {
@@ -599,6 +649,11 @@
 				hold.style.display = shown.display === 'inline' ? 'inline-block' : shown.display;
 				hold.style.width = Math.max(1, Math.round(box.width)) + 'px';
 				var coarse = event.pointerType === 'touch';
+                if (coarse) {
+                    editor.removeAttribute('data-typing');
+                    editor.setAttribute('inputmode', 'none');
+                    editor.blur();
+                }
 				var cap = Math.round(Math.min(window.innerHeight * 0.45, 280));
 				hold.style.height = (coarse && box.height > cap ? 28 : Math.max(1, Math.round(box.height))) + 'px';
 				hold.style.verticalAlign = shown.verticalAlign;
@@ -700,6 +755,11 @@
 					var x = e && e.clientX !== undefined ? e.clientX : point.x;
 					var y = e && e.clientY !== undefined ? e.clientY : point.y;
 					var dest = editorAt(x, y) || lastEditor;
+                    if (coarse && dest) {
+                        dest.removeAttribute('data-typing');
+                        dest.setAttribute('inputmode', 'none');
+                        dest.blur();
+                    }
 					var spot = dest && upload.rangeAt(dest, x, y, true);
 					if (!spot || spot.startContainer === hold || hold.contains(spot.startContainer)) {
 						spot = lastSpot && lastEditor === dest && lastSpot.startContainer !== hold && !hold.contains(lastSpot.startContainer) ? lastSpot : null;
@@ -1202,12 +1262,11 @@
 						var spanProgress = e.loaded / e.total;
 						var progress = (upload.spanIndex + spanProgress) / upload.spanCount;
 						upload.updateBar(progress, barinfo);
-						upload.reportQueue(0, 1, null, progress);
 					})
 					.done(r => {
 						if (r && r.error) {
                             upload.showError(r.error);
-                            upload.reportQueue(1, 1);
+
                             if (upload.lightboxShown()) {
                                 upload.doc.box.className = 'idle';
                                 upload.doc.footer.className = 'idle';
@@ -1217,7 +1276,6 @@
                         }
                         l('done fired', r);
 						if (lastSpan) {
-							upload.reportQueue(1, 1);
 							if (upload.lightboxShown()) {
 								upload.doc.box.className = 'done';
 								upload.doc.footer.className = 'done';
@@ -1229,7 +1287,14 @@
 							upload.uploadFileSpan();
 						}
 					})
-					.fail(() => upload.reportQueue(1, 1));
+					.fail(() => {
+                        if (upload.lightboxShown()) {
+                            upload.doc.box.className = 'idle';
+                            upload.doc.footer.className = 'idle';
+                            upload.doc.upload.classList.remove('loading');
+                        }
+                        upload.showError('Upload failed. Please try again.');
+                    });
 
 		};
 	});

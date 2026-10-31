@@ -20,7 +20,7 @@ final class SkpViewer
         if ($base === '' || $dir === null) {
             return '';
         }
-        $rel = 'public/js/skp-viewer.js';
+        $rel = 'public/modules/skp-viewer.js';
         return Assets::href(rtrim($base, '/') . '/' . $rel, $dir . $rel);
     }
 }

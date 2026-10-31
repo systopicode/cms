@@ -13,7 +13,7 @@ try {
  await page.evaluate(()=>{window.panel={};panelConstructor.call(panel);panel.onUpdateTree();panel.onUpdateTree();});
  assert.equal(await page.evaluate(()=>scrolls.length),0,'unchanged remote selection does not scroll');
  await page.evaluate(()=>{document.querySelector('li').dataset.node_id='12';panel.onUpdateTree();window.rebuilt={};panelConstructor.call(rebuilt);rebuilt.onUpdateTree();});
- assert.deepEqual(await page.evaluate(()=>scrolls),[['instant','12',false]],'only actual local selection change scrolls, not module rebuild');
+ assert.deepEqual(await page.evaluate(()=>scrolls),[['smooth','12',false]],'only actual local selection change scrolls, not module rebuild');
  await page.evaluate(()=>{
   const active=document.querySelector('li.active');
   const before=document.createElement('li');before.dataset.node_id='10';active.before(before);
@@ -55,5 +55,16 @@ try {
   grip.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerId:1,pointerType:'touch',clientX:r.left+10,clientY:r.top+1}));
  });
  assert.deepEqual(await page.evaluate(()=>drops),[{source:'13',target:'11',action:'insertBefore'}],'native long press keeps metadata');
+ // Local history navigation explicitly reveals the row; unchanged live views do not.
+ const navigation=await browser.newPage();
+ await navigation.route('https://tree.test/**',route=>route.fulfill({contentType:'text/html',body:'<body class="cms"><div class="tree" style="height:60px;overflow:auto"><ul class="tree">'+Array.from({length:20},(_,i)=>`<li data-node_id="${i+1}"><label style="display:block;height:30px">Page ${i+1}</label></li>`).join('')+'</ul></div></body>'}));
+ await navigation.goto('https://tree.test/?id=1');
+ await navigation.evaluate(()=>{window.sys={onDocumentReady(){},core:{server:{revealScroll(el,top){el.scrollTop=top;}}}};});
+ await navigation.addScriptTag({content:await read('../panels/cms/010_pages/pages.js')});
+ await navigation.evaluate(()=>{history.pushState({},'', '?id=20');onAfterHisotryPush();});await navigation.waitForTimeout(100);
+ assert.ok(await navigation.locator('div.tree').evaluate(e=>e.scrollTop)>0,'local selection reaches actual selected row');
+ await navigation.locator('div.tree').evaluate(e=>e.scrollTop=0);await navigation.evaluate(()=>onAfterHisotryPush());await navigation.waitForTimeout(100);
+ assert.equal(await navigation.locator('div.tree').evaluate(e=>e.scrollTop),0,'same selection keeps independent scroll position');
+ await navigation.close();
  console.log('ok: remote updates keep local tree state; touch drop carries distinct source and target');
 } finally {await browser.close();}

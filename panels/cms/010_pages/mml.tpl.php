@@ -27,7 +27,7 @@ $siteRoot = (string) http::$siteRoot;
 		<h4><span><?= $e($label) ?></span><a class="ajax button transparent icononly small mediaGroupInfo" data-history="false" href="<?= $e($this->href . 'mml/groupInfo/?group=' . rawurlencode($groupName)) ?>" title="Allowed file types" aria-label="Allowed file types for <?= $e($label) ?>"><i class="cmsIcon cmsIcon-circle-info"></i></a></h4>
 		<ul>
 			<li class="upload" data-upload-many>
-				<i class='cmsIcon cmsIcon-plus'></i>
+				<button type="button" class="mmlUploadButton" aria-label="Add files to <?= $e($label) ?>" title="Add files to <?= $e($label) ?>"><i class='cmsIcon cmsIcon-plus' aria-hidden="true"></i></button>
 			</li>
 			<?php foreach ($entries as $entry) {
 				$media = $entry['media'];
@@ -36,6 +36,7 @@ $siteRoot = (string) http::$siteRoot;
 				$id = $entry['alias'] ? (int) $node->relationId('originalNode') : (int) $node->id;
 				$mediaId = (int) ($media?->id ?? 0);
 				$filename = (string) ($media?->filename ?? '');
+                $mediaLabel = trim((string) ($media?->label ?? '')) ?: ($filename !== '' ? $filename : 'Untitled file');
 				$mime = (string) ($media?->mimetype ?? '');
 				$type = (string) ($media?->type ?? '');
 				$folders = Files::idPath($mediaId);
@@ -49,13 +50,13 @@ $siteRoot = (string) http::$siteRoot;
 					'on_contextmenu' => 'mml/getMmlContextmenu',
 				]) ?>>
 					<?php if ($entry['alias']) { ?>
-					<input type=file accept="<?= $e(GroupPolicy::accept($groupInfo, $groupName)) ?>" data-on_change='upload/open'>
+					<input type=file title="Replace file: <?= $e($mediaLabel) ?>" aria-label="Replace file: <?= $e($mediaLabel) ?>" accept="<?= $e(GroupPolicy::accept($groupInfo, $groupName)) ?>" data-on_change='upload/open'>
 					<?php } ?>
 					<?php if ($entry['alias']) {
 						$ext = in_array($mime, ['image/png', 'image/jpeg'], true) ? '' : '.png';
 						?>
-						<a class='ajax' href='./?id=<?= (int) $entry['originalParentId'] ?>'>
-							<img src='<?= $e("{$siteRoot}var/formats/mmlThumb/$folders$filename$ext") ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
+						<a class='ajax' href='./?id=<?= (int) $entry['originalParentId'] ?>' title='Show original page: <?= $e($mediaLabel) ?>' aria-label='Show original page: <?= $e($mediaLabel) ?>'>
+							<img alt='<?= $e($mediaLabel) ?>' src='<?= $e("{$siteRoot}var/formats/mmlThumb/$folders$filename$ext") ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
 							<i class='cmsIcon cmsIcon-file-import'></i>
 						</a>
 					<?php } else {
@@ -63,16 +64,16 @@ $siteRoot = (string) http::$siteRoot;
 						$src = ($media === NULL || $face['mark']) ? '' : $this->thumbOf($media);
 						?>
 						<?php if (!$face['mark']) { ?>
-						<img src='<?= $e($src) ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
+						<img alt='<?= $e($mediaLabel) ?>' src='<?= $e($src) ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
 						<?php } ?>
 						<i class='cmsIcon cmsIcon-<?= $e($face['icon']) ?> thumbType'></i>
 						<div class='thumbActions'>
 							<span class='thumbGrip' title='Drag'><span></span><span></span><span></span><span></span><span></span><span></span></span>
 							<div class='thumbButtons'>
-								<a class='ajax' href='editor/file/?target_id=<?= $id ?>' title='Edit' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-pen'></i></a>
+								<a class='ajax' href='editor/file/?target_id=<?= $id ?>' title='Edit: <?= $e($mediaLabel) ?>' aria-label='Edit: <?= $e($mediaLabel) ?>' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-pen'></i></a>
 								<label title='Replace' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'>
 									<i class='cmsIcon cmsIcon-arrows-rotate'></i>
-									<input type=file accept="<?= $e(GroupPolicy::accept($groupInfo, $groupName)) ?>" data-on_change='upload/open'>
+									<input type=file title="Replace file: <?= $e($mediaLabel) ?>" aria-label="Replace file: <?= $e($mediaLabel) ?>" accept="<?= $e(GroupPolicy::accept($groupInfo, $groupName)) ?>" data-on_change='upload/open'>
 								</label>
 							</div>
 						</div>

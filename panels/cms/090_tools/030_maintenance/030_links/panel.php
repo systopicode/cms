@@ -1,18 +1,8 @@
 <?php
-declare(strict_types=1);
-
 namespace Systopic\Cms\Panels\Root\Cms\Tools\Maintenance\Links;
-
-use Systopic\Db\Scope;
-use Systopic\System\Panels\PanelNode;
-
-/**
- * tools/maintenance/links — links in the page texts that lead nowhere:
- * inside ones on every visit, outside ones when the button asks the hosts.
- */
-class Panel extends PanelNode {
-
-	public Scope $scope {
-		get => Scope::default();
-	}
+class Panel extends \Systopic\System\Panels\PanelNode {
+    public function getNaviItem(): ?\htmlElement { return null; }
+    public function onLoad() {
+        if ($this->inPath()) \http::redirect(\http::$root . 'cms/tools/website/links/' . (($_SERVER['QUERY_STRING'] ?? '') !== '' ? '?' . $_SERVER['QUERY_STRING'] : ''));
+    }
 }

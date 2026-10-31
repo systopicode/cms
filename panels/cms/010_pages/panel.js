@@ -9,6 +9,17 @@
 		sys.lib.applyParentConstructor(this, setup, []);
 		var pagesModule = this; // internal instance name
 
+        pagesModule.reviewSiteRename = event => {
+            const section=event.element.closest('.siteRename');
+            const name=section.querySelector('input[name="siteName"]').value.trim().toLowerCase();
+            const previous=section.dataset.currentName;
+            if (!name || name === previous) return;
+            const review='Rename '+previous+' to '+name+'?\n\nThis updates the site record, renames sites/'+previous+'/ to sites/'+name+'/ and updates this machine’s links and host rules.\nOther installations and DNS are not changed.';
+            if (!window.confirm(review)) return;
+            event.data.values = Object.assign({}, event.data.values, {siteName:name});
+            event.executeAction('renameSite');
+        };
+
 		pagesModule.initFooterResize = function () {
 			c('called').open();
 		};
@@ -36,8 +47,15 @@
             treeUi.position = selectedPosition(initialActive);
         }
 		pagesModule.onUpdateTree = function () {
+            if (typeof closeAllMenus === 'function') closeAllMenus();
 			standIn && standIn.remove();
-			standIn = null;
+            standIn = null;
+            const foldFocus = treeUi.foldFocus;
+            delete treeUi.foldFocus;
+            if (foldFocus && performance.now() - foldFocus.time < 5000 &&
+                (document.activeElement === document.body || document.activeElement === foldFocus.element || document.activeElement?.dataset.focusId === foldFocus.id)) {
+                document.querySelector('a.fold[data-focus-id="' + CSS.escape(foldFocus.id) + '"]')?.focus({preventScroll:true});
+            }
 			var active = document.querySelector('.cms ul.tree li.active');
 			if (!active || typeof scrollTree !== 'function') {
 				return;
@@ -48,7 +66,7 @@
             var moved = treeUi.activeId === id && treeUi.position !== null && treeUi.position !== position;
             treeUi.activeId = id;
             treeUi.position = position;
-            if (selected || moved) scrollTree('instant', id, false);
+            if (selected || moved) scrollTree('smooth', id, false);
 		};
 
 		// iOS opens the keyboard only for a focus within the tap, not after the
@@ -142,7 +160,8 @@ document.addEventListener('click', function (event) {
 }, true);
 
 function changeSrc(src) {
-	$(".srcToChange").attr('src', src);
+	const fresh=new URL(src,location.href);fresh.searchParams.set('_preview',Date.now());
+	$(".srcToChange").attr('src',fresh.href);
 }
 
 function startCroping() {
@@ -217,3 +236,18 @@ document.addEventListener('click', function (event) {
 	}
 	stopFileMedia(closer.closest('.cmslightbox') || document);
 }, true);
+
+// Fold links have no navigation destination: expose their existing click action to keyboards.
+document.addEventListener('keydown', event => {
+    if (!event.target.matches?.('a.fold[role="button"]') || event.repeat || event.isComposing) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault(); event.target.focus({preventScroll:true});
+        sys.pagesTreeUi.foldFocus = {id:event.target.dataset.focusId, element:event.target, time:performance.now()};
+        event.target.click();
+    }
+});
+
+document.addEventListener('focusin', event => {
+    const pending = sys.pagesTreeUi?.foldFocus;
+    if (pending && event.target !== pending.element && event.target.dataset?.focusId !== pending.id) delete sys.pagesTreeUi.foldFocus;
+});

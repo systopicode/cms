@@ -110,7 +110,7 @@ class Panel extends CmsPanel {
 		}
 		$html .= '</dl>';
 		$html .= '<p class="hint">What a search engine and an AI read for this page. It is written from the fields above.</p>';
-		$html .= '<p class="hint"><a class="cmsTextLink" href="' . $e($root . 'sitemap.xml') . '" target="_blank" rel="noopener">sitemap.xml</a> lists the pages. <a class="cmsTextLink" href="' . $e($root . 'llms.txt') . '" target="_blank" rel="noopener">llms.txt</a> is that list in plain text, for an AI. Both are written when they are opened.</p>';
+		$html .= '<p class="hint"><a class="cmsTextLink cmsExternalLink" href="' . $e($root . 'sitemap.xml') . '" target="_blank" rel="noopener">sitemap.xml<i class="cmsIcon cmsIcon-arrow-up-right-from-square" aria-hidden="true"></i></a> lists the pages. <a class="cmsTextLink cmsExternalLink" href="' . $e($root . 'llms.txt') . '" target="_blank" rel="noopener">llms.txt<i class="cmsIcon cmsIcon-arrow-up-right-from-square" aria-hidden="true"></i></a> is that list in plain text, for an AI. Both are written when they are opened.</p>';
 		return $html;
 	}
 
@@ -124,7 +124,7 @@ class Panel extends CmsPanel {
 		$src = htmlspecialchars((string) $media->setFormat('shareImage')->src, ENT_QUOTES);
 		return "<img src='$src' alt=''><div class='dropActions'>"
 			. "<a class='ajax' href='editor/file/?target_id=$id&format=shareImage' title='Crop and adjust'><i class='cmsIcon cmsIcon-pen'></i></a>"
-			. "<button type='button' data-on_click='sidebar/resetShareImage' title='Use the site image' aria-label='Use the site image' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-trash'></i></button>"
+			. "<button type='button' data-on_click='sidebar/resetShareImage' title='Use the site image' aria-label='Use the site image' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-arrow-rotate-left'></i></button>"
 			. "</div>";
 	}
 

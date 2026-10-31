@@ -21,7 +21,7 @@
 			<?php if ($this->done) { ?>
 				<a class="ajax button" href="<?= htmlspecialchars($back, ENT_QUOTES) ?>"><i class="cmsIcon cmsIcon-check"></i>Ok</a>
 			<?php } else { ?>
-				<a class='button submit' data-on_click='delete'><i class="cmsIcon cmsIcon-trash"></i>Delete Setting</a>
+				<button type="button" data-cms-action class='button submit' data-on_click='delete'><i class="cmsIcon cmsIcon-trash"></i>Delete Setting</button>
 			<?php } ?>
 		</footer>
 	</section>

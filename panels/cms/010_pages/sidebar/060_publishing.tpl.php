@@ -16,14 +16,14 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 		<label class="checkbox">
 			<span>Navi element</span>
 			<input type=checkbox class=switch data-on_change='sidebar/updateParam'
-				   name=is_navi_element <?php if ($row->isNaviElement) { ?> checked='checked' <?php } ?> />
+				   <?= \Systopic\Cms\Pages\FieldVersion::attributes($page, 'is_navi_element') ?> name=is_navi_element <?php if ($row->isNaviElement) { ?> checked='checked' <?php } ?> />
 			<div>
 				<div></div>
 			</div>
 		</label>
 		<label class="checkbox"><span>Published</span><input data-on_change='sidebar/updateParam'
 															 type="checkbox" <?php if ($row->isPublished) { ?> checked='checked' <?php } ?>
-															 value='1' name='is_published' class="switch tinyswitch"/>
+															 value='1' <?= \Systopic\Cms\Pages\FieldVersion::attributes($page, 'is_published') ?> name='is_published' class="switch tinyswitch"/>
 			<div>
 				<div></div>
 			</div>
@@ -39,14 +39,14 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 		$endPublishing = $datetime($row->endPublishing);
 		?>
 		<div class="inputGroup">
-			<input name="start_publishing" placeholder=' ' type="datetime-local"
-				   data-on_change='sidebar/updateParam' class="date" value="<?= $startPublishing ?>"
+			<input <?= \Systopic\Cms\Pages\FieldVersion::attributes($page, 'start_publishing') ?> name="start_publishing" placeholder=' ' type="datetime-local"
+				   data-on_blur='sidebar/updateParam' class="date" value="<?= $startPublishing ?>"
 				   autocomplete="off"/>
 			<span class="bar"></span>
 			<label>Publishing start</label>
 		</div>
 		<div class="inputGroup">
-			<input name="end_publishing" placeholder=' ' type="datetime-local" data-on_change='sidebar/updateParam'
+			<input <?= \Systopic\Cms\Pages\FieldVersion::attributes($page, 'end_publishing') ?> name="end_publishing" placeholder=' ' type="datetime-local" data-on_blur='sidebar/updateParam'
 				   class="date" value="<?= $endPublishing ?>" autocomplete="off"/>
 			<span class="bar"></span>
 			<label>Publishing end</label>
@@ -54,25 +54,25 @@ $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:
 	</li>
 	<?php if (!$page->isAlias && !$page->node->isTrashed) { ?>
 		<li title="Delete Page" >
-			<a data-confirm="Remove this page in every language, including children?"
+			<button type="button" data-cms-action data-confirm="Remove this page in every language, including children?"
 			   class="sideAction quietAction"
 			   data-on_click="userConfirm"
 			   data-action="deletePage"
 			   data-node_id="<?= $page->id ?>">
 				<i class="cmsIcon cmsIcon-trash"></i>
 				Remove page
-			</a>
+			</button>
 		</li>
 	<?php } elseif ($page->node->isTrashed) { ?>
 		<li title="Recover Page" >
-			<a data-confirm="Restore this page in every language, including children?"
+			<button type="button" data-cms-action data-confirm="Restore this page in every language, including children?"
 			   class="sideAction quietAction"
 			   data-on_click="userConfirm"
 			   data-action="recoverPage"
 			   data-node_id="<?= $page->id ?>">
 				<i class="cmsIcon cmsIcon-arrow-rotate-left"></i>
 				Restore page
-			</a>
+			</button>
 		</li>
 	<?php } ?>
 </ul>

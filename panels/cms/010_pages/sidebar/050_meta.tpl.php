@@ -19,17 +19,17 @@ $robots = [
     <li class="seperator">Description</li>
     <li>
 		<p class="hint">Search results and shares. Empty uses the first sentence on the page.</p>
-		<textarea rows="3" data-on_input='sidebar/updateParam' autocomplete='off'
-				  data-node_id="<?= $page->id ?>" maxlength="160" type="text"
-				  name="meta_description"><?= $e($row->metaDescription) ?></textarea>
+		<textarea aria-label="Description" rows="3" data-on_blur='sidebar/updateParam' autocomplete='off'
+				  maxlength="160" type="text"
+				  <?= \Systopic\Cms\Pages\FieldVersion::attributes($page, 'meta_description') ?> name="meta_description"><?= $e($row->metaDescription) ?></textarea>
 		<small><span><?= mb_strlen((string) $row->metaDescription) ?></span> / 160</small>
     </li>
     <li class="seperator">Share title</li>
     <li>
 		<p class="hint"><?= PAGE_TITLE_SEPERATOR ?> <?= PUBLIC_PAGE_NAME ?> is added after this.</p>
 		<input  data-on_blur='sidebar/updateParam' autocomplete='off'
-				class="ajax countSigns" maxlength="100" type="text"
-				name="meta_share_title" value="<?= $e($row->metaShareTitle) ?>" />
+				aria-label="Share title" class="ajax countSigns" maxlength="100" type="text"
+				<?= \Systopic\Cms\Pages\FieldVersion::attributes($page, 'meta_share_title') ?> name="meta_share_title" value="<?= $e($row->metaShareTitle) ?>" />
 		<small><span><?= mb_strlen((string) $row->metaShareTitle) ?></span> / 100</small>
     </li>
 	<li class="seperator">Share image</li>
@@ -38,10 +38,10 @@ $robots = [
 	</li>
 	<li class="seperator">Robots</li>
     <li>
-		<select data-on_change='sidebar/updateParam'
+		<select aria-label="Robots" data-on_change='sidebar/updateParam'
 				 autocomplete='off'
 				 class="ajax"
-				 name="meta_robots">
+				 <?= \Systopic\Cms\Pages\FieldVersion::attributes($page, 'meta_robots') ?> name="meta_robots">
 					 <?php
 					 foreach ($robots as $robots => $label) {
 						 $selected = $row->metaRobots === $robots ? 'selected' : '';

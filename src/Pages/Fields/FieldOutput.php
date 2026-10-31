@@ -64,27 +64,40 @@ final class FieldOutput
         $page = $field->page();
         $dataAttrs = \html::arrayToDataAttr([
             'field'        => $field->name,
+            'field_version' => hash('sha256', (string) $field->value),
             'node_id'      => $page->id,
             'language_iso' => $page->language,
         ]);
         $class = 'editor plaintext';
         $tagLabel = $field->editorLabelText ?? '';
+        $fieldName = htmlspecialchars(self::accessibleName($field), ENT_QUOTES, 'UTF-8');
         $value = (string) $field->value;
         switch ($field->tag) {
             case 'input':
-                return "<div class='$class' $dataAttrs data-on_input='updateTextfield' data-editorLabel='$tagLabel'><input autocomplete=off name={$field->name} value='$value'/></div>";
+                return "<div class='$class' $dataAttrs data-editorLabel='$tagLabel'><input aria-label='$fieldName' data-on_blur='updateTextfield' autocomplete=off name={$field->name} value='$value'/></div>";
             case '':
             case null:
             case 'textarea':
-                return "<div class='$class' $dataAttrs data-on_input='updateTextfield'><textarea name={$field->name} value='$value'>$value</textarea></div>";
+                return "<div class='$class' $dataAttrs><textarea aria-label='$fieldName' data-on_blur='updateTextfield' name={$field->name} value='$value'>$value</textarea></div>";
             default:
                 // The field is the block. The chip names that block, unless the
                 // template set its own label.
                 if ($tagLabel === '') {
                     $tagLabel = self::blockChip((string) $field->tag);
                 }
-                return "<{$field->tag} class='$class' $dataAttrs data-editorLabel='$tagLabel' data-on_input='updatePageParam' contenteditable='true'>$value</{$field->tag}>";
+                return "<{$field->tag} class='$class' $dataAttrs data-editorLabel='$tagLabel' aria-label='$fieldName' role='textbox' aria-multiline='true' data-on_blur='updatePageParam' contenteditable='true'>$value</{$field->tag}>";
         }
+    }
+
+    private static function accessibleName(TextField $field): string
+    {
+        $label = trim((string) ($field->editorLabelText ?? ''));
+        if ($label !== '') return $label;
+        if ($field->name === 'label') return 'Page title';
+        if (preg_match('/^(html|text)([0-9]+)$/', $field->name, $match)) {
+            return ($match[1] === 'html' ? 'Rich text ' : 'Text ') . (int) $match[2];
+        }
+        return ucfirst(str_replace('_', ' ', $field->name));
     }
 
     /** The chip of a plain text field: the same names as a block in a text field. */
@@ -111,10 +124,11 @@ final class FieldOutput
         $fieldContent = $field->editorContent;
         $classes = ['editor'];
         $editableAttributes = \html::arrayToDataAttr([
-            'on_input'              => 'updatePageParam',
+            'on_blur'               => 'updatePageParam',
             'on_drop'               => 'insertItemInEditor',
             'drop_accept'           => 'media page',
             'field'                 => $field->name,
+            'field_version'         => hash('sha256', (string) $field->value),
             'node_id'               => $page->id,
             'node_original_node_id' => $page->node->relationId('originalNode'),
             'language_iso'          => $page->language,
@@ -136,6 +150,7 @@ final class FieldOutput
             $classes[] = 'empty';
         }
         $tagLabel = $field->editorLabelText ?? '';
-        return "<div$editableAttributes data-editorLabel='$tagLabel' class='" . implode(' ', $classes) . "'>$fieldContent</div>";
+        $fieldName = htmlspecialchars(self::accessibleName($field), ENT_QUOTES, 'UTF-8');
+        return "<div$editableAttributes role='textbox' aria-multiline='true' aria-keyshortcuts='Alt+F10' aria-label='$fieldName' data-editorLabel='$tagLabel' class='" . implode(' ', $classes) . "'>$fieldContent</div>";
     }
 }

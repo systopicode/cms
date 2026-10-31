@@ -23,19 +23,20 @@ $format = ((int) $row->width > 0 && (int) $row->height > 0)
 	: $size;
 ?>
 <aside class="cms">
+
 	<div class="flexContainer">
 		<div class="scrollContainer">
 			<div class="scrollContainerContent" data-node_id="<?= (int) $this->targetId ?>">
 				<details class="sidebarSection" data-section="media-file" open>
-					<summary>File</summary>
+					<summary><span class="sidebarLabel">File</span><span class="sidebarTools"><i class="cmsIcon cmsIcon-chevron-down sidebarFold" aria-hidden="true"></i></span></summary>
 					<div class="sidebarItem">
 						<div class="inputGroup">
-							<input data-on_input="updateMediaLabel" spellcheck="off" type="text" name="label" value="<?= $e($row->label) ?>">
+							<input aria-label="Label" data-on_blur="updateMediaLabel" spellcheck="off" type="text" name="label" value="<?= $e($row->label) ?>">
 							<span class="bar"></span>
 							<label>Label</label>
 						</div>
 						<div class="inputGroup">
-							<input data-on_blur="updateFilename" spellcheck="off" type="text" name="filename" value="<?= $e($row->filename) ?>" autocomplete="off" enterkeyhint="done">
+							<input aria-label="File name, the ending stays" data-on_blur="updateFilename" spellcheck="off" type="text" name="filename" value="<?= $e($row->filename) ?>" autocomplete="off" enterkeyhint="done">
 							<span class="bar"></span>
 							<label>File name, the ending stays</label>
 						</div>
@@ -54,8 +55,15 @@ $format = ((int) $row->width > 0 && (int) $row->height > 0)
 						?>
 					</div>
 				</details>
-				<details class="sidebarSection" data-section="media-details" open>
-					<summary>Details</summary>
+				<?php
+$usageScope = $this->pages()->scope;
+$usageNode = $this->targetId;
+$usageMedia = (int) $row->id;
+$usageHref = $this->pages()->href;
+include dirname(__DIR__, 2) . '/media-usage.tpl.php';
+?>
+<details class="sidebarSection" data-section="media-details" open>
+					<summary><span class="sidebarLabel">Details</span><span class="sidebarTools"><i class="cmsIcon cmsIcon-chevron-down sidebarFold" aria-hidden="true"></i></span></summary>
 					<div class="sidebarItem">
 						<dl class="cmsFacts">
 							<?php if ($created = $when($row->createdDate, $row->createdUser?->fullname)) { ?>
@@ -81,8 +89,9 @@ $format = ((int) $row->width > 0 && (int) $row->height > 0)
 						</dl>
 					</div>
 				</details>
+
 				<details class="sidebarSection" data-section="media-tags" open>
-					<summary>Tags</summary>
+					<summary><span class="sidebarLabel">Tags</span><span class="sidebarTools"><i class="cmsIcon cmsIcon-chevron-down sidebarFold" aria-hidden="true"></i></span></summary>
 					<div class="sidebarItem">
 						<?php $this->withView('tags'); ?>
 					</div>

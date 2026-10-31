@@ -28,7 +28,8 @@ $formatBase = rtrim((string) http::$root, '/') . '/';
 			$ready = is_file(\fs::toNative((string) \fs::$siteRoot . $rel));
 			$posterReady = is_file(\fs::toNative((string) \fs::$siteRoot . $posterRel));
 			$width = (int) ($config['max_width'] ?? 0);
-			$label = $width > 0 ? $name . ' (' . $width . ' px)' : (string) $name;
+			$label = mediaFormats::label((string) $name, $config);
+			$label = $width > 0 ? $label . ' (' . $width . ' px)' : $label;
 			?>
 			<option value="<?= $e($url) ?>" data-format="<?= $e($name) ?>" data-ready="<?= $ready ? '1' : '0' ?>" data-poster="<?= $e($posterUrl) ?>" data-poster-ready="<?= $posterReady ? '1' : '0' ?>"><?= $e($label) ?></option>
 		<?php } ?>

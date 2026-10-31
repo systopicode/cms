@@ -10,11 +10,11 @@
     color: var(--cmsSubText);
 }
 
-.settingCrumbs a{
+.settingCrumbs :is(a, button:where([data-cms-action])){
     color: var(--cmsSubText);
 }
 
-.settingCrumbs a:hover{
+.settingCrumbs :is(a, button:where([data-cms-action])):hover{
     color: var(--cmsTextColor);
 }
 

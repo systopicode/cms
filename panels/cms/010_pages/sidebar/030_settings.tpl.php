@@ -55,12 +55,13 @@ foreach ($definitions as $definition) {
 		continue;
 	}
 	$firstOption = $definition->options[0] ?? null;
+    $settingVersion = static fn(int $field, array $ids): string => \Systopic\Cms\Pages\SettingVersion::attributes($page, $field, $ids);
 
 	switch ($definition->type) {
 		case 'select':
 			echo "<h4>{$definition->label}</h4>";
 			echo "<select name='item_node_id' data-on_change='sidebar/updateSelect'"
-				. " data-node_id='$pageNodeId' data-node_parent_node_id='{$definition->nodeId}'>";
+				. ' ' . $settingVersion((int) $definition->nodeId, array_map(static fn($option)=>(int) $option->nodeId, $definition->options)) . " data-node_parent_node_id='{$definition->nodeId}'>";
 			echo "<option>---</option>";
 			foreach ($definition->options as $option) {
 				// Gewaehlt ist, worauf eine Junction-Zeile zeigt — der Wert
@@ -88,7 +89,7 @@ foreach ($definitions as $definition) {
 			echo "<div class='checkboxContainer'><label class='checkbox'>";
 			echo "<span><b>{$definition->label}</b></span>";
 			echo "<input data-on_change='sidebar/updateValue' type='checkbox'"
-				. " data-setting_node_id='$itemNodeId' $checked value='$value' name='$name'"
+				. ' ' . $settingVersion((int) $itemNodeId, [(int) $itemNodeId]) . " data-setting_node_id='$itemNodeId' $checked value='$value' name='$name'"
 				. " class='switch tinyswitch'>";
 			echo "<div><div></div></div></label></div>";
 			break;
@@ -98,8 +99,8 @@ foreach ($definitions as $definition) {
 			// Wert zeigen, der ohne Zutun gilt.
 			$itemNodeId = $firstOption?->nodeId ?? '';
 			echo "<h4>{$definition->label}</h4>";
-			echo "<input data-on_input='sidebar/updateValue' value='{$values->value($definition->name)}'"
-				. " type='text' name='{$definition->name}' data-setting_node_id='$itemNodeId'  >";
+			echo "<input data-on_blur='sidebar/updateValue' value='{$values->value($definition->name)}'"
+				. ' ' . $settingVersion((int) $itemNodeId, [(int) $itemNodeId]) . " type='text' name='{$definition->name}' data-setting_node_id='$itemNodeId'  >";
 			break;
 
 		case 'group':
@@ -107,7 +108,7 @@ foreach ($definitions as $definition) {
 			// Gruppe von einem einzelnen Feld unterscheidbar.
 			echo "<section class='settingGroup'>";
 			echo "<h4>{$definition->label}</h4>";
-			echo "<div data-on_input='sidebar/updateValue' data-node_id=$pageNodeId>";
+			echo "<div data-node_id=$pageNodeId>";
 			foreach ($definition->options as $option) {
 				$itemValue = $values->junction($option->nodeId) === null
 					? ''
@@ -117,7 +118,7 @@ foreach ($definitions as $definition) {
 					);
 				echo "<label data-setting_node_id={$option->nodeId} >";
 				echo $option->label;
-				echo "<input name={$option->name} value=$itemValue>";
+				echo "<input data-on_blur='sidebar/updateValue' " . $settingVersion((int) $option->nodeId, [(int) $option->nodeId]) . " name={$option->name} value=$itemValue>";
 				echo "</label>";
 			}
 			echo '</div></section>';

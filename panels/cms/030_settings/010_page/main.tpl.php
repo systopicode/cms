@@ -68,9 +68,9 @@ $addLabel = match ($parentType) {
 <section class="widget pageSettings">
 	<header>
 		<h2><?= $e($card) ?></h2>
-		<a class="button submit" data-on_click="add" data-id="<?= $addId ?>">
+		<button type="button" data-cms-action class="button submit" data-on_click="add" data-id="<?= $addId ?>">
 			<i class="cmsIcon cmsIcon-plus"></i><span><?= $e($addLabel) ?></span>
-		</a>
+		</button>
 	</header>
 	<?php if ($this->rows === []) { ?>
 		<main><p>Nothing here yet.</p></main>

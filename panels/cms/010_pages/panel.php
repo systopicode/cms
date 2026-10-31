@@ -542,19 +542,45 @@ class Panel extends CmsPanel {
 	function updateField(int $nodeId, ?string $lang, string $field, mixed $value): bool {
 		$page = $this->pageIn($nodeId, $lang);
 		if ($page?->row === NULL || $value === NULL) {
+            \message::error('This field could not be saved. Reload the page and try again.');
 			return FALSE;
 		}
 		try {
 			// the editor sends urls with the reference beside them - store the reference
 			$value = \Systopic\Cms\Refs\Resolver::normalize(ltrim((string) $value, "\r\n"));
-			PageOperator::assign($page->row, $field, $value);
+			if (PageOperator::propertyOf($field) === null) throw new \InvalidArgumentException('Unknown page field.');
 		} catch (\InvalidArgumentException $e) {
 			\message::error($e->getMessage());
 			return FALSE;
 		}
-		PageOperator::touch($page->row, $this->userId());
-		$this->uow()->persist($page->row)->commit();
-		return TRUE;
+        $expected = (string) \http::dataset('field_version', \http::post('field_version', ''));
+        try {
+            $this->uow()->persist($page->row)->commit(function ($connection) use ($page, $field, $value, $expected): void {
+                // Compare and write under one row lock; live updates are
+                // published by the UoW only after the transaction commits.
+                $current = $connection->value('SELECT `page_' . $field . '` FROM cms_pages WHERE page_id = ? FOR UPDATE', [$page->row->id]);
+                // Merely opening/leaving a field is not a content change. In
+                // particular, do not touch its timestamp and broadcast a new
+                // revision to every editor for an unchanged blur-save.
+                if ((string) $current === (string) $value) return;
+                if ($expected !== '' && !hash_equals(hash('sha256', (string) $current), $expected) && (string) $current !== (string) $value) {
+                    throw new \Systopic\Cms\Pages\EditConflict(hash('sha256', (string) $current));
+                }
+                PageOperator::assign($page->row, $field, $value);
+                PageOperator::touch($page->row, $this->userId());
+            });
+        } catch (\Systopic\Cms\Pages\EditConflict $conflict) {
+            \client::callFunction('pageEditConflict', [$nodeId, $lang ?? $page->language, $field, $conflict->getMessage(), \Systopic\Cms\Pages\FieldVersion::latestMetadata($this->scope->connection, (int) $page->row->id)]);
+            \message::error('This field was changed in another editor. Your changes have not been overwritten.');
+            return false;
+        }
+        $property = PageOperator::propertyOf($field);
+        $saved = $page->row->{$property};
+        if ($saved instanceof \DateTimeInterface) $saved = $saved->format('Y-m-d H:i:s');
+        elseif (is_bool($saved)) $saved = $saved ? '1' : '0';
+        else $saved = (string) $value;
+        \client::callFunction('pageEditorVersion', [$nodeId, $lang ?? $page->language, $field, hash('sha256', (string) $saved), true]);
+        return true;
 	}
 
 	/**

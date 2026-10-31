@@ -379,11 +379,13 @@ final class PageTree implements Stringable
     private function foldIcon(int $id, bool $hasChildren, bool $open): string
     {
         if (!$hasChildren) {
-            return "<a class='fold leaf'></a>";
+            return "<a class='fold leaf' aria-hidden='true'></a>";
         }
         $icon = $open ? 'cmsIcon-chevron-down' : 'cmsIcon-chevron-right';
         $openClass = $open ? ' open' : '';
-        return "<a data-on_click=fold data-id=$id class='fold$openClass'><i class='cmsIcon $icon'></i></a>";
+        $label = $open ? 'Hide child pages' : 'Show child pages';
+        $expanded = $open ? 'true' : 'false';
+        return "<a data-on_click=fold data-id=$id class='fold$openClass' data-focus-id='page-fold-$id' role='button' tabindex='0' aria-expanded='$expanded' title='$label' aria-label='$label'><i class='cmsIcon $icon' aria-hidden='true'></i></a>";
     }
 
     private const ALIAS_ICON = '<i class="cmsIcon cmsIcon-file-import"></i>';
@@ -409,15 +411,15 @@ final class PageTree implements Stringable
         $typeIcon = $entry->hasChildren ? 'cmsIcon-folder' : 'cmsIcon-file';
         $icon = "<i class='type cmsIcon $typeIcon'></i>";
         if ($entry->edit) {
-            return $icon
+            return "<span class='treeLabelEdit'>" . $icon
                 . "<span class='label' data-on_blur='updateLabel' data-on_keypress='checkKey' contenteditable='plaintext-only'>"
-                . htmlentities($text) . '</span>';
+                . htmlentities($text) . '</span></span>';
         }
-        $title = ' title="' . $entry->ordering . '"';
-        return "<a class='label ajax' href='./?id={$entry->id}' data-on_contextmenu='getTreeContextmenu'$title>"
+        $title = ' title="' . $entry->ordering . '" aria-label="' . htmlspecialchars($text === '' ? 'Untitled page' : $text, ENT_QUOTES) . '"';
+        return "<button type='button' class='label ajax' data-href='./?id={$entry->id}' data-on_contextmenu='getTreeContextmenu'$title>"
             . $icon
             . ($text === '' ? '- - - -' : htmlentities($text))
-            . '</a>';
+            . '</button>';
     }
 
     private function referenceIcons(PageTreeNode $entry): string
@@ -434,14 +436,14 @@ final class PageTree implements Stringable
             $html .= "<a title='Show aliases' aria-label='Show aliases' class='ajax aliasConnections' href='./?id={$entry->id}&amp;relations=aliases'>" . self::ALIAS_ICON . '</a>';
         }
         if (!$entry->isPublished) {
-            $html .= "<a class='unpublished' title='Hidden - click to publish' data-on_click='publish?id={$entry->id}'>"
-                . "<i class='cmsIcon cmsIcon-eye-slash'></i></a>";
+            $html .= "<button type='button' data-cms-action class='unpublished' title='Hidden - click to publish' data-on_click='publish?id={$entry->id}'>"
+                . "<i class='cmsIcon cmsIcon-eye-slash'></i></button>";
         }
         if ($entry->isTrashed) {
-            $html .= "<a  data-action='recoverPage' data-on_click='userConfirm'"
+            $html .= "<button type='button' data-cms-action  data-action='recoverPage' data-on_click='userConfirm'"
                 . " data-confirm='All langauges, children and versions will be recoverd!'"
                 . " title='Recover Page' class='ajax'  data-node_id='{$entry->id}'>"
-                . "<i class='cmsIcon cmsIcon-arrow-rotate-left'></i></a>";
+                . "<i class='cmsIcon cmsIcon-arrow-rotate-left'></i></button>";
         }
         return $html;
     }

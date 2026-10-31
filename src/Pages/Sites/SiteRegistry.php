@@ -168,10 +168,10 @@ final class SiteRegistry
     {
         $name = strtolower(trim($name));
         if (!self::validName($name)) {
-            throw new RuntimeException("'$name' ist kein Domainname mit TLD (z. B. beautiful-technology.de).");
+            throw new RuntimeException("'$name' is not a domain with an extension (for example example.com).");
         }
         if (self::byName($scope, $name) !== null) {
-            throw new RuntimeException("Die Site '$name' gibt es schon.");
+            throw new RuntimeException("Site '$name' already exists.");
         }
 
         $site = new Site();
@@ -226,13 +226,13 @@ final class SiteRegistry
     {
         $nodeId = $site->relationId('node');
         if ($nodeId === null) {
-            throw new RuntimeException('Die Default-Site kann nicht entfernt werden.');
+            throw new RuntimeException('The default site cannot be removed.');
         }
         // every child counts, trashed ones too: the site node cannot go while
         // anything still points at it
         $children = count(NodeChildren::of($scope, $nodeId));
         if ($children > 0) {
-            throw new RuntimeException("Unter '{$site->name}' hängen noch $children Seiten — erst verschieben oder löschen.");
+            throw new RuntimeException("Site '{$site->name}' still has $children pages. Move or remove them first.");
         }
         $node = $site->node;
         $scope->remove($site);   // first the row that points at the node
@@ -266,17 +266,17 @@ final class SiteRegistry
             return [];
         }
         if (!self::validName($newName)) {
-            throw new RuntimeException("'$newName' ist kein Domainname mit TLD (z. B. beautiful-technology.de).");
+            throw new RuntimeException("'$newName' is not a domain with an extension (for example example.com).");
         }
         if (self::byName($scope, $newName) !== null) {
-            throw new RuntimeException("Die Site '$newName' gibt es schon.");
+            throw new RuntimeException("Site '$newName' already exists.");
         }
 
         $root = rtrim(str_replace('\\', '/', $projectRoot ?? (string) \fs::$projectRoot), '/');
         $oldDir = \fs::toNative("$root/sites/$oldName");
         $newDir = \fs::toNative("$root/sites/$newName");
         if (is_dir($newDir)) {
-            throw new RuntimeException("Der Ordner sites/$newName/ gibt es schon.");
+            throw new RuntimeException("Folder sites/$newName/ already exists.");
         }
 
         // the links of this machine: the site's path entries now, and the
@@ -300,15 +300,15 @@ final class SiteRegistry
         $log = [];
         if (is_dir($oldDir)) {
             if (!@rename($oldDir, $newDir)) {
-                throw new RuntimeException("Ordner sites/$oldName/ konnte nicht umbenannt werden.");
+                throw new RuntimeException("Folder sites/$oldName/ could not be renamed.");
             }
-            $log[] = "Ordner sites/$oldName/ → sites/$newName/";
+            $log[] = "Folder sites/$oldName/ → sites/$newName/";
         }
         foreach ($links as $from => $to) {
             if (\Systopic\System\Config\SiteLinks::isLinkTo($from, $target)) {
                 $log[] = "Link $from → $to: " . \Systopic\System\Config\SiteLinks::move($from, $to, $target);
             } elseif (file_exists($from)) {
-                $log[] = "$from ist kein Link, sondern ein Ordner — bleibt";
+                $log[] = "$from is a directory, not a link; kept unchanged";
             }
         }
 
@@ -322,7 +322,7 @@ final class SiteRegistry
     {
         $decoded = json_decode($json, true);
         if (!is_array($decoded)) {
-            throw new RuntimeException('Meta ist kein gültiges JSON-Objekt: ' . json_last_error_msg());
+            throw new RuntimeException('Metadata is not a valid JSON object: ' . json_last_error_msg());
         }
         $site->meta = new Text(json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         $scope->save($site);
@@ -346,14 +346,14 @@ final class SiteRegistry
                 continue;
             }
             if (!self::validName($domain)) {
-                throw new RuntimeException("'$domain' ist kein Domainname mit TLD.");
+                throw new RuntimeException("'$domain' is not a domain with an extension.");
             }
             if ($domain === $site->name) {
-                throw new RuntimeException("'$domain' ist der Name der Site selbst.");
+                throw new RuntimeException("'$domain' is the site's own domain.");
             }
             foreach (self::all($scope) as $other) {
                 if ($other !== $site && ($other->name === $domain || in_array($domain, $other->aliasList, true))) {
-                    throw new RuntimeException("'$domain' gehört schon zur Site {$other->name}.");
+                    throw new RuntimeException("'$domain' already belongs to site {$other->name}.");
                 }
             }
             $aliases[] = $domain;
@@ -412,7 +412,7 @@ final class SiteRegistry
             $native = \fs::toNative($dir);
             if (!is_dir($native)) {
                 if (!@mkdir($native, 0775, true) && !is_dir($native)) {
-                    throw new RuntimeException("Ordner '$dir' konnte nicht angelegt werden.");
+                    throw new RuntimeException("Folder '$dir' could not be created.");
                 }
                 $created[] = $dir;
             }

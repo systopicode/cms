@@ -37,6 +37,8 @@ main > div.content > article {
 	cursor: row-resize;
 }
 
+.cmslightbox.metaDefaults { --cmsMuted:color-mix(in srgb, var(--cmsTextColor) 80%, var(--cmsCanvas)); }
+
 .cmslightbox.metaDefaults > section{
 	width: min(32rem, 100%);
 	min-width: 0;
@@ -174,7 +176,14 @@ main > div.content > article {
 		margin-bottom: 0.6rem;
 		border-bottom: 1px solid var(--cmsLine);
 
-		a{
+		button:where(:not([data-cms-action])){
+			appearance: none;
+			background: transparent;
+			border: 0;
+			border-radius: 0;
+			box-shadow: none;
+			min-height: 0;
+			font-family: inherit;
 			margin-bottom: -1px;
 			padding: 0.35rem 0;
 			border-bottom: 2px solid transparent;
@@ -184,11 +193,11 @@ main > div.content > article {
 			cursor: pointer;
 		}
 
-		a:hover{
+		button:where(:not([data-cms-action])):hover{
 			color: var(--cmsTextColor);
 		}
 
-		a[aria-selected=true]{
+		button:where(:not([data-cms-action]))[aria-selected=true]{
 			border-bottom-color: var(--cmsHighlightColor);
 			font-weight: 600;
 			color: var(--cmsTextColor);
@@ -215,7 +224,7 @@ main > div.content > article {
 		overscroll-behavior: contain;
 	}
 
-	:is(.linkPages, .linkFiles) button{
+	:is(.linkPages, .linkFiles) button:where(:not([data-cms-action])){
 		margin: 0;
 		border: 1px solid transparent;
 		background: none;
@@ -224,16 +233,16 @@ main > div.content > article {
 		cursor: pointer;
 	}
 
-	:is(.linkPages, .linkFiles) button:hover{
+	:is(.linkPages, .linkFiles) button:where(:not([data-cms-action])):hover{
 		background: var(--cmsHover);
 	}
 
-	:is(.linkPages, .linkFiles) button.selected{
+	:is(.linkPages, .linkFiles) button:where(:not([data-cms-action])).selected{
 		border-color: var(--cmsHighlightColor);
 		background: var(--cmsSelected);
 	}
 
-	.linkPages button{
+	.linkPages button:where(:not([data-cms-action])){
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
@@ -279,6 +288,8 @@ main > div.content > article {
 			justify-content: center;
 			width: 100%;
 			aspect-ratio: 1;
+            height: auto;
+            flex: 0 0 auto;
 			border-radius: calc(var(--cmsRadius) - 2px);
 			background: var(--cmsBgColor);
 			font-size: 1.5rem;
@@ -292,6 +303,8 @@ main > div.content > article {
 			width: calc(100% - 0.6rem);
 			object-fit: cover;
 		}
+
+        button > i { background: #fff; color: #626b70; }
 
 		span{
 			width: 100%;
@@ -313,8 +326,8 @@ main > div.content > article {
 .pageRelations .relationSearch label { display: block; }
 .pageRelations .relationSearch input { width: 100%; margin-top: 0.35rem; }
 .pageRelations .relationResults { margin: 0; padding: 0; }
-.pageRelations .relationResults button { display: flex; align-items: center; gap: 0.5rem; width: 100%; min-height: 2.5rem; padding: 0.45rem; text-align: left; border-radius: var(--cmsRadius); background: transparent; }
-.pageRelations .relationResults button:hover { background: var(--cmsHover); }
+.pageRelations .relationResults button:where(:not([data-cms-action])) { display: flex; align-items: center; gap: 0.5rem; width: 100%; min-height: 2.5rem; padding: 0.45rem; text-align: left; border-radius: var(--cmsRadius); background: transparent; }
+.pageRelations .relationResults button:where(:not([data-cms-action])):hover { background: var(--cmsHover); }
 .pageRelations .relationIncoming li { padding-block: 0.25rem; }
 
 .pageRelations .relationLink { display: flex; align-items: start; gap: .5rem; padding-block: .3rem; }
@@ -325,7 +338,7 @@ main > div.content > article {
 .pageRelations .relationResults { list-style: none; }
 
 
-.contextmenu .iconOnly a { position: relative; }
+.contextmenu .iconOnly :is(a, button:where([data-cms-action])) { position: relative; }
 
 .pageRelations :is(i.alias, .alias > i) { color: var(--cmsAlias); }
 .pageRelations :is(i.redirect, .redirect > i) { color: var(--cmsRedirect); }
@@ -339,7 +352,7 @@ main > div.content > article {
 .pageRelations .relationLink small { text-decoration: none; font-weight: 400; }
 
 
-.cms .contextmenu a.removeAlias i { color: var(--cmsMainColor); }
+.cms .contextmenu :is(a, button:where([data-cms-action])).removeAlias i { color: var(--cmsMainColor); }
 aside.cms .pageRelations .relationSearch { margin-top: .6rem; }
 aside.cms .pageRelations .relationSearch label { font-size: .75rem; color: var(--cmsMuted); }
 
@@ -355,7 +368,7 @@ aside.cms .pageRelations > .relationBlock + .relationBlock { border-top: 1px sol
 
 
 /* The eye's knockout follows the surface of its action in every state. */
-.cms :is(.contextmenu, aside) a:is(:hover, :focus-visible, :active) .layerEyeIcon { --layerEyeBg: var(--cmsHover); }
+.cms :is(.contextmenu, aside) :is(a, button:where([data-cms-action])):is(:hover, :focus-visible, :active) .layerEyeIcon { --layerEyeBg: var(--cmsHover); }
 aside.cms .sideActions .sideAction { background: transparent; padding-inline: .3rem; }
 aside.cms .sideActions .sideAction .layerEyeIcon { --layerEyeBg: var(--cmsCanvas); }
 aside.cms .sideActions .sideAction:is(:hover, :focus-visible, :active) { background: var(--cmsHover); }
@@ -378,7 +391,7 @@ aside.cms .sideAction:is(:hover, :focus-visible, :active) .layerEyeIcon { --laye
 .cmslightbox.relationsHelp h2 .cmsIcon-file-import { color: var(--cmsAlias); }
 .cmslightbox.relationsHelp h2 .cmsIcon-route { color: var(--cmsRedirect); }
 
-aside.cms :is(a, button).quietAction { display: flex; align-items: center; gap: .5rem; width: 100%; min-height: var(--cmsControl); margin: .35rem 0 0; padding: .35rem .3rem; border: 0; background: transparent; color: var(--cmsTextColor); font-size: .8125rem; font-weight: 500; text-decoration: none; }
+aside.cms :is(:is(a, button:where([data-cms-action])), button:where(:not([data-cms-action]))).quietAction { display: flex; align-items: center; gap: .5rem; width: 100%; min-height: var(--cmsControl); margin: .35rem 0 0; padding: .35rem .3rem; border: 0; background: transparent; color: var(--cmsTextColor); font-size: .8125rem; font-weight: 500; text-decoration: none; }
 aside.cms .quietAction:hover { background: var(--cmsHover); }
 aside.cms .releaseFields > li { margin: 0 0 .75rem; }
 aside.cms .releaseFields > li:last-child { margin-bottom: 0; }
@@ -386,29 +399,27 @@ aside.cms .releaseFields .sideActions { gap: .15rem; margin-top: .5rem; }
 aside.cms .releaseFields .sideActions .sideAction { margin: 0; }
 aside.cms .releaseFields .inputGroup + .inputGroup { margin-top: .65rem; }
 
-aside.cms a.previewAction { background: var(--cmsButtonBg); }
-.cms ul.tree label > a.aliasConnections, .cms ul.tree label > a.aliasConnections i { color: var(--cmsSubText); }
-.cms ul.tree li.active > label a.aliasConnections,
-.cms ul.tree li.active > label a.aliasConnections i { color: #46535a; color: contrast-color(var(--cmsActive)); opacity: .8; }
-aside.cms .pageRelations .relationResults button { border: 1px solid var(--cmsLine); padding: .55rem .6rem; margin-top: .35rem; white-space: normal; }
+aside.cms :is(a, button:where([data-cms-action])).previewAction { background: var(--cmsButtonBg); }
+.cms ul.tree label > :is(a, button:where([data-cms-action])).aliasConnections, .cms ul.tree label > :is(a, button:where([data-cms-action])).aliasConnections i { color: var(--cmsSubText); }
+.cms ul.tree li.active > label :is(a, button:where([data-cms-action])).aliasConnections,
+.cms ul.tree li.active > label :is(a, button:where([data-cms-action])).aliasConnections i { color: #46535a; color: contrast-color(var(--cmsActive)); opacity: .8; }
+aside.cms .pageRelations .relationResults button:where(:not([data-cms-action])) { border: 1px solid var(--cmsLine); padding: .55rem .6rem; margin-top: .35rem; white-space: normal; }
 aside.cms .pageRelations .relationIncoming li { background: var(--cmsButtonBg); border: 0; border-radius: var(--cmsRadius); margin-bottom: .35rem; padding: .2rem .25rem; gap: .2rem; }
 aside.cms .pageRelations .relationIncoming .relationLink { background: transparent; margin: 0; }
-aside.cms .pageRelations .relationIncoming > li > :is(a, button):last-child:not(.relationLink) { background: transparent; border: 0; border-radius: var(--cmsRadius); width: 2rem; min-height: 2rem; flex: 0 0 2rem; margin: 0; padding: .3rem; color: var(--cmsTextColor); }
-aside.cms .pageRelations .relationIncoming > li > :is(a, button):last-child:hover { background: var(--cmsHover); }
+aside.cms .pageRelations .relationIncoming > li > :is(:is(a, button:where([data-cms-action])), button:where(:not([data-cms-action]))):last-child:not(.relationLink) { background: transparent; border: 0; border-radius: var(--cmsRadius); width: 2rem; min-height: 2rem; flex: 0 0 2rem; margin: 0; padding: .3rem; color: var(--cmsTextColor); }
+aside.cms .pageRelations .relationIncoming > li > :is(:is(a, button:where([data-cms-action])), button:where(:not([data-cms-action]))):last-child:hover { background: var(--cmsHover); }
 
 aside.cms .pageRelations .relationResults .relationResultRow { display: flex; align-items: center; gap: .5rem; margin-top: .4rem; padding: .5rem .6rem; border: 1px solid var(--cmsLine); border-radius: var(--cmsRadius); }
 aside.cms .pageRelations .relationResultLabel { flex: 1; min-width: 0; font-size: .8125rem; overflow-wrap: anywhere; }
 aside.cms .pageRelations .relationResultLabel small { display: block; margin-top: .2rem; font-size: .7rem; color: var(--cmsMuted); }
-aside.cms .pageRelations .relationResults button.relationConnect { flex: 0 0 2rem; width: 2rem; min-height: 2rem; margin: 0; padding: .25rem; border: 0; justify-content: center; background: transparent; color: var(--cmsMainColor); }
-aside.cms .pageRelations .relationResults button.relationConnect:hover { background: var(--cmsHover); }
+aside.cms .pageRelations .relationResults button:where(:not([data-cms-action])).relationConnect { flex: 0 0 2rem; width: 2rem; min-height: 2rem; margin: 0; padding: .25rem; border: 0; justify-content: center; background: transparent; color: var(--cmsMainColor); }
+aside.cms .pageRelations .relationResults button:where(:not([data-cms-action])).relationConnect:hover { background: var(--cmsHover); }
 aside.cms .pageRelations .relationResults .relationEmpty { font-size: .75rem; line-height: 1.4; text-align: center; color: var(--cmsTextColor); padding: .2rem 0 0; margin: 0; }
 aside.cms .pageRelations .relationSearch:has(.relationEmpty) + .relationNoRedirects { margin-top: 1.2rem; }
 aside.cms .pageRelations .relationIncoming li:has(.relationLink:is(:hover, :focus-visible)) { background: var(--cmsHover); }
 aside.cms .pageRelations .relationIncoming .relationLink:is(:hover, :focus-visible) { color: var(--cmsTextColor); }
 
 aside.cms .releaseFields, aside.cms .releaseFields > li, aside.cms .releaseFields .inputGroup { min-width: 0; max-width: 100%; }
-aside.cms .releaseFields input[type="datetime-local"] { display: block; width: 100%; min-width: 0; max-width: 100%; box-sizing: border-box; -webkit-appearance: none; }
-aside.cms .releaseFields input[type="datetime-local"]::-webkit-date-and-time-value { min-width: 0; text-align: left; }
 aside.cms .pageRelations .relationIncoming .relationLink { border: 0; outline: 0; box-shadow: none; }
 aside.cms .pageRelations .relationIncoming .relationLink:is(:hover, :focus-visible) span { text-decoration: none; }
 aside.cms .pageRelations .relationIncoming .relationLink:focus-visible { outline: 2px solid var(--cmsHighlightColor); outline-offset: -2px; }
@@ -423,3 +434,14 @@ aside.cms .pageRelations .relationIncoming .relationLink:focus-visible { outline
 .cms aside textarea[name="meta_description"] { min-height: calc(3 * 1.5em + 1rem); line-height: 1.5; }
 
 aside.cms .pageRelations .relationLink small { word-break: break-all; overflow-wrap: anywhere; }
+
+.cmsPreview > .pageEditorNotice { flex:0 0 auto; min-height:0; width:100%; box-sizing:border-box; font:400 .75rem/1.4 var(--cmsFontFamily, sans-serif); color:var(--cmsTextColor); overflow:hidden; }
+.cmsPreview > .pageEditorNotice:not([hidden]) { display:flex; gap:.5rem; align-items:center; padding:.45rem .8rem; background:var(--cmsButtonBg); }
+.cmsPreview > .pageEditorNotice > i { flex:0 0 auto; font-size:.85rem; }
+
+.cmslightbox.pageConflict > section { width: min(40rem, 100%); min-width:0; max-width:40rem; }
+
+.cmsPreview > .pageEditorNotice:not([hidden]) { background:color-mix(in srgb,var(--cmsInteractive) 14%,var(--cmsCanvas)); }
+.cmsPreview > .pageEditorNotice > i { color:var(--cmsInteractive); }
+
+.cmsPreview > .pageEditorNotice { order: -1; }

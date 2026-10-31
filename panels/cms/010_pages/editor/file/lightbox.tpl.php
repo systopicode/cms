@@ -27,7 +27,7 @@ $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/
 					<a href="<?= htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') ?>" target="_blank" title="Open original"><i class="cmsIcon cmsIcon-eye"></i></a>
 				</li>
 				<li>
-					<a class="put" data-confirm="Do you really want to delete this File?" data-on_click="userConfirm" data-action="deleteMedia" title="Delete"><i class="cmsIcon cmsIcon-trash"></i></a>
+					<button type="button" data-cms-action class="put" data-confirm="<?= htmlspecialchars('Delete this file? ' . count(\Systopic\Cms\Queries\MediaUsage\MediaUsage::of($this->pages()->scope, (int) $this->targetId, (int) $this->mediaRow->id)) . ' page references found. Deleting may break these references.', ENT_QUOTES) ?>" data-on_click="userConfirm" data-action="deleteMedia" title="Delete"><i class="cmsIcon cmsIcon-trash"></i></button>
 				</li>
 				<li>
 					<a class="ajax" href="../../" aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></a>

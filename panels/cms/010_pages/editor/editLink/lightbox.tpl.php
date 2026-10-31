@@ -30,8 +30,9 @@ $types = [
 $type = preg_match('/^(mailto|tel|sms):/i', $href, $m) ? strtolower($m[1]) : 'url';
 $address = $type === 'url' ? $href : rawurldecode(substr($href, strlen($type) + 1));
 $title = ($href === '' ? 'Insert ' : 'Edit ') . ($media ? 'Image Link' : 'Link');
-$returnUrl = (string) http::post('return_url', $this->state->returnUrl ?? $pages->href);
-if (parse_url($returnUrl, PHP_URL_HOST) !== null || parse_url($returnUrl, PHP_URL_SCHEME) !== null || parse_url($returnUrl, PHP_URL_PATH) !== parse_url($pages->href, PHP_URL_PATH)) $returnUrl = $pages->href;
+$pageUrl = http::$siteUrl . 'cms/pages/';
+$returnUrl = (string) http::post('return_url', $this->state->returnUrl ?? $pageUrl);
+if (parse_url($returnUrl, PHP_URL_HOST) !== null || parse_url($returnUrl, PHP_URL_SCHEME) !== null || parse_url($returnUrl, PHP_URL_PATH) !== parse_url($pageUrl, PHP_URL_PATH)) $returnUrl = $pageUrl;
 $this->state->returnUrl = $returnUrl;
 
 
@@ -60,11 +61,11 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 			<h1><?= $title ?></h1>
 			<ul class="barmenu">
 				<li>
-					<a class="ajax" onclick="wysiwyg.cancelLink()" data-history="false" href="<?= $e($returnUrl) ?>" aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></a>
+					<a class="ajax" onclick="event.preventDefault(); event.stopImmediatePropagation(); wysiwyg.cancelLink(); sys.core.server.sendCall({method: 'get', history: false}, this.href); return false;" data-history="false" href="<?= $e($returnUrl) ?>" aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></a>
 				</li>
 			</ul>
 		</header>
-		<main class="linkDialog" onkeydown="if (event.key === 'Enter' && !event.shiftKey && !event.target.matches('select, [type=search]')) { event.preventDefault(); this.closest('section').querySelector('footer a').click(); }">
+		<main class="linkDialog" onkeydown="if (event.key === 'Enter' && !event.shiftKey && !event.target.matches('select, [type=search]') && !event.target.closest('[role=tab]')) { event.preventDefault(); this.closest('section').querySelector('footer button[data-cms-action]').click(); }">
 			<div class="fieldGrid is-stack">
 				<?php if ($media) { ?>
 					<label class="field">
@@ -72,12 +73,12 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 						<select name="imageFormat" onchange="linkFormatChosen(this)">
 							<option value="">Link somewhere else</option>
 							<?php
-							foreach (array_reverse(mediaFormats::get()) as $key => $format) {
+							foreach (mediaFormats::get() as $key => $format) {
 								if (($format['cms_display'] ?? '') === 'none') {
 									continue;
 								}
 								$size = \mediaFormats::sizeLabel($format);
-								echo '<option value="media:' . (int) http::post('image_node_id') . '?format=' . $e($key) . '">' . $e($key . ' (' . $size . ')') . '</option>';
+								echo '<option value="media:' . (int) http::post('image_node_id') . '?format=' . $e($key) . '">' . $e(\mediaFormats::label((string) $key, $format) . ' (' . $size . ')') . '</option>';
 							}
 							?>
 						</select>
@@ -93,7 +94,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 					<span>Link to</span>
 					<nav class="linkTabs" role="tablist">
 						<?php foreach ($tabs as $key => $label) { ?>
-							<a role="tab" data-tab="<?= $key ?>" aria-selected="<?= $key === $tab ? 'true' : 'false' ?>" onclick="linkTab(this)"><?= $label ?></a>
+							<button type="button" role="tab" data-tab="<?= $key ?>" aria-selected="<?= $key === $tab ? 'true' : 'false' ?>" onclick="linkTab(this)"><?= $label ?></button>
 						<?php } ?>
 					</nav>
 					<div class="linkPane linkTo" data-pane="address" <?= $tab === 'address' ? '' : 'hidden' ?>>
@@ -102,7 +103,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 								<option value="<?= $key ?>" data-hint="<?= $e($hint) ?>" <?= $key === $type ? 'selected' : '' ?>><?= $label ?></option>
 							<?php } ?>
 						</select>
-						<textarea name="linkUrl" rows="2" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="<?= $e($types[$type][1]) ?>" autofocus><?= $e($address) ?></textarea>
+						<textarea aria-label="Link address" name="linkUrl" rows="2" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="<?= $e($types[$type][1]) ?>" autofocus><?= $e($address) ?></textarea>
 					</div>
 					<div class="linkPane" data-pane="page" <?= $tab === 'page' ? '' : 'hidden' ?>>
 						<input type="search" name="search" data-on_input="<?= $e($pages->href . 'editor/editLink/searchLinkPages') ?>" placeholder="Search pages by title" aria-label="Search pages" autocomplete="off">
@@ -123,12 +124,13 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 							<ul class="linkFiles">
 								<?php foreach ($files as $i => $file) {
 									$icon = $faces[$i]['icon'];
+									$fileLabel = trim((string) $file->label) !== '' ? $file->label : $file->filename;
 									?>
 									<li>
-										<button type="button" class="<?= $fileHrefs[$i] === $href ? 'selected' : '' ?>" data-file-inline="<?= \Systopic\System\Media\Presentation::opensInline((string) $file->mimetype) ? '1' : '0' ?>" data-href="<?= $e($fileHrefs[$i]) ?>" data-label="<?= $e($file->label) ?>" onclick="linkPicked(this)" title="<?= $e($file->label) ?>">
+										<button type="button" class="<?= $fileHrefs[$i] === $href ? 'selected' : '' ?>" data-file-inline="<?= \Systopic\System\Media\Presentation::opensInline((string) $file->mimetype) ? '1' : '0' ?>" data-href="<?= $e($fileHrefs[$i]) ?>" data-label="<?= $e($fileLabel) ?>" onclick="linkPicked(this)" title="<?= $e($fileLabel) ?>">
 											<i class="cmsIcon cmsIcon-<?= $icon ?>"></i>
 											<?php if ($thumbs[$i] !== '') { ?><img src="<?= $e($thumbs[$i]) ?>" alt="" loading="lazy" onerror="this.remove()"><?php } ?>
-											<span><?= $e($file->label) ?></span>
+											<span><?= $e($fileLabel) ?></span>
 										</button>
 									</li>
 								<?php } ?>
@@ -154,7 +156,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 			</div>
 		</main>
 		<footer>
-			<a class="button submit" onclick="applyHTMLeditorLink(this)"><i class="cmsIcon cmsIcon-link"></i><?= $href === '' ? 'Insert link' : 'Save' ?></a>
+			<button type="button" data-cms-action class="button submit" onclick="applyHTMLeditorLink(this)"><i class="cmsIcon cmsIcon-link"></i><?= $href === '' ? 'Insert link' : 'Save' ?></button>
 		</footer>
 	</section>
 </div>

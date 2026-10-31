@@ -94,7 +94,7 @@ $currentFormat = $replacement && (int) $media->width > 0
 					<div class="scrollContainer">
 						<div class="scrollContainerContent">
 							<details class="sidebarSection" data-section="upload-file" open>
-								<summary>File</summary>
+								<summary><span class="sidebarLabel">File</span><span class="sidebarTools"><i class="cmsIcon cmsIcon-chevron-down sidebarFold" aria-hidden="true"></i></span></summary>
 								<div class="sidebarItem">
 									<div class="inputGroup">
 										<input data-doc="label" type="text" spellcheck="off" autocomplete="off">
@@ -120,21 +120,23 @@ $currentFormat = $replacement && (int) $media->width > 0
 									?>
 								</div>
 							</details>
-							<details class="sidebarSection" data-section="upload-details" open>
-								<summary>Details</summary>
+							<?php if ($replacement) {
+$usageScope = $this->parent->scope;
+$usageNode = $nodeId;
+$usageMedia = (int) $row->id;
+$usageHref = $this->parent->href;
+include dirname(__DIR__) . '/media-usage.tpl.php';
+?><?php } ?>
+<details class="sidebarSection" data-section="upload-details" open>
+								<summary><span class="sidebarLabel">Details</span><span class="sidebarTools"><i class="cmsIcon cmsIcon-chevron-down sidebarFold" aria-hidden="true"></i></span></summary>
 								<div class="sidebarItem">
 									<dl class="cmsFacts" data-doc="info"></dl>
 								</div>
 							</details>
-							<details class="sidebarSection" data-section="upload-tags" open>
-								<summary>Tags</summary>
-								<div class="sidebarItem">
-									<?php $this->withView('tags'); ?>
-								</div>
-							</details>
+
 							<?php if ($replacement) { ?>
-								<details class="sidebarSection" data-section="upload-current" open>
-									<summary>Current file</summary>
+                                <details class="sidebarSection" data-section="upload-current" open>
+									<summary><span class="sidebarLabel">Current file</span><span class="sidebarTools"><i class="cmsIcon cmsIcon-chevron-down sidebarFold" aria-hidden="true"></i></span></summary>
 									<div class="sidebarItem">
 										<dl class="cmsFacts">
 											<div>
@@ -157,6 +159,12 @@ $currentFormat = $replacement && (int) $media->width > 0
 									</div>
 								</details>
 							<?php } ?>
+<details class="sidebarSection" data-section="upload-tags" open>
+								<summary><span class="sidebarLabel">Tags</span><span class="sidebarTools"><i class="cmsIcon cmsIcon-chevron-down sidebarFold" aria-hidden="true"></i></span></summary>
+								<div class="sidebarItem">
+									<?php $this->withView('tags'); ?>
+								</div>
+							</details>
 						</div>
 					</div>
 				</div>

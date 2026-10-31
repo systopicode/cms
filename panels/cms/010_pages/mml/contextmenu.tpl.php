@@ -28,9 +28,9 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 		</a>
 	    </li>
 	    <li title="Delete" class="iconOnly">
-		<a class="put" data-confirm="Do you really want to delete this File?" data-on_click='userConfirm' data-action="mml/deleteMedia?node_id=<?= $nodeId ?>&media_id=<?= (int) $media->id ?>">
+		<button type="button" data-cms-action class="put" data-confirm="<?= htmlspecialchars('Delete this file? ' . count(\Systopic\Cms\Queries\MediaUsage\MediaUsage::of($pages->scope, (int) $nodeId, (int) $media->id)) . ' page references found. Deleting may break these references.', ENT_QUOTES) ?>" data-on_click='userConfirm' data-action="mml/deleteMedia?node_id=<?= $nodeId ?>&media_id=<?= (int) $media->id ?>">
 		    <i class="cmsIcon cmsIcon-trash"></i>
-		</a>
+		</button>
 	    </li>
 	</ul>
     </li>

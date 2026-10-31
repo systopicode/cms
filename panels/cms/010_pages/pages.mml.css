@@ -180,7 +180,7 @@ body.mediaDragging:has(.mmlContent li.title.dropTarget) .draghelper{
     opacity: 0.8;
 }
 
-.cms div.mmlContent div.tree ul li a {
+.cms div.mmlContent div.tree ul li :is(a, button:where([data-cms-action])) {
     display: inline-block;
 }
 
@@ -255,7 +255,7 @@ body.mediaDragging:has(.mmlContent li.title.dropTarget) .draghelper{
 
 /* The picture does not load (gui/ui.js): its crossed-out icon stands in */
 .cms div.mmlContent ul li ul li.thumbMissing,
-.cms div.mmlContent ul li ul li:has(> a.thumbMissing) {
+.cms div.mmlContent ul li ul li:has(> :is(a, button:where([data-cms-action])).thumbMissing) {
     background: var(--cmsBgColor);
     border-style: dashed;
 }
@@ -384,7 +384,7 @@ body.fileDrag div.mmlContent li.fileOver {
     opacity: 1;
 }
 
-:root[data-pointer="touch"] .cms div.mmlContent ul li ul li.touchOpen:not(.upload) .thumbActions a,
+:root[data-pointer="touch"] .cms div.mmlContent ul li ul li.touchOpen:not(.upload) .thumbActions :is(a, button:where([data-cms-action])),
 :root[data-pointer="touch"] .cms div.mmlContent ul li ul li.touchOpen:not(.upload) .thumbActions label {
     pointer-events: auto;
 }
@@ -399,7 +399,7 @@ body.fileDrag .cms div.mmlContent .thumbActions *,
     pointer-events: none !important;
 }
 
-.cms div.mmlContent ul li ul li:not(.upload) .thumbActions a,
+.cms div.mmlContent ul li ul li:not(.upload) .thumbActions :is(a, button:where([data-cms-action])),
 .cms div.mmlContent ul li ul li:not(.upload) .thumbActions label {
     position: relative;
     display: flex;
@@ -433,7 +433,7 @@ body.fileDrag .cms div.mmlContent .thumbActions *,
     color: inherit;
 }
 
-.cms div.mmlContent ul li ul li:not(.upload) .thumbActions a:hover,
+.cms div.mmlContent ul li ul li:not(.upload) .thumbActions :is(a, button:where([data-cms-action])):hover,
 .cms div.mmlContent ul li ul li:not(.upload) .thumbActions label:hover {
     background: var(--cmsHighlightColor);
     color: var(--cmsMainColor);
@@ -536,6 +536,7 @@ div.mmlContent input {
 }
 
 .cms div.mmlContent ul li.upload.loading > i,
+.cms div.mmlContent ul li.upload.loading > .mmlUploadButton,
 .cms div.mmlContent ul li.loading .thumbType,
 .cms div.mmlContent ul li.loading .thumbActions {
     opacity: 0;
@@ -664,7 +665,7 @@ div.mmlContent input {
     float: left;
 }
 
-.cms form[name='changeImageFormat'] a.button {
+.cms form[name='changeImageFormat'] :is(a, button:where([data-cms-action])).button {
     height: calc(100% - 2px);
     margin-right: 0;
 }
@@ -743,13 +744,13 @@ aside .mediaDrop img{
 	opacity: 1;
 }
 
-body.dragging .mediaDrop .dropActions a,
-body.dragging .mediaDrop .dropActions button{
+body.dragging .mediaDrop .dropActions :is(a, button:where([data-cms-action])),
+body.dragging .mediaDrop .dropActions button:where(:not([data-cms-action])){
 	visibility: hidden;
 }
 
-body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > a,
-body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > button{
+body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > :is(a, button:where([data-cms-action])),
+body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > button:where(:not([data-cms-action])){
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -770,8 +771,8 @@ body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > button{
 	cursor: pointer;
 }
 
-body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > a:hover,
-body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > button:hover{
+body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > :is(a, button:where([data-cms-action])):hover,
+body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > button:where(:not([data-cms-action])):hover{
 	background: var(--cmsHighlightColor);
 	background-color: var(--cmsHighlightColor);
 	color: #14181c;
@@ -824,7 +825,7 @@ body.cms aside.cms ul li .mediaDrop.shareImage .dropActions > button:hover{
         gap: 0.8rem;
     }
 
-    .cms div.mmlContent ul li ul li:not(.upload) .thumbActions a,
+    .cms div.mmlContent ul li ul li:not(.upload) .thumbActions :is(a, button:where([data-cms-action])),
     .cms div.mmlContent ul li ul li:not(.upload) .thumbActions label {
         width: 1.9rem;
         height: 1.9rem;
@@ -871,3 +872,21 @@ body.mediaDragging .mediaDrop.dropRejected::after { content: ""; position: absol
     width: 1.1em;
     height: 1.1em;
 }
+
+/* The complete library, including its resize area, belongs to a selected page. */
+.cms.pylon > footer.resizeMML.is-empty { max-height:0 !important; min-height:0; border:0; visibility:hidden; overflow:hidden; pointer-events:none; }
+
+/* The existing lightbox presents the session's upload batches. */
+.uploadSummary main { overflow:auto; }
+.uploadQueueFiles { list-style:none; padding:0; margin:1rem 0; }
+.uploadQueueFiles li { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.25rem 1rem; padding:.75rem 0; border-bottom:1px solid var(--cmsLine); }
+.uploadQueueFiles strong, .uploadQueueFiles small { overflow-wrap:anywhere; }
+.uploadQueueFiles small { grid-column:1 / -1; }
+.uploadQueueFiles li[data-state=failed] span, .uploadQueueFiles li[data-state=rejected] span { color:var(--cmsError); }
+.uploadQueueFiles li[data-state=success] span { color:var(--cmsConfirm); }
+.uploadQueueOpen { position:fixed; right:.75rem; bottom:calc(2.5rem + env(safe-area-inset-bottom)); z-index:7900; min-height:44px; flex-shrink:0; }
+@media (max-width:767px) { .uploadQueueOpen { position:fixed; right:.75rem; bottom:calc(.75rem + env(safe-area-inset-bottom)); z-index:7900; } }
+
+/* Results also have an explicit close control on touch layouts. */
+body.cms .cmslightbox.uploadSummary section > header .barmenu,
+body.cms .cmslightbox.uploadSummary section > header li:has(.cmsIcon-xmark) { display:flex; }

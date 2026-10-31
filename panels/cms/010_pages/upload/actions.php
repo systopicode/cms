@@ -200,14 +200,56 @@ $store = static function (string $tmpFileNative, string $fileName, string $label
 	return TRUE;
 };
 
+// Session-scoped receipts make explicit retries safe after a lost final response.
+$uploadKey = (string) http::put('uploadKey');
+$receipt = preg_match('/^[a-f0-9-]{36}$/D', $uploadKey) ? $uploadKey : null;
+$fingerprint = hash('sha256', json_encode([$this->action, http::put('name'), http::put('size'), http::put('url'), http::get('node_id'), http::get('node_parent_node_id'), http::get('group')]));
+$receipts = (array) ($this->state->uploadReceipts ?? []);
+if ($receipt !== null && isset($receipts[$receipt])) {
+    $renderStyle = 'none';
+    client::done($receipts[$receipt] === $fingerprint ? ['uploadComplete' => true] : ['error' => 'Upload identity changed. Choose the file again.']);
+    return;
+}
+$rememberUpload = function (bool $stored) use ($receipt, $fingerprint, $receipts): void {
+    if (!$stored || $receipt === null) return;
+    $receipts[$receipt] = $fingerprint;
+    // Receipts live for this editing session; never silently evict a retry identity.
+    $this->state->uploadReceipts = $receipts;
+};
+
 switch ($this->action) {
 	case 'open':
 		break;
 
 	case 'upload':
 		$fileName = str::getSafeName(http::put('name'));
-		$tmpFileNative = fs::toNative($tmpdir . $fileName);
-		file_put_contents($tmpFileNative, (string) http::binary(), (int) http::put('spanIndex') === 0 ? 0 : FILE_APPEND);
+		$tmpFileNative = fs::toNative($tmpdir . ($receipt !== null ? $receipt . '-' : '') . $fileName);
+        $binary = (string) http::binary();
+        if ($receipt !== null) {
+            // A browser can replay a chunk after losing its response. Write at
+            // its fixed offset, never append the same chunk twice.
+            $index = (int) http::put('spanIndex');
+            $offset = (int) http::put('spanStart');
+            if ($index < 0 || $offset !== $index * 3 * 1024 * 1024 || strlen($binary) > 3 * 1024 * 1024) {
+                $renderStyle = 'none'; client::done(['error' => 'Invalid upload chunk.']); break;
+            }
+            $handle = @fopen($tmpFileNative, 'c+b');
+            $written = false;
+            if ($handle !== false && flock($handle, LOCK_EX)) {
+                $available = fstat($handle)['size'];
+                if ($offset === 0) ftruncate($handle, 0);
+                if ($offset === 0 || $available >= $offset) {
+                    fseek($handle, $offset);
+                    $written = fwrite($handle, $binary) === strlen($binary);
+                    if ($written && http::put('lastSpan')) ftruncate($handle, $offset + strlen($binary));
+                }
+                flock($handle, LOCK_UN);
+            }
+            if ($handle !== false) fclose($handle);
+            if (!$written) { $renderStyle = 'none'; client::done(['error' => 'The upload chunk could not be stored. Retry the file.']); break; }
+        } else {
+            file_put_contents($tmpFileNative, $binary, (int) http::put('spanIndex') === 0 ? 0 : FILE_APPEND);
+        }
 		if (!http::put('lastSpan')) {
 			$renderStyle = 'none';
 			break;
@@ -215,7 +257,7 @@ switch ($this->action) {
 		// A render from here would leave the upload panel selected and
 		// replace the page. The client asks the page for its library again.
 		$renderStyle = 'none';
-		$store($tmpFileNative, $fileName, (string) http::put('label'));
+		$rememberUpload($store($tmpFileNative, $fileName, (string) http::put('label')));
 		break;
 
 	case 'fetch':
@@ -227,7 +269,7 @@ switch ($this->action) {
 			break;
 		}
 		$tmpFileNative = fs::toNative($tmpdir . 'fetch-' . bin2hex(random_bytes(6)));
-		$context = stream_context_create(['http' => ['timeout' => 30, 'follow_location' => 1, 'max_redirects' => 3, 'user_agent' => 'fluxo cms']]);
+		$context = stream_context_create(['http' => ['timeout' => 30, 'follow_location' => 1, 'max_redirects' => 3, 'user_agent' => 'fluxo']]);
 		$in = @fopen($url, 'rb', false, $context);
 		$out = $in ? fopen($tmpFileNative, 'wb') : false;
 		$bytes = ($in && $out) ? stream_copy_to_stream($in, $out, 512 * 1024 * 1024) : false;
@@ -242,6 +284,6 @@ switch ($this->action) {
 		}
 		$base = pathinfo((string) parse_url($url, PHP_URL_PATH), PATHINFO_FILENAME) ?: 'media';
 		$fileName = str::getSafeName($base) . '.' . $ext;
-		$store($tmpFileNative, $fileName, $base);
+		$rememberUpload($store($tmpFileNative, $fileName, $base));
 		break;
 }

@@ -1,0 +1,13 @@
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const source=await readFile(new URL('../../system/public/js/gui/HTMLeditor.funcs.js',import.meta.url),'utf8');
+const start=source.indexOf('function createHTMLeditorLink(event)');
+const end=source.indexOf('/** "Save" in the link dialog',start);
+let idle;const sent=[];
+const ctx={document:{activeElement:null},queueMicrotask,wysiwyg:{linkFor:()=>({text:'Selected text'})},location:{pathname:'/cms/pages/',search:'?id=9'},settings:{siteRoot:'/'},sys:{core:{server:{onIdle(fn){idle=fn},sendCall(...args){sent.push(args)}}}}};
+vm.runInNewContext(source.slice(start,end),ctx);
+ctx.createHTMLeditorLink({data:{target:{}}});
+await Promise.resolve();assert.equal(sent.length,0,'dialog cannot overtake the blur-save');
+idle();assert.equal(sent.length,1);assert.equal(sent[0][0].history,false);assert.equal(sent[0][0].post.text,'Selected text');
+console.log('PASS: link dialog opens only after the in-flight save; payload and ephemeral history preserved');

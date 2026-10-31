@@ -346,7 +346,7 @@ class appSite {
 		}
 		$pageLabel = strtolower($pageLabel) == 'home ' . $sep . ' ' ? '' : $pageLabel;
 		$label = $tempPage ? strtolower((string) $tempPage->label->value) : '';
-		$PUBLIC_PAGE_NAME = self::siteMeta('title', 'PUBLIC_PAGE_NAME', 'fluxo cms');
+		$PUBLIC_PAGE_NAME = self::siteMeta('title', 'PUBLIC_PAGE_NAME', 'fluxo');
 		$PUBLIC_TITLE = $pageLabel;
 		if ($label != 'home' && $label != 'start' && trim(str_replace($sep, '', $pageLabel)) != trim($PUBLIC_PAGE_NAME)) {
 			$PUBLIC_TITLE .= $PUBLIC_PAGE_NAME;

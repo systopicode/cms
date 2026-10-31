@@ -67,7 +67,7 @@ $items = static fn(string $key): array => match ($key) {
 							<?php } ?>
 						</ul>
 						<?php if ($key === 'brokenlinks') { ?>
-							<p><a class="ajax" href="<?= $e(\http::$root . 'cms/tools/maintenance/links/') ?>">All links <i class="cmsIcon cmsIcon-chevron-right"></i></a></p>
+							<p><a class="ajax" href="<?= $e(\http::$root . 'cms/tools/website/links/') ?>">All links <i class="cmsIcon cmsIcon-chevron-right"></i></a></p>
 						<?php } ?>
 					</details>
 				<?php } ?>

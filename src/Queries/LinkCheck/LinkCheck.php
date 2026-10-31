@@ -13,7 +13,7 @@ use Systopic\Db\Scope;
  * A reference (page:43, media:293, {page:43.label}) is checked by its id.
  * Older texts still store paths and data-node_id; those are checked too.
  * Outside links are only collected - asking every host takes the maintenance
- * panel's button (cms/tools/maintenance/links/).
+ * panel's button (cms/tools/website/links/).
  */
 final class LinkCheck
 {
@@ -184,7 +184,7 @@ final class LinkCheck
                 CURLOPT_MAXREDIRS => 5,
                 CURLOPT_CONNECTTIMEOUT => 5,
                 CURLOPT_TIMEOUT => 8,
-                CURLOPT_USERAGENT => 'Mozilla/5.0 (fluxo cms link check)',
+                CURLOPT_USERAGENT => 'Mozilla/5.0 (fluxo link check)',
             ]);
             curl_multi_add_handle($multi, $handle);
             $handles[$url] = $handle;

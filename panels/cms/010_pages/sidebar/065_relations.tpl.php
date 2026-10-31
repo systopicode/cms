@@ -20,7 +20,7 @@ $redirect = (int) $page->node->relationId('redirectNode');
             <p class="hint">This is another view of the original page below. Content changes on the original appear here too. This alias has its own address and page settings.</p>
             <?= $link($page->contentNodeId, 'alias') ?>
             <?php if (!$page->hasChildren) { ?>
-            <a class="sideAction quietAction" data-on_click="userConfirm" data-action="<?= http::$root ?>cms/pages/deleteAlias?node_id=<?= $page->id ?>" data-confirm="Remove this alias? The original remains intact."><i class="cmsIcon cmsIcon-trash"></i>Remove alias</a>
+            <button type="button" data-cms-action class="sideAction quietAction" data-on_click="userConfirm" data-action="<?= http::$root ?>cms/pages/deleteAlias?node_id=<?= $page->id ?>" data-confirm="Remove this alias? The original remains intact."><i class="cmsIcon cmsIcon-trash"></i>Remove alias</button>
             <?php } ?>
         </div>
     <?php } ?>
@@ -30,7 +30,7 @@ $redirect = (int) $page->node->relationId('redirectNode');
         <p class="hint">These pages share this page's content. Removing an alias keeps the original.</p>
         <ul class="relationIncoming"><?php foreach ($aliases as $row) { $aliasPage = $pages->pageFor((int) $row['node_id']); ?><li>
             <?= $link((int) $row['node_id'], 'alias') ?>
-            <?php if ($aliasPage !== null && !$aliasPage->hasChildren) { ?><a class="button transparent icononly small" title="Remove alias" aria-label="Remove alias" data-on_click="userConfirm" data-action="<?= http::$root ?>cms/pages/deleteAlias?node_id=<?= (int) $row['node_id'] ?>" data-confirm="Remove this alias? The original remains intact."><i class="cmsIcon cmsIcon-trash"></i></a><?php } ?>
+            <?php if ($aliasPage !== null && !$aliasPage->hasChildren) { ?><button type="button" data-cms-action class="button transparent icononly small" title="Remove alias" aria-label="Remove alias" data-on_click="userConfirm" data-action="<?= http::$root ?>cms/pages/deleteAlias?node_id=<?= (int) $row['node_id'] ?>" data-confirm="Remove this alias? The original remains intact."><i class="cmsIcon cmsIcon-trash"></i></button><?php } ?>
         </li><?php } ?></ul>
     </section>
     <?php } ?>

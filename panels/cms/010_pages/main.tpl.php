@@ -23,7 +23,8 @@ if ($page === null || $page->row === null) {
 	return;
 }
 ?>
-<div class="cmsPreview"><article class="cmsContent">
+<div class="cmsPreview"><div class="pageEditorNotice cmsOwn" data-editor-presence data-node="<?= (int) $page->id ?>" data-lang="<?= htmlspecialchars((string) $page->language, ENT_QUOTES) ?>" data-endpoint="<?= htmlspecialchars(http::$siteUrl . 'cms/pages/editorPresence', ENT_QUOTES) ?>" hidden></div>
+<article class="cmsContent">
 	<?php
 	// The opened page becomes a regular DomLayer inside the panel layer tree.
 	// That is deliberate — it gives the preview its own diff slot, so switching
@@ -45,8 +46,7 @@ if ($page === null || $page->row === null) {
 			// would include THIS file a second time.
 			// The trash root is such a page, and so is every container page.
 			if ($pageNav->getActive()->getViewBasePath() === '') {
-				message::info('<b>' . htmlspecialchars((string) $page->row->label) . '</b> has no template, so there is no preview. Pages below it can have one.');
-				echo '<div class="cmsOwn">' . message::flush() . '</div>';
+				$noTemplate = true;
 			} else {
 				$pageNav->getActive()->render('main.tpl.php');
 			}
@@ -57,4 +57,6 @@ if ($page === null || $page->row === null) {
 		}
 	}
 	?>
-</article></div>
+</article>
+<?php if (!empty($noTemplate)): ?><div class="pageEditorNotice cmsOwn"><i class="cmsIcon cmsIcon-circle-info" aria-hidden="true"></i><span><b><?= htmlspecialchars((string) $page->row->label) ?></b> has no template, so there is no preview. Pages below it can have one.</span></div><?php endif; ?>
+</div>

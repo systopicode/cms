@@ -35,8 +35,8 @@ $open = array_sum(array_map(static fn(array $entry): int => count($entry['open']
 	<?php } ?>
 	<?php if ($report['changed'] > 0) { ?>
 		<footer>
-			<a class="button submit" data-on_click="userConfirm" data-action="convertHtmlRefs"
-			   data-confirm="Rewrite <?= $report['changed'] ?> of <?= $report['rows'] ?> page rows? Images, videos and links become references (media:…, page:…)."><i class="cmsIcon cmsIcon-arrows-rotate"></i><span>Convert</span></a>
+			<button type="button" data-cms-action class="button submit" data-on_click="userConfirm" data-action="convertHtmlRefs"
+			   data-confirm="Rewrite <?= $report['changed'] ?> of <?= $report['rows'] ?> page rows? Images, videos and links become references (media:…, page:…)."><i class="cmsIcon cmsIcon-arrows-rotate"></i><span>Convert</span></button>
 		</footer>
 	<?php } ?>
 </section>

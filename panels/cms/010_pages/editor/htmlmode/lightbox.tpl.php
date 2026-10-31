@@ -19,6 +19,7 @@ $value = $row === null ? '' : $row->$property;
 $value = $value instanceof Text ? $value->value : (string) $value;
 ?>
 <form method="post" action="../../updateHTML">
+    <input type="hidden" name="field_version" value="<?= hash('sha256', $value) ?>">
     <input name='field' value='<?= htmlspecialchars($field, ENT_QUOTES) ?>' type='hidden'>
     <input name='node_id' value='<?= $nodeId ?>' type='hidden'>
     <div class="cmslightbox cms" data-size='3'>
@@ -32,7 +33,7 @@ $value = $value instanceof Text ? $value->value : (string) $value;
                 </ul>
             </header>
             <main>
-                <textarea class="htmlSource" spellcheck="false" autocapitalize="off" autocomplete="off" name="html" autofocus><?= htmlspecialchars(HtmlSource::pretty($value)) ?></textarea>
+                <textarea data-conflict-submit="1" data-field="<?= htmlspecialchars($field, ENT_QUOTES) ?>" data-node_id="<?= $nodeId ?>" data-language_iso="<?= htmlspecialchars($pages->pageFor($nodeId)?->language ?? '', ENT_QUOTES) ?>" class="htmlSource" spellcheck="false" autocapitalize="off" autocomplete="off" name="html" autofocus><?= htmlspecialchars(HtmlSource::pretty($value)) ?></textarea>
             </main>
             <footer>
                 <button type="submit" onclick="this.classList.add('loading')" class="submit"><i class="cmsIcon cmsIcon-check"></i>Save</button>

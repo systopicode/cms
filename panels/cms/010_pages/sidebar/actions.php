@@ -82,24 +82,15 @@ switch ($this->action) {
 	// -------------------------------------------------------- page fields
 
 	case 'updateParam':
-		if ($row === null) {
-			break;
-		}
-		try {
-			foreach ((array) http::values() as $name => $value) {
-				PageOperator::assign($row, (string) $name, $value);
-			}
-		} catch (InvalidArgumentException $e) {
-			message::error($e->getMessage());
-			break;
-		}
-		PageOperator::touch($row, $pages->userId());
-		$save([$row]);
-		// Label and published are drawn by the tree — from this very row.
-		$this->parent->updateView('tree');
-		$this->parent->updateView('main');
-		$this->refreshSeoPreview();
-		break;
+        $page = $pages->pageIn((int) http::dataset('node_id', $page?->id ?? 0), (string) http::dataset('language_iso', $page?->language ?? ''));
+        if ($page?->row === null) { message::error('This page is no longer available. Reload the page.'); break; }
+        foreach ((array) http::values() as $name => $value) {
+            if (!$pages->updateField((int) $page->id, (string) $page->language, (string) $name, $value)) break;
+        }
+        $this->parent->updateView('tree');
+        $this->parent->updateView('main');
+        $this->refreshSeoPreview();
+        break;
 
 	case 'updateTemplate':
 		if ($row === null) {

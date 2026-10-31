@@ -152,6 +152,36 @@ switch ($this->action) {
 		}
 		break;
 
+	case 'saveImageEdit':
+        if ($row === NULL || $row->id === null) { http_response_code(404); break; }
+        $currentFormats = $formatsOf(false);
+        $names = $formatsOf((int) http::get('apply_all', 0) === 1);
+        $geometry = [];
+        foreach (['left','top','width','height'] as $key) {
+            $value = filter_var(http::get($key), FILTER_VALIDATE_FLOAT);
+            if ($value === false || !is_finite($value) || abs($value) > 100 || (in_array($key, ['width','height'], true) && $value <= 0)) {
+                http_response_code(422); break 2;
+            }
+            $geometry[$key] = $value;
+        }
+        $tune = ['b'=>max(0,min(200,(int) http::get('brightness',100))),
+            'c'=>max(0,min(200,(int) http::get('contrast',100))),
+            's'=>max(0,min(200,(int) http::get('saturation',100))),
+            'r'=>((int) http::get('rotate',0)%360+360)%360,'f'=>(int) ((int) http::get('flip',0) === 1)];
+        if (!in_array($tune['r'], [0,90,180,270], true) || $names === []) { http_response_code(422); break; }
+        foreach ($names as $name) {
+            // Crop belongs to its format. Only image adjustments may propagate.
+            if (in_array($name, $currentFormats, true)) {
+                [$editMedia,$editCrop] = \Systopic\System\Queries\MediaCrop\MediaCrop::of($pages->scope,(int) $row->id,$name);
+                $pages->scope->save(\Systopic\System\Tables\MediaCrops\Operator::cropped(
+                    $editCrop,$editMedia,$name,$geometry['left'],$geometry['top'],$geometry['width'],$geometry['height']));
+            }
+            MediaFiles::saveTune((int) $row->id,(string) $row->filename,$name,$tune);
+            MediaFiles::dropFormatFile((int) $row->id,$name,(string) $row->filename);
+        }
+        header('X-Image-Edit: saved');
+        break;
+
 	case 'adjustImage':
 		if ($row === NULL || $row->id === null) {
 			break;
@@ -165,14 +195,17 @@ switch ($this->action) {
 			break;
 		}
 		$tune = ['b' => $brightness, 'c' => $contrast, 's' => $saturation, 'r' => $rotate, 'f' => $flip ? 1 : 0];
-		$names = $formatsOf((int) http::get('apply_all', 0) === 1);
+		$currentFormats = $formatsOf(false);
+        $names = $formatsOf((int) http::get('apply_all', 0) === 1);
 		if ($names === []) {
 			header('X-Adjust: empty');
 			http_response_code(422);
 			break;
 		}
+		$existingTunes = MediaFiles::tunes((int) $row->id, (string) $row->filename);
 		foreach ($names as $name) {
-			MediaFiles::saveTune((int) $row->id, (string) $row->filename, $name, $tune);
+			$combined = MediaFiles::composeTune($existingTunes[$name] ?? [], $tune);
+			MediaFiles::saveTune((int) $row->id, (string) $row->filename, $name, $combined);
 			MediaFiles::dropFormatFile((int) $row->id, $name, (string) $row->filename);
 		}
 		header('X-Adjust: saved');

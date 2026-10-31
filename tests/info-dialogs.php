@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 require dirname(__DIR__,2).'/system/tests/bootstrap.php';
+class fs {public static string $siteRoot='/private/tmp/fluxo-no-theme-override/';public static string $sysRoot;public static function toNative($path){return $path;}}
+fs::$sysRoot=dirname(__DIR__,2).'/system/';
 class http {
  public static string $root='/public/';public static string $siteUrl='https://fixture.test/public/';
  public static function get($key){return $key==='group'?'images':null;}
@@ -21,5 +23,7 @@ foreach(['mml/groupInfo','sidebar/relationsHelp','sidebar/defaultMeta'] as $name
  check($name.' closes to same page/language without history',str_contains($html,'data-history="false"')&&str_contains($html,'href="/public/cms/pages/?id=10&amp;lang=de"'));
  $all.=$html;
 }
-check('edit defaults remains real navigation',preg_match('~<a class="button submit ajax" href="/public/cms/settings/pagesettings/"~',$all)===1);
+check('global defaults remain real navigation',str_contains($all,'class="ajax cmsTextLink" href="/public/cms/settings/pagesettings/"'));
+check('share image points to Theme',str_contains($all,'href="/public/cms/settings/theme/"'));
+check('default sources are explained',str_contains($all,'built-in fallback'));
 file_put_contents('/private/tmp/fluxo-info-dialogs.html',$all);
