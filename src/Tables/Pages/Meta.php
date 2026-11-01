@@ -74,27 +74,13 @@ final class Meta
             if ($this->params->preview) {
                 return true;
             }
-            $page = $this->page->row;
-            if ($page === null) {
-                return false;
-            }
-            if ($this->page->node->isTrashed) {
-                return false;
-            }
-            if (!$this->scope->value($page, 'isPublished')) {
-                return false;
-            }
-            $now  = new DateTimeImmutable();
-            $from = $this->scope->value($page, 'startPublishing');
-            $to   = $this->scope->value($page, 'endPublishing');
-
-            if ($from instanceof DateTimeImmutable && $from > $now) {
-                return false;
-            }
-            if ($to instanceof DateTimeImmutable && $to < $now) {
-                return false;
-            }
-            return true;
+            $row = $this->page->row;
+            return \Systopic\Cms\Pages\PublishingState::of(
+                $row !== null, (bool) $this->page->node->isTrashed,
+                $row !== null && (bool) $this->scope->value($row, 'isPublished'),
+                $row !== null ? $this->scope->value($row, 'startPublishing') : null,
+                $row !== null ? $this->scope->value($row, 'endPublishing') : null,
+            )['public'];
         }
     }
 

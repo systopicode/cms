@@ -8,7 +8,7 @@ switch ($this->action) {
 	case 'checkExternal':
 		$check = LinkCheck::checkNext($this->scope);
 		if (!$check['done']) {
-			\http::refresh('./', 'checkExternal');
+			\http::refresh($this->getHref(\http::$root), 'checkExternal');
 		}
 		$this->updateView();
 		break;

@@ -14,7 +14,7 @@ $unused = $this->unused;
 			<input class="listSearch" type="search" placeholder="Search" data-on_input="filterUnused" autocomplete="off">
 		<?php } ?>
 	</header>
-	<p class="tagsHint">Delete removes the file for good. An alias of another file is not listed here.</p>
+	<p class="tagsHint">Permanently removes unused media records and their files. Media aliases are excluded from this list.</p>
 	<?php if ($unused === []) { ?>
 		<main><p>Every file is used by a page.</p></main>
 	<?php } else { ?>

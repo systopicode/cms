@@ -13,7 +13,6 @@ uasort($entries, function (array $a, array $b): int {
 });
 ?>
 <h1>Trash</h1>
-<p class="tagsHint">Deleted pages.</p>
 <?= \message::flush() ?>
 <section class="widget is-list">
 	<header>
@@ -22,7 +21,7 @@ uasort($entries, function (array $a, array $b): int {
 			<input class="listSearch" type="search" placeholder="Search" data-on_input="filterTrash" autocomplete="off">
 		<?php } ?>
 	</header>
-	<p class="tagsHint">The eye opens the page. Restore puts it back, including the pages that were under it. Delete removes it for good, with its media and the pages under it.</p>
+	<p class="tagsHint">Restoring includes child pages. Permanent deletion removes the page branch in every language and its media files. An alias or redirect elsewhere that points into the branch must be resolved first.</p>
 	<?php if ($entries === []) { ?>
 		<main><p>The trash is empty.</p></main>
 	<?php } else { ?>

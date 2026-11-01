@@ -657,6 +657,13 @@
 				var cap = Math.round(Math.min(window.innerHeight * 0.45, 280));
 				hold.style.height = (coarse && box.height > cap ? 28 : Math.max(1, Math.round(box.height))) + 'px';
 				hold.style.verticalAlign = shown.verticalAlign;
+                // A non-interactive source ghost preserves both position and context.
+                var ghost = media.cloneNode(true);
+                ghost.removeAttribute('id');
+                ghost.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
+                ghost.setAttribute('aria-hidden', 'true');
+                ghost.setAttribute('contenteditable', 'false');
+                hold.append(ghost);
 				var selection = getSelection();
 				if (selection.rangeCount && media.contains(selection.anchorNode)) {
 					selection.removeAllRanges();
@@ -671,8 +678,7 @@
 				line.hidden = true;
 				document.body.appendChild(line);
 				document.body.classList.add('editorMediaDrop');
-				var lastSpot = null;
-				var lastEditor = editor;
+				var lastSpot = null, hoverEditor = null, hoverSince = 0, rejectedEditor = null;
 				var point = {x: event.clientX, y: event.clientY};
 				var running = true;
 				var edge = coarse ? 96 : 56;
@@ -688,10 +694,16 @@
 				};
 				var mark = () => {
 					var dest = editorAt(point.x, point.y);
+                    var rejected = document.elementFromPoint(point.x,point.y)?.closest('.editor.plaintext');
+                    if(rejectedEditor && rejectedEditor!==rejected)rejectedEditor.classList.remove('dropRejected');
+                    rejectedEditor=rejected;
+                    rejectedEditor?.classList.add('dropRejected');
+                    if(dest!==hoverEditor){hoverEditor=dest;hoverSince=performance.now();}
 					var spot = dest && upload.rangeAt(dest, point.x, point.y, true);
-					if (spot && spot.startContainer !== hold && !hold.contains(spot.startContainer)) {
+                    lastSpot = null;
+                    document.body.classList.toggle('editorMediaDropInvalid', !dest);
+					if (performance.now()-hoverSince>=220 && spot && spot.startContainer !== hold && !hold.contains(spot.startContainer)) {
 						lastSpot = spot;
-						lastEditor = dest;
 					}
 					var rects = lastSpot && lastSpot.getClientRects ? lastSpot.getClientRects() : [];
 					var rect = rects.length ? rects[0] : null;
@@ -751,19 +763,18 @@
 					document.removeEventListener('pointerup', stop, true);
 					document.removeEventListener('pointercancel', stop, true);
 					line.remove();
-					document.body.classList.remove('editorMediaDrop');
+                    rejectedEditor?.classList.remove('dropRejected');
+					document.body.classList.remove('editorMediaDrop', 'editorMediaDropInvalid');
 					var x = e && e.clientX !== undefined ? e.clientX : point.x;
 					var y = e && e.clientY !== undefined ? e.clientY : point.y;
-					var dest = editorAt(x, y) || lastEditor;
+					var dest = e?.type === 'pointercancel' ? null : editorAt(x, y);
                     if (coarse && dest) {
                         dest.removeAttribute('data-typing');
                         dest.setAttribute('inputmode', 'none');
                         dest.blur();
                     }
 					var spot = dest && upload.rangeAt(dest, x, y, true);
-					if (!spot || spot.startContainer === hold || hold.contains(spot.startContainer)) {
-						spot = lastSpot && lastEditor === dest && lastSpot.startContainer !== hold && !hold.contains(lastSpot.startContainer) ? lastSpot : null;
-					}
+					if (spot && (spot.startContainer === hold || hold.contains(spot.startContainer))) spot = null;
 					if (spot && dest && dest.contains(spot.startContainer)) {
 						spot.insertNode(media);
 						hold.remove();

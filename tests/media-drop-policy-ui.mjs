@@ -32,5 +32,11 @@ try {
  });
  assert.equal(await page.evaluate(()=>accepted),1,'page tree item can be dropped into editor');
  assert.equal(await page.locator('#editor').evaluate(el=>el.contains(getSelection().anchorNode)),true,'page drop places caret at drop position');
+ await page.evaluate(()=>{const e=document.createElement('div');e.id='plain';e.className='editor plaintext';e.dataset.drop_accept='media';e.style.cssText='position:absolute;left:750px;top:400px;width:250px;height:100px';e.textContent='Text only';document.body.append(e);});
+ for(const ext of ['jpg','mp4','mp3','pdf','zip']){
+  await page.evaluate(ext=>{const s=document.querySelector('#source'),e=document.querySelector('#plain'),r=s.getBoundingClientRect(),d=e.getBoundingClientRect();s.dataset.drag_type='media';s.dataset.mediaExtension=ext;window.accepted=0;new sys.core.event.drag({e:$.Event('mousedown',{currentTarget:s,target:s,clientX:r.x,clientY:r.y})},{accept:()=>accepted++});$(document).trigger($.Event('mousemove',{target:e,clientX:d.x+60,clientY:d.y+30}));},ext);
+  assert.equal(await page.locator('#plain').evaluate(e=>e.classList.contains('dropRejected')),true,'MML plain-text rejection '+ext);
+  await page.evaluate(()=>{const e=document.querySelector('#plain'),d=e.getBoundingClientRect();$(document).trigger($.Event('mouseup',{target:e,clientX:d.x+60,clientY:d.y+30}));});assert.equal(await page.evaluate(()=>accepted),0,'MML never accepts media in plain text '+ext);
+ }
  console.log('ok: invalid media targets turn red and reject; tree pages drop into WYSIWYG with the caret at the drop point');
 } finally {await browser.close();}

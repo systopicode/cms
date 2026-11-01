@@ -245,7 +245,7 @@ switch ($this->action) {
                 message::confirm("config/$line");
             }
             if ($log === []) {
-                message::info('Keine Instanz-Datei geändert — die Regeln gibt es schon, oder keine Datei hat welche.');
+                message::info('No instance file changed: the rules already exist, or no matching rules were found.');
             }
             // a fresh request: the config of this one does not know the rule yet
             http::redirect($isDefault ? './?site=default' : './?id=' . $nodeId);
@@ -257,7 +257,7 @@ switch ($this->action) {
             try {
                 $name = $this->actionSite->name;
                 $configLog = \Systopic\Cms\Pages\Sites\SiteRegistry::remove($this->scope, $this->actionSite);
-                message::confirm("Site $name entfernt. Der Ordner sites/$name/ bleibt bestehen.");
+                message::confirm("Site $name removed. The sites/$name/ directory has been retained.");
                 foreach ($configLog as $line) {
                     message::confirm("config/$line");
                 }
@@ -405,6 +405,7 @@ switch ($this->action) {
     case 'cmsPageSearch':
         $term = trim((string) http::values('search'));
         $this->state->cmsPageSearchstring = $term;
+        if ($term !== '') $this->state->cmsPageLastSearch = $term;
         $html = '';
         if ($term !== '') {
             $active = (int) ($this->state->id ?? 0);

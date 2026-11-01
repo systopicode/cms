@@ -35,7 +35,7 @@ switch ($this->action) {
 				. '<b>' . $e($row->label) . '</b><small>/' . $e($path) . '</small></button></li>';
 		}
 		if ($html === '') {
-			$html = '<li class="linkHint">' . ($term === '' ? 'Type a few letters of the page title.' : 'No page with “' . $e($term) . '” in its title.') . '</li>';
+			$html = '<li class="linkHint">' . ($term === '' ? 'Search pages by title.' : 'No page with “' . $e($term) . '” in its title.') . '</li>';
 		}
 		client::replaceInner('.linkDialog ul.linkPages', $html);
 		break;

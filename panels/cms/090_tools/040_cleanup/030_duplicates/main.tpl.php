@@ -31,7 +31,7 @@ usort($crops, static function ($a, $b): int {
 });
 ?>
 <h1>Duplicates</h1>
-<p class="tagsHint">Pages and images that exist twice.</p>
+<p class="tagsHint">Duplicate database records and identical original files.</p>
 <?= \message::flush() ?>
 <section class="widget is-list">
 	<header>
@@ -40,7 +40,7 @@ usort($crops, static function ($a, $b): int {
 			<input class="listSearch" type="search" placeholder="Search" data-on_input="filterList" autocomplete="off">
 		<?php } ?>
 	</header>
-	<p class="tagsHint">The same page stored twice. Delete removes that copy and leaves the other.</p>
+	<p class="tagsHint">Duplicate page records. Removing a listed duplicate keeps the other record.</p>
 	<?php if ($pages === []) { ?>
 		<main><p>No duplicate pages.</p></main>
 	<?php } else { ?>
@@ -76,12 +76,12 @@ usort($crops, static function ($a, $b): int {
 </section>
 <section class="widget is-list">
 	<header>
-		<h2>Images</h2>
+		<h2>Stored image crops</h2>
 		<?php if ($crops !== []) { ?>
 			<input class="listSearch" type="search" placeholder="Search" data-on_input="filterList" autocomplete="off">
 		<?php } ?>
 	</header>
-	<p class="tagsHint">The same image in the same format, stored twice. Delete removes that copy.</p>
+	<p class="tagsHint">Duplicate crop records for the same image and format. This does not compare uploaded file contents. Delete removes only that crop record.</p>
 	<?php if ($crops === []) { ?>
 		<main><p>No duplicate images.</p></main>
 	<?php } else { ?>
@@ -115,4 +115,15 @@ usort($crops, static function ($a, $b): int {
 			</table>
 		</div>
 	<?php } ?>
+</section>
+
+<section class="widget is-list">
+    <header><h2>Identical media files</h2><button type="button" class="button" data-on_click="scanFiles"><i class="cmsIcon cmsIcon-magnifying-glass"></i>Check files</button></header>
+    <main><p class="tagsHint">Compares local originals of all media types by size and SHA-256. Nothing is deleted. Generated formats and external media are excluded. Each check has a five-second time budget.</p>
+    <?php if ($result = $this->fileDuplicates) { ?>
+        <?php if ($result['remaining'] || $result['unreadable']) { ?><p><i class="cmsIcon cmsIcon-triangle-exclamation is-warning"></i> Partial result: <?= (int) $result['remaining'] ?> candidates were not fully checked within the time limit; <?= (int) $result['unreadable'] ?> files could not be read. This is not a complete all-clear.</p><?php } ?>
+        <?php if (!$result['groups']) { ?><p>No identical files found among the checked originals.</p><?php } ?>
+        <?php foreach ($result['groups'] as $group) { ?><ul><?php foreach ($group as $file) { ?><li><?= $e($file['label']) ?> <small class="muted">Media #<?= (int) $file['id'] ?></small></li><?php } ?></ul><?php } ?>
+    <?php } ?>
+    </main>
 </section>

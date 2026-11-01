@@ -20,10 +20,10 @@ $card = match ($parentType) {
 	default => 'Shown in the sidebar',
 };
 $note = match ($parentType) {
-	'select' => 'Each row is one choice. The pen changes it. Drag the handle to change the order.',
-	'group' => 'Each row is one field in this block. The pen changes it. Drag the handle to change the order.',
-	'checkbox' => 'This is the value the switch stores. The pen changes it.',
-	default => 'Open a row to see what belongs to it. The pen changes the row. Drag the handle to change the order.',
+	'select' => 'Choices available in this field, in their display order.',
+	'group' => 'Fields available inside this block, in their display order.',
+	'checkbox' => 'Defines the value controlled by this switch. Enabled and disabled states are stored as 1 and 0.',
+	default => 'Defines the settings available in the page sidebar.',
 };
 $columns = match ($parentType) {
 	'select' => ['label', 'value'],

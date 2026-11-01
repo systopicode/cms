@@ -15,18 +15,18 @@ $failed = array_intersect_key($last['failed'], $external);
 ?>
 
 <h1>Links</h1>
-<p class="tagsHint">Links in the page texts that lead nowhere.</p>
+<p class="tagsHint">Checks outgoing links in page content. Incoming · 404 records visits to addresses that do not exist. Internal links are checked when this page or the dashboard opens; external checks run when you choose Check now. The dashboard shows known problems.</p>
 <?= \message::flush() ?>
 <section class="widget is-list">
 	<header>
-		<h2>Inside the website</h2>
+		<h2>Internal</h2>
 		<?php if ($broken !== []) { ?>
 			<input class="listSearch" type="search" placeholder="Search" data-on_input="filterLinks" autocomplete="off">
 		<?php } ?>
 	</header>
 	<p class="tagsHint">Links to pages, files and media of this website. Checked every time this page opens.</p>
 	<?php if ($broken === []) { ?>
-		<main><p><i class="cmsIcon cmsIcon-circle-check"></i> Every link leads somewhere.</p></main>
+		<main><p><i class="cmsIcon cmsIcon-circle-check is-success"></i> Every link leads somewhere.</p></main>
 	<?php } else { ?>
 		<div class="tableScroll">
 			<table>
@@ -53,21 +53,21 @@ $failed = array_intersect_key($last['failed'], $external);
 
 <section class="widget is-list">
 	<header>
-		<h2>Other websites</h2>
-		<button type="button" class="button" data-on_click="checkExternal" <?= $running || $external === [] ? 'disabled' : '' ?>><i class="cmsIcon cmsIcon-arrows-rotate"></i><span>Check now</span></button>
+		<h2>Outgoing</h2>
+		<button type="button" class="button" data-loading data-on_click="checkExternal" <?= $external === [] ? 'disabled' : '' ?>><i class="cmsIcon cmsIcon-arrows-rotate"></i><span><?= $running ? 'Continue check' : 'Check now' ?></span></button>
 	</header>
 	<p class="tagsHint">
 		<?= count($external) ?> address<?= count($external) === 1 ? '' : 'es' ?> on other websites.
 		<?php if ($running) { ?>
 			Checking … <?= min($last['offset'], count($external)) ?> of <?= count($external) ?>.
 		<?php } elseif ($last['checked'] !== null) { ?>
-			Last checked <?= $e(LocalTime::format($last['checked'], 'j M Y, H:i')) ?>.
+			Last checked <?= $e(LocalTime::format($last['checked'], \Systopic\System\Sys\LocalTime::DATETIME)) ?>.
 		<?php } else { ?>
-			Not checked yet: "Check now" asks every one of them, which takes a moment.
+			External links have not been checked yet. Checks contact the destination websites.
 		<?php } ?>
 	</p>
 	<?php if ($last['checked'] !== null && !$running && $failed === []) { ?>
-		<main><p><i class="cmsIcon cmsIcon-circle-check"></i> Every address answered.</p></main>
+		<main><p><i class="cmsIcon cmsIcon-circle-check is-success"></i> Every address answered.</p></main>
 	<?php } elseif ($failed !== []) { ?>
 		<div class="tableScroll">
 			<table>

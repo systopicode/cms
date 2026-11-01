@@ -11,7 +11,7 @@ class Panel extends CmsPanel {
 
 	public array $groups = [
 		'content' => ['label' => 'Content', 'templates' => ['templates', 'settings', 'tags']],
-		'seo' => ['label' => 'SEO & KI', 'templates' => ['urls', 'meta', 'search']],
+		'seo' => ['label' => 'SEO & AI', 'templates' => ['urls', 'meta', 'search']],
 		'publishing' => ['label' => 'Publishing', 'templates' => ['publishing', 'relations', 'info']],
 	];
 

@@ -20,7 +20,7 @@ if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
 		?>
 		<div class="pylonTitle">
 			<div class='searchInput'>
-				<input class='put' id='cmsSearchInput' data-focus-id='pages-tree-search' data-on_input='<?= htmlspecialchars(http::$root . 'cms/pages/cmsPageSearch', ENT_QUOTES) ?>' name='search' autocomplete='off' type="search"
+				<input class='put' id='cmsSearchInput' data-last-search='<?= htmlspecialchars((string) ($this->state->cmsPageLastSearch ?? $this->state->cmsPageSearchstring), ENT_QUOTES) ?>' data-focus-id='pages-tree-search' data-on_input='<?= htmlspecialchars(http::$root . 'cms/pages/cmsPageSearch', ENT_QUOTES) ?>' name='search' autocomplete='off' type="search"
 				       placeholder="Search" aria-label="Search pages" value="<?= htmlspecialchars((string) $this->state->cmsPageSearchstring) ?>">
 			</div>
 			<ul class="treeNavi">

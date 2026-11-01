@@ -8,6 +8,6 @@
                         <li><a class="sideAction relationLink" href="<?= $e($usageHref . '?id=' . $use['node'] . '&lang=' . rawurlencode($use['lang'])) ?>"><i class="cmsIcon cmsIcon-file"></i><span><?= $e($use['label'] ?: 'Untitled') ?><small><?= $e(implode(' · ', $use['reasons']) . ($use['lang'] ? ' · ' . $use['lang'] : '')) ?></small></span></a></li>
                         <?php endforeach; ?>
                         </ul>
-                        <?php if (!$uses): ?><p class="tagsHint">No page references found.</p><?php endif; ?>
+                        <?php if (!$uses): ?><p class="tagsHint">No page references were found by this check. Project templates or external links may still use this file.</p><?php endif; ?>
                     </div>
                 </details>

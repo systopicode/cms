@@ -65,7 +65,7 @@ if ($active !== null) {
 					</li>
                     <?php if ($node->hasChildren) { ?>
 					<li title="Hide with children" class="iconOnly">
-						<button type="button" data-cms-action title="Hide with children" aria-label="Hide with children"  data-on_click="unPublishAll?id=<?= $node->id ?>">
+						<button type="button" data-cms-action title="Hide with children" aria-label="Hide with children"  data-on_click="userConfirm" data-action="unPublishAll?id=<?= (int) $node->id ?>" data-confirm="<?= htmlspecialchars($this->branchConfirmation((int) $node->id, 'unPublishAll'), ENT_QUOTES) ?>">
 							<span class="layerEyeIcon" aria-hidden="true"><i class="cmsIcon cmsIcon-layer-group"></i><i class="cmsIcon cmsIcon-eye-slash"></i></span>
 						</button>
 					</li>
@@ -78,7 +78,7 @@ if ($active !== null) {
 					</li>
                     <?php if ($node->hasChildren) { ?>
 					<li title="Publish with children" class="iconOnly">
-						<button type="button" data-cms-action title="Publish with children" aria-label="Publish with children"  data-on_click="publishAll?id=<?= $node->id ?>">
+						<button type="button" data-cms-action title="Publish with children" aria-label="Publish with children"  data-on_click="userConfirm" data-action="publishAll?id=<?= (int) $node->id ?>" data-confirm="<?= htmlspecialchars($this->branchConfirmation((int) $node->id, 'publishAll'), ENT_QUOTES) ?>">
 							<span class="layerEyeIcon" aria-hidden="true"><i class="cmsIcon cmsIcon-layer-group"></i><i class="cmsIcon cmsIcon-eye"></i></span>
 						</button>
 					</li>
@@ -101,7 +101,7 @@ if ($active !== null) {
 				<?php } ?>
 				<?php if (!$node->isAlias && !$node->isTrashed) { ?>
 					<li style='margin-left: auto;' title="Delete Page" class="iconOnly">
-						<button type="button" data-cms-action title="Delete Page" aria-label="Delete Page" data-confirm="All langauges, children and versions will be removed!"
+						<button type="button" data-cms-action title="Delete Page" aria-label="Delete Page" data-confirm="<?= htmlspecialchars($this->branchConfirmation((int) $node->id, 'deletePage'), ENT_QUOTES) ?>"
 						   data-on_click='userConfirm'
 						   data-action="deletePage"
 						   data-node_id="<?= $node->id ?>">

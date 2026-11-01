@@ -8,6 +8,7 @@ document.addEventListener('input', function (event) {
 	if (!field || field.id !== 'cmsSearchInput') {
 		return;
 	}
+	if(field.value.trim())field.dataset.lastSearch=field.value;
 	var tree = field.closest('nav') && field.closest('nav').querySelector('div.tree');
 	if (tree) {
 		tree.classList.toggle('is-results', field.value.trim() !== '');
@@ -280,3 +281,10 @@ function pageEditConflict(node, lang, field, version, metadata = {}) {
         selected=id;
     });
 })();
+
+// Re-entering search restores its last query, without reactivating it on render.
+document.addEventListener('focusin',function(event){
+    const field=event.target;if(field.id!=='cmsSearchInput')return;
+    if(!field.value && field.dataset.lastSearch){field.value=field.dataset.lastSearch;field.dispatchEvent(new Event('input',{bubbles:true}));}
+    requestAnimationFrame(()=>{if(document.activeElement===field)field.setSelectionRange(field.value.length,field.value.length);});
+});

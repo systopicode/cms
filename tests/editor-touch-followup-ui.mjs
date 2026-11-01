@@ -17,6 +17,22 @@ try {
  assert.equal(await page.locator('.editorMediaHold').count(),0,'placeholder removed');
  assert.equal(await page.locator('.editor').getAttribute('inputmode'),'none','touch move keeps keyboard suppressed');
  assert.equal(await page.locator('.editor').getAttribute('data-typing'),null);
+ // Cancelled and rejected drops must restore the exact source DOM, including a visible ghost while held.
+ for(const ending of ['pointercancel','pointerup']){
+  await page.evaluate(()=>{const media=document.querySelector('#move'),r=media.getBoundingClientRect();editorBeginMediaMove(media,{clientX:r.x+10,clientY:r.y+10,pointerType:'touch'});});
+  assert.equal(await page.locator('.editorMediaHold img').count(),1,'source ghost contains the media');
+  await page.evaluate(type=>document.dispatchEvent(new PointerEvent(type,{bubbles:true,clientX:1100,clientY:790,pointerType:'touch'})),ending);
+  assert.equal(await page.locator('.editor #move').count(),1,'invalid/cancelled drop restores source '+ending);
+  assert.equal(await page.locator('.editorMediaHold').count(),0);
+ }
+ for(const tag of ['img','video','audio','object','a']){
+  await page.evaluate(tag=>{document.querySelector('.editor').innerHTML='<p>Before</p><'+tag+' id="move" style="display:block;width:80px;height:80px">File</'+tag+'><p>After</p>';if(!document.querySelector('.plaintext'))document.body.insertAdjacentHTML('beforeend','<div class="editor plaintext" style="position:fixed;left:700px;top:30px;width:250px;height:200px">Text only</div>');const m=document.querySelector('#move'),r=m.getBoundingClientRect();editorBeginMediaMove(m,{clientX:r.x+10,clientY:r.y+10,pointerType:'touch'});document.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,clientX:750,clientY:80,pointerType:'touch'}));},tag);
+  await page.waitForTimeout(250);
+  assert.equal(await page.locator('.plaintext').evaluate(e=>e.classList.contains('dropRejected')),true,'plain text rejects '+tag);
+  await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,clientX:750,clientY:80,pointerType:'touch'})));
+  assert.equal(await page.locator('.editor:not(.plaintext) #move').count(),1,'all media restored on rejected drop '+tag);
+  assert.equal(await page.locator('.plaintext #move').count(),0);
+ }
  await page.setContent('<article class=cmsContent><div class="editor" contenteditable=true style="width:600px;padding:40px;margin-top:240px"><p>Select this text without opening a keyboard.</p></div></article>');
  await page.evaluate(()=>{window.cmsMenuSequence=0;window.contextMenus=[];window.closeAllMenus=()=>document.querySelectorAll('.HTMLeditorMenu').forEach(e=>e.parentElement.remove());window.prepareMenuKeyboard=()=>{};window.HTMLeditorRightClick=(kind,event)=>new contextMenuWW(kind==='selectedWord'?{bold:{title:'Bold',className:'cmsIcon cmsIcon-bold'}}:{},event);});
  await page.addScriptTag({path:'../system/public/js/gui/HTMLeditor.contextmenu.js'});
@@ -46,6 +62,24 @@ try {
  assert.equal(await classInput.isVisible(),true,'keyboard/caret scrolling does not close class input');
  await page.getByRole('button',{name:'Apply',exact:true}).click();
  assert.equal(await page.locator('.editor p').getAttribute('class'),'fixture-class','class is applied');
+ // The media-format hover marker is UI state, never a user CSS class.
+ await page.evaluate(()=>{closeAllMenus();document.querySelector('.editor').innerHTML='<img class="cmsMediaOn" width="80" height="80">';});
+ await page.addScriptTag({path:'../system/public/js/gui/HTMLeditor.menus.js'});
+ await page.evaluate(()=>{window.editorFormats={image:{},video:{}};const img=document.querySelector('.editor img');HTMLeditorRightClick('image',{target:img});});
+ const classes=page.getByRole('button',{name:'CSS classes',exact:true});
+ const crop=page.getByRole('button',{name:'Crop on page — choose an image format first',exact:true});
+ assert.equal(await crop.isVisible(),true,'Original still exposes the crop action');
+ assert.equal(await crop.isDisabled(),true,'Original requires a generated image format');
+ assert.equal(await classes.getAttribute('aria-pressed'),'false','hover marker does not select CSS class action');
+ await classes.click();assert.equal(await classInput.inputValue(),'','same media target has no authored classes');
+ assert.equal(await classInput.getAttribute('placeholder'),'CSS classes (space-separated)');
+ await classInput.press('Escape');
+ await page.evaluate(()=>{closeAllMenus();window.url2mediaParams=()=>({format:'tile'});const img=document.querySelector('.editor img');HTMLeditorRightClick('fixedImage',{target:img},[img]);});
+ assert.equal(await page.getByRole('button',{name:'Crop on page',exact:true}).isEnabled(),true,'template images expose the same crop action');
+ assert.equal(await page.getByRole('button',{name:'Move',exact:true}).count(),0,'fixed images remain immovable');
+ await page.evaluate(()=>{closeAllMenus();const img=document.querySelector('.editor img');HTMLeditorRightClick('fixedVideo',{target:img},[img]);});
+ assert.equal(await page.getByRole('button',{name:'Crop on page',exact:true}).count(),0,'video menu is unchanged');
+ await page.evaluate(()=>document.querySelector('.editor').innerHTML='<p>Class tools test</p>');
  await page.setViewportSize({width:390,height:844});
  await page.addStyleTag({content:await fs.readFile('../system/public/css/12_HTMLeditor.css','utf8')});
  await page.evaluate(()=>{const p=document.querySelector('.editor p');const r=p.getBoundingClientRect();editorRange=document.createRange();editorRange.selectNodeContents(p);new contextMenuWW(Object.fromEntries(Array.from({length:14},(_,n)=>['item'+n,{title:'Tool '+n,className:'cmsIcon cmsIcon-copy'}])),{target:p,anchorRect:r});});

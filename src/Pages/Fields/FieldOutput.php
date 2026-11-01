@@ -122,7 +122,7 @@ final class FieldOutput
     {
         $page = $field->page();
         $fieldContent = $field->editorContent;
-        $classes = ['editor'];
+        $classes = ['editor', 'mediaDroppable', 'pageDroppable', 'fulltextsearch'];
         $editableAttributes = \html::arrayToDataAttr([
             'on_blur'               => 'updatePageParam',
             'on_drop'               => 'insertItemInEditor',
@@ -144,7 +144,6 @@ final class FieldOutput
                 [\http::$siteRoot, \http::$siteRoot . 'var/', ' mediaDroppable pageDroppable', ' mediaDroppable pageDroppable', 'maillink auto'],
                 "\n" . $fieldContent,
             );
-            $classes[] = 'mediaDroppable pageDroppable fulltextsearch editor';
         }
         if (!$field->isVisible) {
             $classes[] = 'empty';

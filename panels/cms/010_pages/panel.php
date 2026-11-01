@@ -524,6 +524,7 @@ class Panel extends CmsPanel {
 					'metaHeight' => 300,
 					'openFolds' => [],
 					'cmsPageSearchstring' => '',
+                    'cmsPageLastSearch' => '',
 					'cmsPageSearchResults' => '',
 					'treeMode' => 'normal',
 					'editSite' => NULL, // 'default' | 'new' while main shows the site editor without a node
@@ -588,6 +589,23 @@ class Panel extends CmsPanel {
 	 *
 	 * @return int how many rows changed
 	 */
+    /** Same branch as the action; counts are a preview, re-evaluated on execution. */
+    public function branchConfirmation(int $nodeId, string $action): string
+    {
+        $branch = Branch::of($this->scope, $this->params, $nodeId);
+        if ($action === 'deletePage') {
+            return 'Move this branch to the trash? ' . count($branch->nodes)
+                . ' tree items, including attached media, are affected in every language. '
+                . 'This can be undone from Trash. References from other pages may stop working.';
+        }
+        $publish = $action === 'publishAll';
+        $changed = array_filter($branch->rows, static fn($row): bool => (bool) $row->isPublished !== $publish);
+        return ($publish ? 'Publish' : 'Unpublish') . ' this branch? ' . count($changed)
+            . ' page records will change in language “' . $this->params->lang . '”. '
+            . 'Other languages and alias originals outside this branch stay unchanged. '
+            . ($publish ? 'Publishing dates still apply.' : 'Visitors will no longer be able to open these pages normally.');
+    }
+
 	function publishBranch(int $nodeId, bool $published): int {
 		$branch = Branch::of($this->scope, $this->params, $nodeId);
 		$uow = $this->uow();

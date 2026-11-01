@@ -8,6 +8,8 @@ for(const width of [1440,1194,1024,390])for(const dark of [false,true]){
  await page.setContent(`<html data-mode="${dark?'dark':'light'}"><style>${css}</style><body class="cms system settings"><main style="height:100vh;overflow:auto"><div class=content><div class=projectFiles style="max-width:800px"><section class=widget>${html}</section></div><label>Range <input type=range min=0 max=200 value=100></label></div></main></body></html>`);
  await page.evaluate(()=>window.sys={});await page.addScriptTag({path:'../system/public/js/gui/tableFit.js'});
  await page.evaluate(()=>document.querySelectorAll('.tableScroll').forEach(box=>{sys.fitTables.fit(box);}));
+ assert.equal(await page.locator('thead th').nth(1).evaluate(e=>getComputedStyle(e).textAlign),'left','settings table headers align left');
+ assert.equal(await page.locator('tbody tr').first().evaluate(e=>getComputedStyle(e).transform),'none','idle rows avoid transformed-input caret rendering');
  const stacked=await page.locator('.tableScroll').evaluate(e=>e.classList.contains('stacked'));
  assert.equal(stacked,width<=767,'only smartphones use accordion cards');
  if(!stacked){

@@ -10,10 +10,11 @@ use Systopic\System\Tables\MediaCrops\Model as Crop;
 use Systopic\Cms\Tables\Pages\Model as PageRow;
 
 /**
- * tools/maintenance/duplicates — pages and crops that exist twice, to delete
- * the copies by hand.
+ * tools/cleanup/duplicates — duplicate rows and read-only original-file comparison.
  */
 class Panel extends PanelNode {
+
+    public ?array $fileDuplicates = null;
 
 	public Scope $scope {
 		get => Scope::default();

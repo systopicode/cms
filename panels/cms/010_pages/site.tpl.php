@@ -61,7 +61,7 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
             <div class="siteRename" data-current-name="<?= $e($site->name) ?>">
                 <label class="_4_8">New domain<input name="siteName" value="<?= $e($site->name) ?>" autocomplete="off"></label>
                 <button type="button" class="button" data-on_click="reviewSiteRename">Rename site…</button>
-                <p class="hint">Review the changes before renaming. Nothing changes while you type.</p>
+                <p class="hint">Renaming can change the site directory and local links. The review lists the affected locations.</p>
             </div>
 			<?php if (!$hasFolder || $missingRules || $nodeId !== NULL) { ?>
 				<p>

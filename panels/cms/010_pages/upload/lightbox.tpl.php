@@ -29,8 +29,14 @@ $currentFormat = $replacement && (int) $media->width > 0
 		</header>
 		<div class="layout">
 			<main class="uploadStage">
+        <?php if ($replacement): ?>
+        <div class="cms message is-stay uploadNotice"><div class="info"><p class="message">Replacing this file updates its existing references. Review “Used on” before uploading.</p></div></div>
+        <?php endif; ?>
+
 				<div class="uploadPane">
-					<?php if ($replacement) { ?><p class="paneLabel">New file</p><?php } ?>
+                    <?php if ($replacement) { ?>
+                        <p class="paneLabel">New file</p>
+                    <?php } ?>
 					<div data-doc="box" class="idle">
 						<div class="uploader">
 							<p class="dropHint"><i class="cmsIcon cmsIcon-cloud-arrow-up"></i>Drop a file here, or click to choose</p>

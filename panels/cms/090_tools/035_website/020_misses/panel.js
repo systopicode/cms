@@ -1,7 +1,7 @@
 /* global sys */
 (function () {
 	var setup = {
-		info: 'Unknown addresses',
+		info: 'Incoming · 404',
 		route: 'panels.cms.tools.website.misses',
 		extends: 'panels.cms',
 	};

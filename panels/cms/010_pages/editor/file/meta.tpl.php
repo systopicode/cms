@@ -8,7 +8,7 @@
 $row = $this->mediaRow;
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 $when = static function (?DateTimeImmutable $d, ?string $who) use ($e): string {
-	$stamp = \Systopic\System\Sys\LocalTime::format($d, 'd.m.Y H:i');
+	$stamp = \Systopic\System\Sys\LocalTime::format($d, \Systopic\System\Sys\LocalTime::DATETIME);
 	$who = trim((string) $who);
 	if ($stamp === '') {
 		return '';
@@ -66,6 +66,8 @@ include dirname(__DIR__, 2) . '/media-usage.tpl.php';
 					<summary><span class="sidebarLabel">Details</span><span class="sidebarTools"><i class="cmsIcon cmsIcon-chevron-down sidebarFold" aria-hidden="true"></i></span></summary>
 					<div class="sidebarItem">
 						<dl class="cmsFacts">
+                            <div><dt>Media ID</dt><dd><?= (int) $row->id ?></dd></div>
+                            <div><dt>File details</dt><dd>Dimensions and size below describe the original file. Generated image formats can have different dimensions and crops.</dd></div>
 							<?php if ($created = $when($row->createdDate, $row->createdUser?->fullname)) { ?>
 								<div>
 									<dt>Created</dt>

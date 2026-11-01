@@ -22,13 +22,13 @@ $figures['misses'] = Misses::count($scope);
 $href = \http::$root . 'cms/pages/?id=';
 // level: fix - visitors run into it; improve - better for search and accessibility; info - only to know
 $tasks = array_filter([
-	'brokenlinks' => ['fix', 'cmsIcon-link-slash', 'Broken links', 'Visitors land on an error page.', 'Open the page and correct or remove the link. Pages and files that were deleted are the usual cause.'],
+	'brokenlinks' => ['fix', 'cmsIcon-link-slash', 'Broken links', 'These references can no longer reach their intended destination.', 'Deleted or moved pages and files are common causes. The affected pages are listed below.'],
 	'deadlinks' => ['fix', 'cmsIcon-globe', 'Links to other websites not answering', 'The other website may be gone or moved.', ''],
-	'nodescription' => ['improve', 'cmsIcon-magnifying-glass', 'Pages without a description', 'Search engines show it under the title in their results.', 'Open the page, in the sidebar under Meta write one or two sentences about it (up to 160 letters). Without it, search engines pick any text of the page.'],
-	'noalt' => ['improve', 'cmsIcon-image', 'Media without a label', 'Read aloud to blind visitors, used by image search and as link text.', 'Open the medium and write in Label what it shows.'],
-	'hidden' => ['info', 'cmsIcon-eye-slash', 'Hidden pages', 'Visitors can’t see them yet.', 'Fine for drafts. To publish, click the crossed-out eye in the page tree.'],
-	'planned' => ['info', 'cmsIcon-calendar', 'Planned pages', 'They go online by themselves on their date.', 'Nothing to do, unless the date is wrong.'],
-	'trashed' => ['info', 'cmsIcon-trash', 'Pages in the trash', 'Restore them or delete them for good.', ''],
+	'nodescription' => ['improve', 'cmsIcon-magnifying-glass', 'Pages without a description', 'A concise description helps explain a page in search results.', 'Use a short summary of the page’s purpose. Search engines may use it as a snippet, but can choose other text.'],
+	'noalt' => ['improve', 'cmsIcon-image', 'Media without a label', 'Useful labels make media easier to identify and can supply text alternatives, depending on the template.', 'Describe the meaningful content in context, rather than repeating the file name.'],
+	'hidden' => ['info', 'cmsIcon-eye-slash', 'Hidden pages', 'Visitors can’t see them yet.', 'Hidden pages remain unpublished until publication is enabled.'],
+	'planned' => ['info', 'cmsIcon-calendar', 'Planned pages', 'They go online by themselves on their date.', 'These pages have a future publishing start. The configured server time determines when they become public.'],
+	'trashed' => ['info', 'cmsIcon-trash', 'Pages in the trash', 'Trashed content is retained for recovery until it is permanently deleted.', ''],
 	'unusedmedia' => ['info', 'cmsIcon-photo-film', 'Unused media', 'No page uses these files.', ''],
 	'misses' => ['fix', 'cmsIcon-diamond-turn-right', 'Unknown addresses', 'Visitors opened an address that belongs to no page.', ''],
 ], static fn(string $key): bool => $figures[$key] > 0, ARRAY_FILTER_USE_KEY);
@@ -36,12 +36,12 @@ $tasks = array_filter([
 $items = static fn(string $key): array => match ($key) {
 	'noalt' => array_map(static fn(array $media): array => [\http::$root . 'cms/pages/editor/file/?target_id=' . $media['node'], $media['filename'], $media['type']], Dashboard::unlabelled($scope)),
 	'brokenlinks' => array_map(static fn(array $page): array => [$href . $page['id'], $page['label'], isset($page['target']) && str_starts_with($page['target'], \http::$root) ? substr($page['target'], strlen(\http::$root)) : ($page['target'] ?? null)], array_slice($broken, 0, 5)),
-	default => array_map(static fn(array $page): array => [$href . $page['id'], $page['label'], null], Dashboard::pages($scope, $key, 5)),
+	default => array_map(static fn(array $page): array => [$href . $page['id'] . '&lang=' . rawurlencode($page['language']), $page['label'], $page['language']], Dashboard::pages($scope, $key, 5)),
 };
 ?>
 <header><h2><i class="cmsIcon cmsIcon-list-check"></i>To do</h2></header>
 <?php if ($tasks === []) { ?>
-	<main><p class="hint"><i class="cmsIcon cmsIcon-circle-check"></i> All done: no broken links, every page has a description, every image a label.</p></main>
+	<main><p class="hint"><i class="cmsIcon cmsIcon-circle-check is-success"></i> No open items in these checks.</p></main>
 <?php } else { ?>
 	<ul class="dashList dashTasks">
 		<?php foreach ($tasks as $key => [$level, $icon, $label, $why, $hint]) {
@@ -60,7 +60,7 @@ $items = static fn(string $key): array => match ($key) {
 				<?php } else { ?>
 					<details>
 						<summary><?= $count ?><i class="cmsIcon cmsIcon-chevron-down"></i></summary>
-						<p><b>How:</b> <?= $e($hint) ?></p>
+						<?php if ($hint !== '') { ?><p><?= $e($hint) ?></p><?php } ?>
 						<ul>
 							<?php foreach ($items($key) as [$link, $text, $small]) { ?>
 								<li><a class="ajax" href="<?= $e($link) ?>"><?= $e($text !== '' ? $text : 'Untitled') ?><?php if ($small !== null) { ?><small><?= $e($small) ?></small><?php } ?></a></li>

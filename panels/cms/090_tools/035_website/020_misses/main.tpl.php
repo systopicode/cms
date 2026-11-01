@@ -6,8 +6,8 @@ $misses = $this->misses;
 $pages = $this->pages;
 ?>
 
-<h1>Unknown addresses</h1>
-<p class="tagsHint">Addresses that were opened and belong to no page. Send one to a page and the next visit goes there.</p>
+<h1>Incoming · 404</h1>
+<p class="tagsHint">Incoming visits to addresses that belong to no page (404). These are different from outgoing links checked under Links. Send one to a page and the next visit goes there.</p>
 <?= \message::flush() ?>
 <section class="widget is-list">
 	<header>
@@ -32,7 +32,7 @@ $pages = $this->pages;
 				</thead>
 				<tbody>
 					<?php foreach ($misses as $miss) {
-						$when = $miss->lastAt?->format('d.m.Y H:i') ?? '';
+						$when = $miss->lastAt?->format(\Systopic\System\Sys\LocalTime::DATETIME) ?? '';
 						?>
 						<tr>
 							<td>&#47;<?= $e($miss->path) ?><?php if ($when !== '') { ?><small class="muted"><?= $e($when) ?></small><?php } ?></td>

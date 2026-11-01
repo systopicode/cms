@@ -25,6 +25,19 @@ final class Duplicates
         return $scope->rows(__DIR__ . '/Duplicates.sql', [])->set(1)?->all(Crop::class) ?? [];
     }
 
+    /** All local original media types; URLs and generated formats are excluded. */
+    public static function files(Scope $scope): array
+    {
+        $rows = $scope->rows(__DIR__ . '/Files.sql', [])->all(\Systopic\System\Tables\Medias\Model::class);
+        $files = [];
+        foreach ($rows as $row) {
+            if (in_array($row->type, ['youtube', 'vimeo'], true)) continue;
+            $media = new \Systopic\System\Tables\Medias\Media($row);
+            $files[] = ['id' => (int) $row->id, 'label' => trim((string) $row->label) ?: (string) $row->filename, 'path' => $media->path];
+        }
+        return IdenticalFiles::scan($files);
+    }
+
     public static function page(Scope $scope, int $pageId): ?PageRow
     {
         foreach (self::pages($scope) as $page) {

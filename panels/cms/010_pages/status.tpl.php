@@ -9,25 +9,14 @@ $row = $page?->row;
 if ($row === null) {
 	return;
 }
-$now = new DateTimeImmutable();
-$from = $row->startPublishing;
-$to = $row->endPublishing;
-if (!$row->isPublished) {
-	$publishState = ['offline', 'Offline'];
-} elseif ($from instanceof DateTimeImmutable && $from > $now) {
-	$publishState = ['scheduled', 'Geplant ab ' . $from->format('d.m.Y H:i')];
-} elseif ($to instanceof DateTimeImmutable && $to < $now) {
-	$publishState = ['expired', 'Abgelaufen'];
-} else {
-	$publishState = ['online', 'Veröffentlicht'];
-}
+$publishing = \Systopic\Cms\Pages\PublishingState::of(true, (bool) $page->node->isTrashed, (bool) $row->isPublished, $row->startPublishing, $row->endPublishing);
 $modified = $row->modifiedDate;
-$modifiedDate = $modified instanceof DateTimeImmutable ? \Systopic\System\Sys\LocalTime::format($modified, 'd.m.Y H:i') : '';
+$modifiedDate = $modified instanceof DateTimeImmutable ? \Systopic\System\Sys\LocalTime::format($modified, \Systopic\System\Sys\LocalTime::DATETIME) : '';
 $modifiedName = trim((string) ($row->modifiedUser?->fullname ?? ''));
 ?>
 <div class="cmsStatusInfo">
 	<?php if ($modifiedDate !== '') { ?>
-		<span class="modified">Geändert <?= htmlspecialchars($modifiedDate, ENT_QUOTES, 'UTF-8') ?><?= $modifiedName !== '' ? ' · ' . htmlspecialchars($modifiedName, ENT_QUOTES, 'UTF-8') : '' ?></span>
+		<span class="modified">Modified <?= htmlspecialchars($modifiedDate, ENT_QUOTES, 'UTF-8') ?><?= $modifiedName !== '' ? ' · ' . htmlspecialchars($modifiedName, ENT_QUOTES, 'UTF-8') : '' ?></span>
 	<?php } ?>
-	<span class="publishState <?= $publishState[0] ?>"><?= htmlspecialchars($publishState[1], ENT_QUOTES, 'UTF-8') ?></span>
+	<span title="<?= htmlspecialchars($publishing['reason'], ENT_QUOTES, 'UTF-8') ?>" class="publishState <?= $publishing['key'] ?>"><?= htmlspecialchars($publishing['label'], ENT_QUOTES, 'UTF-8') ?></span>
 </div>

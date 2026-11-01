@@ -407,7 +407,7 @@ aside.cms .pageRelations .relationResults button:where(:not([data-cms-action])) 
 aside.cms .pageRelations .relationIncoming li { background: var(--cmsButtonBg); border: 0; border-radius: var(--cmsRadius); margin-bottom: .35rem; padding: .2rem .25rem; gap: .2rem; }
 aside.cms .pageRelations .relationIncoming .relationLink { background: transparent; margin: 0; }
 aside.cms .pageRelations .relationIncoming > li > :is(:is(a, button:where([data-cms-action])), button:where(:not([data-cms-action]))):last-child:not(.relationLink) { background: transparent; border: 0; border-radius: var(--cmsRadius); width: 2rem; min-height: 2rem; flex: 0 0 2rem; margin: 0; padding: .3rem; color: var(--cmsTextColor); }
-aside.cms .pageRelations .relationIncoming > li > :is(:is(a, button:where([data-cms-action])), button:where(:not([data-cms-action]))):last-child:hover { background: var(--cmsHover); }
+aside.cms .pageRelations .relationIncoming > li > :is(:is(a, button:where([data-cms-action])), button:where(:not([data-cms-action]))):last-child:not(.relationLink):hover { background: var(--cmsHover); }
 
 aside.cms .pageRelations .relationResults .relationResultRow { display: flex; align-items: center; gap: .5rem; margin-top: .4rem; padding: .5rem .6rem; border: 1px solid var(--cmsLine); border-radius: var(--cmsRadius); }
 aside.cms .pageRelations .relationResultLabel { flex: 1; min-width: 0; font-size: .8125rem; overflow-wrap: anywhere; }
@@ -445,3 +445,8 @@ aside.cms .pageRelations .relationLink small { word-break: break-all; overflow-w
 .cmsPreview > .pageEditorNotice > i { color:var(--cmsInteractive); }
 
 .cmsPreview > .pageEditorNotice { order: -1; }
+
+/* Publishing status shares the public renderer's window rules. */
+.publishingSummary{padding:.75rem 0;font-size:.9em;overflow-wrap:anywhere}
+.publishingSummary p{margin:.35rem 0}
+.publishingSummary small{display:block;opacity:.75}

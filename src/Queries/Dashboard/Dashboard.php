@@ -33,7 +33,7 @@ final class Dashboard
      * One row per page (its newest language), newest change first.
      *
      * @param 'recent'|'nodescription'|'hidden'|'planned' $filter
-     * @return list<array{id: int, label: string, published: bool, start: ?string, modified: ?string, user: string}>
+     * @return list<array{id: int, label: string, language: string, published: bool, start: ?string, modified: ?string, user: string}>
      */
     public static function pages(Scope $scope, string $filter, int $limit): array
     {
@@ -46,6 +46,7 @@ final class Dashboard
             $out[$id] = [
                 'id'        => $id,
                 'label'     => trim(strip_tags((string) $row['dash_label'])),
+                'language'  => (string) $row['dash_language'],
                 'published' => (bool) $row['dash_published'],
                 'start'     => $row['dash_start'] !== null ? (string) $row['dash_start'] : null,
                 'modified'  => $row['dash_modified'] !== null ? (string) $row['dash_modified'] : null,

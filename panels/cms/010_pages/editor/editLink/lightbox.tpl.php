@@ -113,7 +113,7 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 								$path = $linkedPage->rewritepaths->path . $linkedPage->rewritepaths->appendix; ?>
 								<li><button type="button" class="selected" data-href="page:<?= (int) $linkedPage->id ?>?lang=<?= $e($pages->params->lang) ?>" data-label="<?= $e($label) ?>" onclick="linkPicked(this)"><b><?= $e($label) ?></b><small>/<?= $e($path) ?></small></button></li>
 							<?php } else { ?>
-								<li class="linkHint">Type a few letters of the page title.</li>
+								<li class="linkHint">Search pages by title.</li>
 							<?php } ?>
 						</ul>
 					</div>

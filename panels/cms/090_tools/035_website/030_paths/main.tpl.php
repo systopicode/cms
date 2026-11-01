@@ -39,7 +39,7 @@ usort($entries, static function (array $a, array $b): int {
 		<button type="button" data-cms-action class="button" data-on_click="assignSites"><i class="cmsIcon cmsIcon-sitemap"></i><span>Reassign sites</span></button>
 		<button type="button" data-cms-action class="button" data-on_click="buildAllAutoRewritepaths"><i class="cmsIcon cmsIcon-arrows-rotate"></i><span>Create paths</span></button>
 	</header>
-	<p class="tagsHint">Preview opens the address. Delete removes it. Primary is the address the page uses. A dash has no path, so it cannot be opened.</p>
+	<p class="tagsHint">The primary path is the preferred address for a page. Other paths can keep older links working. Removing a path can make that address unavailable.</p>
 	<?php if ($entries === []) { ?>
 		<main><p>No addresses.</p></main>
 	<?php } else { ?>

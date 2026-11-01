@@ -54,3 +54,36 @@ File preview frames show the shared spinner while image/video/audio/PDF content 
 Tree reveal clamps its target to the available scroll range, skips negligible/duplicate requests and reveals remembered selections after an AJAX entry without `?id=`. A live refresh with an unchanged selection does not trigger this entry reveal.
 
 The self-contained SketchUp ES module lives under `public/modules/` and is imported only by the 3D viewer. It must not be put back under the globally scanned `public/js/` directory as a classic script.
+
+## Publishing and branch previews (1 November 2026)
+
+`Pages\PublishingState` is shared by the public publishing-window check and the editor
+status. Preview mode retains its existing bypass; the editor summary describes the public
+window independently of preview. Missing records, trash, disabled publishing, future start
+and elapsed end are distinct states. Start/end boundaries keep the existing inclusive rules.
+The summary names server time and its zone. Navigation membership is separate from whether
+a page can be opened directly. The summary is not a network reachability or permission test.
+
+Branch publish/unpublish previews count changed page records in the current language using
+the same `Branch` query as execution. Alias originals outside the branch are not included.
+Trash previews count tree items and explain that trash applies to all languages and may
+break references. Counts describe the moment the preview is rendered; execution reads the
+branch again. Existing role checks and action handlers remain in place.
+
+Checks: `php tests/publishing-state.php`, System `tests/display-dates.php`, read-only live
+status/preview checks and cancellation. Confirmed destructive operations were not performed
+on project data. Version history belongs to the planned editor work; the rights redesign
+and the proposed comment feature are not implemented by this follow-up.
+
+## Media replacement and dashboard links
+
+The replacement notice belongs inside `main.uploadStage`, above both preview columns;
+it does not span the metadata sidebar. Desktop/tablet use two aligned previews. Narrow
+layouts stack the notice, previews and sidebar without horizontal overflow. Upload and
+replacement reuse the existing usage template; custom-template and external references
+remain outside its detection scope. File details identify original-file properties rather
+than the dimensions of a generated format.
+
+Recently edited and applicable To-do links carry the language displayed in their result.
+The empty To-do message describes only the checks represented by that widget. A language
+matrix and comment tasks remain proposals, not shipped dashboard features.

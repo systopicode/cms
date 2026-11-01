@@ -11,9 +11,9 @@ $href = \http::$root . 'cms/pages/?id=';
 <ul class="dashList">
 	<?php foreach (Dashboard::pages(\Systopic\Db\Scope::default(), 'recent', 6) as $page) { ?>
 		<li>
-			<a class="ajax" href="<?= $e($href . $page['id']) ?>">
+			<a class="ajax" href="<?= $e($href . $page['id'] . '&lang=' . rawurlencode($page['language'])) ?>">
 				<i class="cmsIcon cmsIcon-file"></i>
-				<span><strong><?= $e($page['label'] !== '' ? $page['label'] : 'Untitled') ?></strong><small><?= $e(trim(Cms::ago($page['modified']) . ($page['user'] !== '' ? ' · ' . $page['user'] : ''))) ?></small></span>
+				<span><strong><?= $e($page['label'] !== '' ? $page['label'] : 'Untitled') ?></strong><small><?= $e(trim(Cms::ago($page['modified']) . ' · ' . $page['language'] . ($page['user'] !== '' ? ' · ' . $page['user'] : ''))) ?></small></span>
 				<?php if (!$page['published']) { ?><em class="dashBadge">Hidden</em><?php } ?>
 			</a>
 		</li>
