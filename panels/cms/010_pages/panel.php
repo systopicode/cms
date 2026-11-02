@@ -37,7 +37,7 @@ class Panel extends CmsPanel {
 	public $icon = 'fa-duotone fa-regular fa-files';
 
 	public function buildGranted() {
-		return \Systopic\System\Auth\Session::hasOneRole('editor', 'textEditor');
+		return \Systopic\System\Auth\Session::hasOneRole('cmsAdmin', 'cmsEditor', 'cmsPageEditor');
 	}
 
 	/**
