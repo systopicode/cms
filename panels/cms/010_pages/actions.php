@@ -16,6 +16,10 @@
  * is placed somewhere (new, moved, duplicated) the parent it lands under. A
  * refusal says so; in the tree it draws the tree again, so a drag snaps back.
  *
+ * A drag that gives a page another parent needs the right `move` as well
+ * (the controlmap, `Access::right()`; panel.config.json: cmsAdmin and
+ * cmsEditor). A cmsPageEditor only orders pages within their parent.
+ *
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Panel $this
  */
 
@@ -27,6 +31,17 @@ use Systopic\Cms\Tables\Pages\Page;
 use Systopic\Cms\Queries\PageSearch\PageSearch;
 use Systopic\Cms\Pages\Fields\HtmlSource;
 use Systopic\Cms\Pages\PageAccess;
+use Systopic\System\Controlmap\Access;
+
+// a drag to another parent: the right `move` (the controlmap)
+$mayMove = function (Node $node, ?Node $newParent): bool {
+    if ((int) $node->parentNode?->id === (int) $newParent?->id || Access::right($this, 'move')) {
+        return true;
+    }
+    message::error('You may order pages, but not move them to another parent.');
+    $this->updateView('tree');
+    return false;
+};
 
 /** The node id an action is about: the dataset of the clicked element, else the address. */
 $nodeIdOf = static function (): ?int {
@@ -243,6 +258,9 @@ switch ($this->action) {
             $this->updateView('tree');
             break;
         }
+        if (!$mayMove($drag->node, $drop->node->parentNode)) {
+            break;
+        }
         $this->scope->save(...NodeOperator::placedBeside($this->scope, $drag->node, $drop->node, after: $this->action === 'insertAfter'));
         // multi-site: the paths of the moved branch follow it into its (maybe other) site
         \Systopic\Cms\Pages\Sites\NodeSite::rebuildBranch((int) $drag->node->id);
@@ -262,6 +280,9 @@ switch ($this->action) {
         }
         if (PageAccess::refuses($drag->node, $drop->node)) {
             $this->updateView('tree');
+            break;
+        }
+        if (!$mayMove($drag->node, $drop->node)) {
             break;
         }
         $this->scope->save(...NodeOperator::placed($this->scope, $drag->node, $drop->node, 0));
