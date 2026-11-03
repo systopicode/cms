@@ -19,9 +19,9 @@ final class SiteAccess
     private const DETECTED_KEY = 'systopic_language_detected';
 
     /**
-     * A site that is not public sends a visitor without a session to sign in:
-     * the project's own sign-in (panels/auth) if it has one, the CMS's
-     * otherwise. Either brings them back to the page (Session::takeReturn()).
+     * A site that is not public sends a visitor without a session to sign in
+     * (auth/, the system's; a project's panels/auth adds to it or replaces
+     * its templates). It brings them back to the page (Session::takeReturn()).
      */
     public static function guard(): void
     {
@@ -29,8 +29,7 @@ final class SiteAccess
             return;
         }
         Session::rememberReturn((string) (\http::ajax() ? ($_SERVER['HTTP_REFERER'] ?? '') : ($_SERVER['REQUEST_URI'] ?? '')));
-        $own = \fs::isDir(rtrim((string) \fs::$projectRoot, '/') . '/panels/auth');
-        $target = \http::$root . ($own ? 'auth/' : 'admin/auth/');
+        $target = \http::$root . 'auth/';
         // nothing of the page may follow, also not in an ajax answer
         if (\http::ajax()) {
             header('Content-type: application/json; charset=utf-8');
