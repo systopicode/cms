@@ -450,3 +450,67 @@ aside.cms .pageRelations .relationLink small { word-break: break-all; overflow-w
 .publishingSummary{padding:.75rem 0;font-size:.9em;overflow-wrap:anywhere}
 .publishingSummary p{margin:.35rem 0}
 .publishingSummary small{display:block;opacity:.75}
+/* sidebar permissions: inherited or not writable groups show, but do not toggle */
+aside.cms .aclGroups .tag.locked{
+	cursor: default;
+	opacity: .55;
+}
+
+/* sidebar permissions: group => roles => read / write, for superusers.
+   The class twice: the CMS table rules (24_table.css) outweigh one class. */
+aside.cms table.aclResolution{
+	width: 100%;
+	margin: 0.75rem 0 0;
+	border-collapse: collapse;
+	font-size: 0.75rem;
+}
+aside.cms table.aclResolution.aclResolution :is(th, td){
+	padding: 0;
+	font-size: inherit;
+	letter-spacing: normal;
+	text-transform: none;
+	white-space: normal;
+	background: none;
+	color: inherit;
+	border-bottom: 1px solid var(--cmsLine);
+	text-align: left;
+	vertical-align: top;
+}
+/* every header cell like the sidebar's section bars */
+aside.cms table.aclResolution.aclResolution th{
+	background: var(--cmsPanelAlt);
+	font-weight: 700;
+	color: var(--cmsTextColor);
+}
+aside.cms table.aclResolution.aclResolution thead th{
+	border-bottom-color: var(--cmsLineStrong);
+}
+aside.cms table.aclResolution.aclResolution tr.groupStart > *{
+	border-top: 1px solid var(--cmsLineStrong);
+}
+aside.cms table.aclResolution.aclResolution tbody.summary tr:first-child > th{
+	border-top: 2px solid var(--cmsLineStrong);
+}
+/* a read-only overview: no row highlight on hover (24_table.css) */
+aside.cms table.aclResolution.aclResolution tbody tr:hover > :is(td, th):nth-child(n){
+	background: none;
+	box-shadow: none;
+}
+aside.cms table.aclResolution.aclResolution tbody tr:hover > th:nth-child(n){
+	background: var(--cmsPanelAlt);
+}
+aside.cms table.aclResolution.aclResolution .rw{
+	width: 1.5rem;
+	text-align: center;
+}
+aside.cms table.aclResolution.aclResolution .none{
+	color: var(--cmsMuted);
+	font-style: italic;
+}
+
+/* A page the user may not change (PageAccess): a lock where the title pencil was */
+header.cms .pageTitleLock{
+	align-self: center;
+	padding: 0 0.5rem;
+	color: var(--cmsMuted);
+}

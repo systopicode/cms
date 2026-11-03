@@ -51,13 +51,24 @@ final readonly class Params
          * against the legacy code wants exactly the same set as `pages.sql`.
          */
         public ?string $nodeType = null,
+        /**
+         * The ACLs the viewer may read (`Identity::readAclIds`) — only nodes
+         * with one of them come back. NULL reads every node: a superuser,
+         * and every query that is not a visitor looking (a branch to trash,
+         * a removal).
+         *
+         * @var list<int>|null
+         */
+        public ?array $readAcls = null,
+        /** The viewer's user id: a node they own is theirs to see whatever its ACL. */
+        public int $owner = 0,
     ) {}
 
     /** The same parameters in another language. */
     public function in(string $lang): self
     {
         return new self($lang, $this->preview, $this->showTrashed, $this->completion,
-            $this->root, $this->siteUrl, $this->inCms, $this->nodeType);
+            $this->root, $this->siteUrl, $this->inCms, $this->nodeType, $this->readAcls, $this->owner);
     }
 
     /**
@@ -72,6 +83,10 @@ final readonly class Params
             'preview'     => $this->preview,
             'showtrashed' => $this->showTrashed,
             'nodeType'    => $this->nodeType,
+            'aclAll'      => $this->readAcls === null ? 1 : 0,
+            // -1 keeps `IN (…)` valid when the viewer may read no ACL at all
+            'readAcls'    => [-1, ...($this->readAcls ?? [])],
+            'aclOwner'    => $this->owner,
         ];
     }
 
@@ -79,6 +94,7 @@ final readonly class Params
     public function key(): string
     {
         return $this->lang . '|' . (int) $this->preview . '|' . (int) $this->showTrashed
-            . '|' . ($this->nodeType ?? '*') . '|' . $this->completion->name;
+            . '|' . ($this->nodeType ?? '*') . '|' . $this->completion->name
+            . '|' . ($this->readAcls === null ? '*' : implode(',', $this->readAcls) . '@' . $this->owner);
     }
 }

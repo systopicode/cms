@@ -1,0 +1,6 @@
+{
+	"build": ["cmsAdmin", "cmsEditor", "cmsPageEditor"],
+	"rights": {
+		"move": ["cmsAdmin", "cmsEditor"]
+	}
+}

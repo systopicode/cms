@@ -12,6 +12,7 @@ use Systopic\Cms\Pages\Builder\ViewResolver;
 use Systopic\Cms\Pages\Route\RouteNode;
 use Systopic\Cms\Pages\PageRootFolder;
 use Systopic\Db\Scope;
+use Systopic\System\Auth\Session;
 use Systopic\Cms\Queries\Params;
 use Systopic\Cms\Tables\Pages\Page;
 
@@ -168,6 +169,8 @@ class Route implements RenderTree
             siteUrl: (string) \http::$siteUrl,
             inCms: $inCms,
             nodeType: 'page',
+            readAcls: \Systopic\Cms\Pages\PageAccess::readAcls(),
+            owner: (int) Session::id(),
         );
     }
 

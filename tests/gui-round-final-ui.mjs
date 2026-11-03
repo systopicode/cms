@@ -5,7 +5,7 @@ const {chromium}=await import(process.env.FLUXO_PLAYWRIGHT_MODULE);
 let css=(await Promise.all((await fs.readdir('../system/public/css')).filter(n=>n.endsWith('.css')).sort().map(n=>fs.readFile('../system/public/css/'+n,'utf8')))).join('\n');
 css+='\n'+await fs.readFile('../system/panels/cms/auth/auth.css','utf8');
 css+='\n'+await fs.readFile('../system/panels/cms/user/profile.css','utf8');
-css+='\n'+await fs.readFile('panels/cms/010_pages/module.css','utf8');
+css+='\n'+await fs.readFile('panels/cms/010_pages/panel.css','utf8');
 const form=execFileSync('php',['-r',`class http {public static $root='/';} class message {static function flush(...$args){return '';}} $authTitle='Reset password';$authLead='We email you a code.';$authForm='<form><input aria-label="Email"><button class="button highlight">Send code</button></form>';include '../system/src/Auth/form.card.tpl.php';`],{encoding:'utf8'});
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try {

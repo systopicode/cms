@@ -15,6 +15,7 @@ $width = $collapsed ? 0 : ((int) $this->state->sidebarWidth ?: 280);
 $manage = [
 	'tags' => ['cms/settings/tags/', 'Manage tags'],
 	'settings' => ['cms/settings/page/', 'Manage template settings'],
+	'permissions' => ['cms/users/permissions/', 'Manage content groups'],
 ];
 ?>
 <aside class="cms<?= $collapsed ? ' collapsed' : '' ?>" style="flex: 0 0 <?= $width ?>px" data-cols="1" data-items="1">

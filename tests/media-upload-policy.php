@@ -20,7 +20,7 @@ class str {public static function getSafeName($name){return $name;}}
 class message {public static array $errors=[]; public static function error($error){self::$errors[]=$error;}}
 class client {public static array $done=[];public static function done($data){self::$done[]=$data;}}
 $dir=sys_get_temp_dir().'/fluxo-upload-preflight-'.bin2hex(random_bytes(5));mkdir($dir);fs::$siteRoot=$dir.'/';
-$media=(object)['group'=>'images','filename'=>'current.png','label'=>'Keep me','width'=>100,'height'=>100];
+$media=(object)['node'=>null,'group'=>'images','filename'=>'current.png','label'=>'Keep me','width'=>100,'height'=>100];
 $pages=new class($media) {
  public array $mediaGroups=['images'=>['label'=>'Images','file_extension'=>'png']];
  public object $state;
@@ -28,6 +28,7 @@ $pages=new class($media) {
  public function mediaOfNode($id){return $id===42?$this->media:null;}
  public function uow(){throw new RuntimeException('Rejected file reached persistence!');}
  public function updateView(...$args){}
+ public function nodeFor($id){return null;}
 };
 $panel=new class($pages) {
  public string $action='upload';

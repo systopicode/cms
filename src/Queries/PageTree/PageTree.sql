@@ -73,6 +73,9 @@ WHERE
 	AND ( page_end_publishing >= NOW() OR :preview OR ISNULL(page_end_publishing) )
 	AND ( ISNULL(:nodeType) OR node_type = :nodeType OR ( :nodeType = 'page' AND node_type = 'site' ) )
 	AND ( !node_is_trashed OR :showtrashed )
+	-- who may see the node: its ACL among the viewer's (Params::$readAcls; NULL
+	-- there reads everything), or the viewer owns it
+	AND ( :aclAll OR node_acl_id IN (:readAcls) OR ( :aclOwner > 0 AND node_user_id = :aclOwner ) )
 ORDER BY node_parent_node_id, node_ordering
 
 -- :parentIds
@@ -81,3 +84,6 @@ ORDER BY node_parent_node_id, node_ordering
 -- :preview
 -- :nodeType
 -- :showtrashed
+-- :aclAll
+-- :readAcls
+-- :aclOwner

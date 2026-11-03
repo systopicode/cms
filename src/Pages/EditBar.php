@@ -17,7 +17,7 @@ final class EditBar
 {
     public static function html(int $pageId, string $lang): string
     {
-        if ((defined('FRONTEND_EDIT_BAR') && !FRONTEND_EDIT_BAR) || !Session::known() || !Session::hasRole('editor') || \http::ajax()) {
+        if ((defined('FRONTEND_EDIT_BAR') && !FRONTEND_EDIT_BAR) || !Session::known() || !Session::hasOneRole('cmsAdmin', 'cmsEditor', 'cmsPageEditor') || \http::ajax()) {
             return '';
         }
         $identity = Session::current();

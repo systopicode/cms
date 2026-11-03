@@ -9,7 +9,7 @@ $pages=new class {public function uow(){throw new RuntimeException('Forbidden ty
 $panel=new class($pages) {
  public string $action='updateMediaType';
  public object $mediaRow;
- public function __construct(public object $owner){$this->mediaRow=(object)['type'=>'image','url'=>''];}
+ public function __construct(public object $owner){$this->mediaRow=(object)['node'=>null,'type'=>'image','url'=>''];}
  public function pages(){return $this->owner;}
  public function run(){include dirname(__DIR__).'/panels/cms/010_pages/editor/file/actions.php';}
 };

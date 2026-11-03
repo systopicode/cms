@@ -33,7 +33,11 @@ $title = $page?->label->plain ?? '';
 		</nav>
         <div class="pageTitleRow">
 			<h1 class="pageTitle" contenteditable="false" data-on_blur="updateLabel"><?= $title !== '' ? $title : '- - - -' ?></h1>
-			<button type="button" class="pageTitleEdit" data-page-title-edit title="Edit title"><i class="cmsIcon cmsIcon-pen"></i></button>
+			<?php if (\Systopic\Cms\Pages\PageAccess::mayEdit($page)) { ?>
+				<button type="button" class="pageTitleEdit" data-page-title-edit title="Edit title"><i class="cmsIcon cmsIcon-pen"></i></button>
+			<?php } else { ?>
+				<i class="cmsIcon cmsIcon-lock pageTitleLock" title="Read only: you may not change this page"></i>
+			<?php } ?>
             <?php if ($page->isAlias) { ?>
                 <button type="button" class="button transparent icononly cmsRelationNotice alias" data-on_click="sidebar/showRelations" title="Alias: open original and connections" aria-label="Alias: open original and connections"><i class="cmsIcon cmsIcon-file-import"></i></button>
             <?php } ?>

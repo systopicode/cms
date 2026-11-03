@@ -9,6 +9,7 @@
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Sidebar\Panel $this
  */
 
+use Systopic\Cms\Pages\PageAccess;
 use Systopic\System\Tables\Nodes\Model as Node;
 use Systopic\System\Tables\Tags\Model as Tag;
 use Systopic\System\Tables\TagGroups\Model as TagGroup;
@@ -38,7 +39,7 @@ switch ($this->action) {
 		$name = trim((string) http::posted('name', ''));
 		$groupId = (int) http::posted('group_id', 0);
 		$nodeId = (int) http::posted('node_id', $this->parent->page?->id ?? 0);
-		if ($name === '' || $groupId < 1 || $nodeId < 2) {
+		if ($name === '' || $groupId < 1 || $nodeId < 2 || PageAccess::refuses($this->parent->nodeFor($nodeId))) {
 			break;
 		}
 		$group = null;
@@ -88,7 +89,7 @@ switch ($this->action) {
 		$tagId = (int) ($on
 			? http::dragdata('tag_id', http::dataset('tag_id'))
 			: http::put('tag_id', http::dataset('tag_id')));
-		if ($nodeId < 2 || $tagId < 1) {
+		if ($nodeId < 2 || $tagId < 1 || PageAccess::refuses($this->parent->nodeFor($nodeId))) {
 			break;
 		}
 		$uow = $this->parent->uow();

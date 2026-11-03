@@ -12,6 +12,14 @@
  * getImageEditor (the crop editor) still uses the legacy media classes; it
  * moves with the crops (legacy-db-removal.plan.md, 2d).
  *
+ * What changes a node asks `PageAccess` first: the node itself, and for what
+ * is placed somewhere (new, moved, duplicated) the parent it lands under. A
+ * refusal says so; in the tree it draws the tree again, so a drag snaps back.
+ *
+ * A drag that gives a page another parent needs the right `move` as well
+ * (the controlmap, `Access::right()`; panel.config.json: cmsAdmin and
+ * cmsEditor). A cmsPageEditor only orders pages within their parent.
+ *
  * @var \Systopic\Cms\Panels\Root\Cms\Pages\Panel $this
  */
 
@@ -22,6 +30,18 @@ use Systopic\Cms\Tables\Pages\Operator as PageOperator;
 use Systopic\Cms\Tables\Pages\Page;
 use Systopic\Cms\Queries\PageSearch\PageSearch;
 use Systopic\Cms\Pages\Fields\HtmlSource;
+use Systopic\Cms\Pages\PageAccess;
+use Systopic\System\Controlmap\Access;
+
+// a drag to another parent: the right `move` (the controlmap)
+$mayMove = function (Node $node, ?Node $newParent): bool {
+    if ((int) $node->parentNode?->id === (int) $newParent?->id || Access::right($this, 'move')) {
+        return true;
+    }
+    message::error('You may order pages, but not move them to another parent.');
+    $this->updateView('tree');
+    return false;
+};
 
 /** The node id an action is about: the dataset of the clicked element, else the address. */
 $nodeIdOf = static function (): ?int {
@@ -34,6 +54,13 @@ $savePage = function (PageRow $row): void {
     PageOperator::touch($row, $this->userId());
     $this->uow()->persist($row)->commit();
 };
+
+// A site is its node; a new one goes onto the topmost level.
+if (in_array($this->action, ['createSite', 'updateSiteMeta', 'updateSiteAliases', 'renameSite', 'createSiteFolder', 'addSiteHostRules', 'removeSite'], true)
+    && PageAccess::refuses($this->action === 'createSite' ? null : $this->actionSite?->node)) {
+    $this->updateView('main');
+    return;
+}
 
 switch ($this->action) {
     case 'editorPresence':
@@ -145,6 +172,9 @@ switch ($this->action) {
             $this->action === 'newChild'   => [$ref->node, PHP_INT_MAX],
             default                        => [$ref->node->parentNode, NodeOperator::indexOf($this->scope, $ref->node) + 1],
         };
+        if (PageAccess::refuses($parent)) {
+            break;
+        }
         $template = (string) ($ref?->row?->templateName ?? '');
         $label = $template !== '' ? '##New ' . ucfirst($template) . ' Page' : '##New Page';
 
@@ -282,6 +312,13 @@ switch ($this->action) {
             message::error('Impossible Acestry - cancel Action!');
             break;
         }
+        if (PageAccess::refuses($drag->node, $drop->node->parentNode)) {
+            $this->updateView('tree');
+            break;
+        }
+        if (!$mayMove($drag->node, $drop->node->parentNode)) {
+            break;
+        }
         $this->scope->save(...NodeOperator::placedBeside($this->scope, $drag->node, $drop->node, after: $this->action === 'insertAfter'));
         // multi-site: the paths of the moved branch follow it into its (maybe other) site
         \Systopic\Cms\Pages\Sites\NodeSite::rebuildBranch((int) $drag->node->id);
@@ -301,6 +338,13 @@ switch ($this->action) {
             message::error('Impossible Acestry - cancel Action!');
             break;
         }
+        if (PageAccess::refuses($drag->node, $drop->node)) {
+            $this->updateView('tree');
+            break;
+        }
+        if (!$mayMove($drag->node, $drop->node)) {
+            break;
+        }
         $this->scope->save(...NodeOperator::placed($this->scope, $drag->node, $drop->node, 0));
         // multi-site: the paths of the moved branch follow it into its (maybe other) site
         \Systopic\Cms\Pages\Sites\NodeSite::rebuildBranch((int) $drag->node->id);
@@ -318,6 +362,10 @@ switch ($this->action) {
         }
         if ($drag->isSite) {
             message::error('A site cannot be aliased.');
+            break;
+        }
+        if (PageAccess::refuses($drop->node)) {
+            $this->updateView('tree');
             break;
         }
         try {
@@ -345,6 +393,9 @@ switch ($this->action) {
             message::error("createAlias: no page at node $original");
             break;
         }
+        if (PageAccess::refuses($parentId > 1 ? $this->pageFor($parentId)?->node : null)) {
+            break;
+        }
         try {
             \Systopic\Cms\Pages\RelationRules::placement($source->contentNodeId, $parentId, $this->relationNode(...));
         } catch (\DomainException $error) { message::error($error->getMessage()); break; }
@@ -362,6 +413,9 @@ switch ($this->action) {
             message::error('only alias objects supported use hide function');
             break;
         }
+        if (PageAccess::refuses($page->node)) {
+            break;
+        }
         if ($page->hasChildren) { message::error('Move or remove child pages before removing this alias.'); break; }
         $originalId = $page->contentNodeId;
         $this->uow()->remove($page->node)->commit();
@@ -376,7 +430,7 @@ switch ($this->action) {
 
     case 'editLabel':
         $entry = $this->tree->getNode((int) http::dataset('id'));
-        if ($entry !== null) {
+        if ($entry !== null && !PageAccess::refuses($entry->node)) {
             $entry->edit = true;
         }
         $this->updateView('tree');
@@ -384,7 +438,7 @@ switch ($this->action) {
 
     case 'updateLabel':
         $page = $this->pageFor($nodeIdOf());
-        if ($page?->row === null) {
+        if ($page?->row === null || PageAccess::refusesEdit($page)) {
             break;
         }
         $label = strip_tags((string) http::put('html'));
@@ -460,7 +514,7 @@ switch ($this->action) {
         $nodeId = (int) http::dataset('node_id');
         $lang = (string) http::request('lang', $this->state->lang);
         $page = $this->pageFor($nodeId);
-        if ($page === null) {
+        if ($page === null || PageAccess::refusesEdit($page)) {
             break;
         }
         $row = PageOperator::create(Node::withId($page->contentNodeId), $lang, $this->userId(), '## New Page');
@@ -476,7 +530,7 @@ switch ($this->action) {
     case 'duplicate':
         // A new node right after the source, every language copied.
         $source = $this->pageFor((int) http::dataset('id', http::get('node_id')));
-        if ($source === null) {
+        if ($source === null || PageAccess::refuses($source->node->parentNode)) {
             break;
         }
         $copy = $source->duplicate($this->userId());
@@ -489,7 +543,7 @@ switch ($this->action) {
     case 'unpublish':
         // The context menu sends ?id=, the sidebar nothing (the shown page).
         $page = $this->pageFor((int) http::get('id', $this->state->id));
-        if ($page?->row === null) {
+        if ($page?->row === null || PageAccess::refusesEdit($page)) {
             break;
         }
         $page->row->isPublished = $this->action === 'publish';
@@ -501,8 +555,11 @@ switch ($this->action) {
     case 'publishAll':
     case 'unPublishAll':
         $nodeId = (int) http::get('id', http::dataset('node_id', $this->state->id));
-        $count = $this->publishBranch($nodeId, $this->action === 'publishAll');
+        [$count, $skipped] = $this->publishBranch($nodeId, $this->action === 'publishAll');
         message::confirm("$count page(s) " . ($this->action === 'publishAll' ? 'published' : 'unpublished'));
+        if ($skipped > 0) {
+            message::error("$skipped page(s) left as they are: you may not change them (their content groups).");
+        }
         $this->updateView('controls');
         $this->child('sidebar')?->updateView('main');
         $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
@@ -525,11 +582,11 @@ switch ($this->action) {
         }
         $page = $this->pageFor($nodeId);
         $parentId = $page?->node->relationId('parentNode');
-        $this->trashPage($nodeId);
+        $trashed = $this->trashPage($nodeId);
         $this->updateView('controls');
         $this->child('sidebar')?->updateView('main');
         $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
-        if ($nodeId === (int) $this->state->id) {
+        if ($trashed !== null && $nodeId === (int) $this->state->id) {
             http::redirect('?id=' . (int) $parentId);
         }
         break;
@@ -539,7 +596,9 @@ switch ($this->action) {
         $nodeId = (int) http::dataset('node_id', 0);
         if ($nodeId > 1) {
             $count = $this->recoverBranch($nodeId);
-            message::confirm("$count node(s) recovered");
+            if ($count !== null) {
+                message::confirm("$count node(s) recovered");
+            }
             $this->updateView('controls');
             $this->child('sidebar')?->updateView('main');
             $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
@@ -598,7 +657,7 @@ switch ($this->action) {
         [$media, $crop] = \Systopic\System\Queries\MediaCrop\MediaCrop::of(
             $this->scope, (int) http::params('media_id'), (string) http::params('image_format'),
         );
-        if ($media === null || (string) http::params('image_format') === '') {
+        if ($media === null || (string) http::params('image_format') === '' || PageAccess::refuses($media->node)) {
             break;
         }
         $this->scope->save(\Systopic\System\Tables\MediaCrops\Operator::cropped(

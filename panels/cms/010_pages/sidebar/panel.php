@@ -10,7 +10,7 @@ class Panel extends CmsPanel {
 	public $templates = [];
 
 	public array $groups = [
-		'content' => ['label' => 'Content', 'templates' => ['templates', 'settings', 'tags']],
+		'content' => ['label' => 'Content', 'templates' => ['templates', 'settings', 'tags', 'permissions']],
 		'seo' => ['label' => 'SEO & AI', 'templates' => ['urls', 'meta', 'search']],
 		'publishing' => ['label' => 'Publishing', 'templates' => ['publishing', 'relations', 'info']],
 	];
@@ -20,6 +20,7 @@ class Panel extends CmsPanel {
 		'templates' => 'Templates',
 		'settings' => 'Settings',
 		'tags' => 'Tags',
+		'permissions' => 'Permissions',
 		'publishing' => 'Release',
         'relations' => 'Aliases & Redirects',
 		'info' => 'Info',

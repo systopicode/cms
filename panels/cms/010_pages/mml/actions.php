@@ -13,6 +13,7 @@
  */
 
 use Systopic\System\Media\GroupPolicy;
+use Systopic\Cms\Pages\PageAccess;
 use Systopic\System\Tables\Medias\Operator as MediaOperator;
 use Systopic\System\Tables\Medias\Removal as MediaRemoval;
 
@@ -52,7 +53,8 @@ switch ($this->action) {
 		// parent and group of the drop: the target medium's, else the dataset's, else the page on screen
 		$parentId = (int) ($target?->node?->relationId('parentNode') ?? http::dataset('node_parent_node_id') ?: ($pages->state->id ?? 0));
 		$group = (string) ($target?->group ?? http::dataset('media_group') ?: 'main');
-		if ($parentId <= 0) {
+		if ($parentId <= 0 || PageAccess::refuses($media->node, $pages->nodeFor($parentId))) {
+			$pages->updateView('mml');
 			break;
 		}
 		if ($error = GroupPolicy::error($pages->mediaGroups, $group, (string) $media->filename)) {
@@ -74,6 +76,10 @@ switch ($this->action) {
 		if ($media === NULL || $pageId <= 0) {
 			break;
 		}
+		if (PageAccess::refuses($media->node, $pages->nodeFor($pageId))) {
+			$pages->updateView('mml');
+			break;
+		}
 		if ($error = GroupPolicy::error($pages->mediaGroups, (string) ($media->group ?: 'main'), (string) $media->filename)) {
 			message::error($error);
 			break;
@@ -84,7 +90,7 @@ switch ($this->action) {
 
 	case 'deleteMedia':
 		$media = $pages->mediaOfNode((int) http::get('node_id'));
-		if ($media !== NULL) {
+		if ($media !== NULL && !PageAccess::refuses($media->node)) {
 			MediaRemoval::remove($pages->scope, $media);
 		}
 		client::callFunction('closeAllMenus');

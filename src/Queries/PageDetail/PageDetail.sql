@@ -25,6 +25,11 @@ LEFT JOIN (
 	FROM cms_nodes WHERE COALESCE(node_original_node_id, 0) != 0 AND node_type = 'page' AND !node_is_trashed
 ) aliases ON alias_of = node_id
 WHERE node_id = :nodeId
+	-- a page the viewer may not read does not open (Params::$readAcls)
+	AND ( :aclAll OR node_acl_id IN (:readAcls) OR ( :aclOwner > 0 AND node_user_id = :aclOwner ) )
 
 -- :nodeId
 -- :lang
+-- :aclAll
+-- :readAcls
+-- :aclOwner

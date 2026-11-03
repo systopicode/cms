@@ -15,6 +15,7 @@
 use Systopic\System\Media\GroupPolicy;
 use Systopic\System\Queries\TagGroups\TagGroups;
 use Systopic\System\Queries\TagLinks\TagLinks;
+use Systopic\Cms\Pages\PageAccess;
 use Systopic\System\Tables\Medias\Files as MediaFiles;
 use Systopic\System\Tables\Medias\Operator as MediaOperator;
 use Systopic\System\Tables\Nodes\Model as Node;
@@ -110,11 +111,17 @@ $store = static function (string $tmpFileNative, string $fileName, string $label
 	$fileName = GroupPolicy::storageName($fileName);
 	if ($replace > 0) {
 		$media = $existing;
+		if ($media !== NULL && PageAccess::refuses($media->node)) {
+			return FALSE;
+		}
 	} else {
 		$parent = (int) http::get('node_parent_node_id');
 		if (http::put('editor')) {
 			// an editor shown through an alias writes the original page's text: its library
 			$parent = (int) ($pages->pageFor($parent)?->row?->relationId('node') ?: $parent);
+		}
+		if (PageAccess::refuses($pages->nodeFor($parent))) {
+			return FALSE;
 		}
 		[$media, $rows] = MediaOperator::create($pages->scope, $parent, $group, $pages->userId());
 	}

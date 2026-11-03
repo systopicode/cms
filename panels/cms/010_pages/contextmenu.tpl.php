@@ -16,10 +16,20 @@
  * goes through the markup. Here it reads `$node->isTrashed`,
  * `$node->isPublished`, `$node->originalId`.
  *
+ * Only what the user may do (`PageAccess`): change the page itself, place
+ * something beside it (under its parent), or change the page on screen.
+ * The actions ask again.
+ *
  * @var \Systopic\Cms\Queries\PageTree\PageTreeNode      $node
  * @var \Systopic\Cms\Queries\PageTree\PageTree          $tree
  * @var \Systopic\Cms\Queries\PageTree\PageTreeNode|null $active
  */
+
+use Systopic\Cms\Pages\PageAccess;
+
+$may = PageAccess::mayWrite($node->node);
+$mayBeside = PageAccess::mayWrite($node->node->parentNode);
+$mayActive = $active !== null && PageAccess::mayWrite($active->node);
 $canAliasAfter = $canAliasChild = false;
 if ($active !== null) {
     try { \Systopic\Cms\Pages\RelationRules::placement($active->contentId, (int) ($node->parent?->id ?? 0), $this->relationNode(...)); $canAliasAfter = true; } catch (\DomainException) {}
@@ -28,6 +38,7 @@ if ($active !== null) {
 ?>
 <ul class="contextmenu" data-id="<?= $node->id ?>">
 	<?php if ($node->isTrashed) { ?>
+		<?php if ($may) { ?>
 		<li title="Recover Page" class="iconOnly">
 			<button type="button" data-cms-action title="Recover Page" aria-label="Recover Page" data-confirm="All langauges, children and versions will be recoverd!"
 			   data-on_click='userConfirm'
@@ -37,6 +48,7 @@ if ($active !== null) {
 			</button>
 		</li>
 		<li class="seperator"></li>
+		<?php } ?>
 		<li>
 			<a href='<?= http::$siteRoot ?>?id=<?= $node->id ?>&lang=<?= $node->language ?>&showtrashed'
 			   target='_blank'>
@@ -45,19 +57,24 @@ if ($active !== null) {
 			</a>
 		</li>
 	<?php } else { ?>
+		<?php if ($may || $mayBeside) { ?>
 		<li class="iconsonly">
 			<ul>
+				<?php if ($may) { ?>
 				<li title="Rename" class="iconOnly">
 					<button type="button" data-cms-action title="Rename" aria-label="Rename" data-on_click="editLabel">
 						<i class="cmsIcon cmsIcon-pen"></i>
 					</button>
 				</li>
+				<?php } ?>
+				<?php if ($mayBeside) { ?>
 				<li title="Duplicate" class="iconOnly">
 					<button type="button" data-cms-action title="Duplicate" aria-label="Duplicate" data-on_click="duplicate?node_id=<?= $node->id ?>">
 						<i class="cmsIcon cmsIcon-copy"></i>
 					</button>
 				</li>
-				<?php if ($node->isPublished) { ?>
+				<?php } ?>
+				<?php if ($may && $node->isPublished) { ?>
 					<li title="Hide" class="iconOnly">
 						<button type="button" data-cms-action title="Hide" aria-label="Hide" data-on_click="unpublish?id=<?= $node->id ?>">
 							<i class="cmsIcon cmsIcon-eye-slash"></i>
@@ -70,7 +87,7 @@ if ($active !== null) {
 						</button>
 					</li>
                     <?php } ?>
-				<?php } else { ?>
+				<?php } elseif ($may) { ?>
 					<li title="Publish" class="iconOnly">
 						<button type="button" data-cms-action title="Publish" aria-label="Publish"  data-on_click="publish?id=<?= $node->id ?>">
 							<i class="cmsIcon cmsIcon-eye"></i>
@@ -84,12 +101,14 @@ if ($active !== null) {
 					</li>
                     <?php } ?>
 				<?php } ?>
+				<?php if ($may) { ?>
 				<li title="New subpage" class="iconOnly">
 					<button type="button" data-cms-action title="New subpage" aria-label="New subpage" data-node_id="<?= $node->id ?>" data-on_click="newChild">
 						<i class="cmsIcon cmsIcon-layer-plus"></i>
 					</button>
 				</li>
-				<?php if ($node->isAlias && !$node->hasChildren) { ?>
+				<?php } ?>
+				<?php if ($may && $node->isAlias && !$node->hasChildren) { ?>
 					<li style='margin-left: auto;' title="Delete Alias" class="iconOnly">
 						<button type="button" data-cms-action title="Delete Alias" aria-label="Delete Alias" data-confirm="Do you really want to delete this Alias Page?"
 						   class='removeAlias'
@@ -99,7 +118,7 @@ if ($active !== null) {
 						</button>
 					</li>
 				<?php } ?>
-				<?php if (!$node->isAlias && !$node->isTrashed) { ?>
+				<?php if ($may && !$node->isAlias && !$node->isTrashed) { ?>
 					<li style='margin-left: auto;' title="Delete Page" class="iconOnly">
 						<button type="button" data-cms-action title="Delete Page" aria-label="Delete Page" data-confirm="<?= htmlspecialchars($this->branchConfirmation((int) $node->id, 'deletePage'), ENT_QUOTES) ?>"
 						   data-on_click='userConfirm'
@@ -112,8 +131,9 @@ if ($active !== null) {
 			</ul>
 		</li>
 		<li class="seperator"></li>
+		<?php } ?>
 		<?php if ($active !== null) { ?>
-			<?php if ($node->id !== $active->id) { ?>
+			<?php if ($mayActive && $node->id !== $active->id) { ?>
 				<li>
 					<button type="button" data-cms-action class=" redirect"
 					   data-on_click="redirectHere?node_id=<?= $active->id ?>&node_redirect_node_id=<?= $node->id ?>">
@@ -122,7 +142,7 @@ if ($active !== null) {
 					</button>
 				</li>
 			<?php } ?>
-			<?php if ($node->redirectId) { ?>
+			<?php if ($may && $node->redirectId) { ?>
 				<li>
 					<button type="button" data-cms-action class=" redirect" data-on_click="redirectHere?node_id=<?= $node->id ?>&node_redirect_node_id=0">
 						<i class="cmsIcon cmsIcon-route"></i>
@@ -130,7 +150,7 @@ if ($active !== null) {
 					</button>
 				</li>
 			<?php } ?>
-            <?php if ($canAliasAfter) { ?>
+            <?php if ($mayBeside && $canAliasAfter) { ?>
 			<li>
 				<button type="button" data-cms-action class=" alias"
 				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_parent_node_id=<?= $node->parent?->id ?>&node_original_node_id=<?= $active->contentId ?>">
@@ -138,7 +158,7 @@ if ($active !== null) {
 					<span>Alias of "<?= $active->label ?>" after this</span>
 				</button>
 			</li>
-            <?php } if ($canAliasChild) { ?>
+            <?php } if ($may && $canAliasChild) { ?>
 			<li>
 				<button type="button" data-cms-action class=" alias"
 				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_parent_node_id=<?= $node->id ?>&node_original_node_id=<?= $active->contentId ?>">
