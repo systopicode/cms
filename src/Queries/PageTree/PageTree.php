@@ -15,7 +15,7 @@ use Systopic\Cms\Queries\Params;
 use Systopic\Cms\Tables\Pages\Page;
 
 /**
- * The page tree in the pylon of `cms/pages/` — successor of
+ * The page tree in the pylon of `admin/pages/` — successor of
  * `lib/class/tree/`.
  *
  * It draws the same markup as `tree` and `treeNode`, character for character.

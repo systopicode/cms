@@ -3,7 +3,7 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const src=await readFile(new URL('../../system/public/js/gui/HTMLeditor.funcs.js',import.meta.url),'utf8');
 let calls=[],opened=[],downloads=[],resolved={url:'/public/var/file.pdf',filename:'file.pdf',inline:true};
-const context={settings:{siteRoot:'/public/'},location:{pathname:'/public/cms/pages/',search:'?id=10'},URLSearchParams,
+const context={settings:{siteRoot:'/public/'},location:{pathname:'/public/admin/pages/',search:'?id=10'},URLSearchParams,
  window:{open:(url)=>{const view={location:{href:url},close(){this.closed=true;}};opened.push(view);return view;},location:{assign:url=>calls.push(['assign',url])}},
  document:{body:{appendChild(){}},createElement:()=>({click(){downloads.push({href:this.href,name:this.download});},remove(){}})},
  sys:{core:{server:{sendGet:url=>calls.push(['get',url]),call:class{constructor(data){this.data=data;}send(url){calls.push(['resolve',url,this.data]);return {done:fn=>{fn(resolved);return {fail(){}};}};}}}}}
@@ -11,9 +11,9 @@ const context={settings:{siteRoot:'/public/'},location:{pathname:'/public/cms/pa
 vm.createContext(context);vm.runInContext(src,context);
 const anchor=attrs=>({nodeType:1,getAttribute:n=>attrs[n]??null,hasAttribute:n=>Object.hasOwn(attrs,n),get href(){return attrs.href;},closest(){return this;}});
 context.openAnchor({data:{target:anchor({'data-ref-href':'page:42?lang=de',href:'/site/example/'})}});
-assert.deepEqual(calls.pop(),['get','/public/cms/pages/?id=42&lang=de']);assert.equal(opened.length,0,'default page visit stays in CMS');
+assert.deepEqual(calls.pop(),['get','/public/admin/pages/?id=42&lang=de']);assert.equal(opened.length,0,'default page visit stays in CMS');
 context.openAnchor({data:{target:anchor({href:'page:42',target:'_blank'})}});
-assert.equal(opened.at(-1).location.href,'/public/cms/pages/?id=42');
+assert.equal(opened.at(-1).location.href,'/public/admin/pages/?id=42');
 context.openAnchor({data:{target:anchor({href:'media::42'})}});
 assert.equal(calls.at(-1)[2].ref,'media:42');assert.equal(opened.at(-1).location.href,'/public/var/file.pdf');
 resolved={url:'/public/var/file.zip',filename:'file.zip',inline:false};

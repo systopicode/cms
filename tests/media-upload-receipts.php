@@ -3,7 +3,7 @@
 declare(strict_types=1);
 require __DIR__.'/media-upload-policy.php';
 $fixture=sys_get_temp_dir().'/fluxo-upload-receipts-'.bin2hex(random_bytes(4));mkdir($fixture);fs::$siteRoot=$fixture.'/';
-$receiptPanel=new class($pages){public string $action='upload';public object $state;function __construct(public object $parent){$this->state=(object)[];}function run(){include dirname(__DIR__).'/panels/cms/010_pages/upload/actions.php';}};
+$receiptPanel=new class($pages){public string $action='upload';public object $state;function __construct(public object $parent){$this->state=(object)[];}function run(){include dirname(__DIR__).'/panels/admin/010_pages/upload/actions.php';}};
 $key='a1b2c3d4-1234-4321-abcd-123456789abc';
 try{
  http::$get=['node_parent_node_id'=>10,'group'=>'images'];

@@ -7,7 +7,7 @@ try {
  const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.setContent('<style>.mmlContent>div>ul{height:180px;overflow:auto}.spacer{height:900px}</style><div class="mmlContent"><div><ul><li class="spacer">Media</li></ul></div></div><input id="replace" type="file" accept=".png">');
  await page.evaluate(()=>{window.sent=[];window.sys={lib:{applyParentConstructor(){},add:(s,c)=>{window.upload={};c.call(upload);}},core:{server:{sendGet:(...args)=>{sent.push(args);return {done(){}};}}}};});
- await page.addScriptTag({content:await readFile(new URL('../panels/cms/010_pages/upload/panel.js',import.meta.url),'utf8')});
+ await page.addScriptTag({content:await readFile(new URL('../panels/admin/010_pages/upload/panel.js',import.meta.url),'utf8')});
  await page.locator('#replace').setInputFiles({name:'wrong.webm',mimeType:'video/webm',buffer:Buffer.from('invalid fixture')});
  await page.evaluate(()=>{document.querySelector('.mmlContent ul').scrollTop=700;const input=document.querySelector('#replace');upload.open({sourceElement:input,element:input,data:{dataset:{node_id:42,media_group:'images'}}});});
  assert.equal(await page.evaluate(()=>sent.length),0,'invalid replacement must not open upload lightbox');

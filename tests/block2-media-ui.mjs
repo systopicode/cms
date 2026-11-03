@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 const {chromium}=await import(process.env.FLUXO_PLAYWRIGHT_MODULE);
-const css=(await Promise.all((await fs.readdir('../system/public/css')).filter(n=>n.endsWith('.css')).sort().map(n=>fs.readFile('../system/public/css/'+n,'utf8')))).join('\n')+'\n'+await fs.readFile('panels/cms/010_pages/pages.mml.css','utf8');
+const css=(await Promise.all((await fs.readdir('../system/public/css')).filter(n=>n.endsWith('.css')).sort().map(n=>fs.readFile('../system/public/css/'+n,'utf8')))).join('\n')+'\n'+await fs.readFile('panels/admin/010_pages/pages.mml.css','utf8');
 const markup=execFileSync('php',['tests/block2-media-fixture.php'],{encoding:'utf8'}),cropMarkup=execFileSync('php',['tests/crop-frame-fixture.php'],{encoding:'utf8'});
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try{for(const width of [1440,1194,1024,390]){
@@ -12,7 +12,7 @@ try{for(const width of [1440,1194,1024,390]){
  await page.setContent(`<style>${css}</style><body class=cms><div class="cms cmslightbox fileEditor"><section><header>Edit image</header><div class=layout><main><div class=fileStage>${markup.replace(/<script>[\s\S]*?<\/script>/,'')}</div></main><aside class=cms>Metadata</aside></div></section></div></body>`);
  await page.addScriptTag({path:'../system/public/js/ext/jquery.js'});await page.addScriptTag({path:'../system/public/js/gui/dropdownMenus.js'});await page.addScriptTag({path:'../system/public/js/gui/imageEditor.js'});
  await page.evaluate(html=>{window.settings={siteRoot:'/'};window.sent=[];window.fetch=url=>{sent.push(url);return Promise.resolve(url.includes('getImageEditor')?{json:()=>Promise.resolve({html})}:{ok:true,headers:new Headers({'X-Image-Edit':'saved'})});};},cropMarkup);
- await page.addScriptTag({content:(await fs.readFile('panels/cms/010_pages/panel.js','utf8')).match(/function changeSrc\(src\) \{[\s\S]*?\n\}/)[0]});
+ await page.addScriptTag({content:(await fs.readFile('panels/admin/010_pages/panel.js','utf8')).match(/function changeSrc\(src\) \{[\s\S]*?\n\}/)[0]});
  await page.addScriptTag({content:markup.match(/<script>([\s\S]*?)<\/script>/)[1]});
  await page.locator('.srcToChange').evaluate(e=>e.src='https://fixture.test/var/formats/tile/1/2/test.jpg');await page.waitForFunction(()=>document.querySelector('.srcToChange').naturalWidth===480);
  await page.evaluate(()=>changeSrc('https://fixture.test/var/formats/tile/1/2/test.jpg'));assert.match(await page.locator('.srcToChange').getAttribute('src'),/_preview=\d+/,'format preview bypasses stale browser cache');await page.waitForFunction(()=>document.querySelector('.srcToChange').complete);

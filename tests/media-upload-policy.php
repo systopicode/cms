@@ -33,8 +33,8 @@ $pages=new class($media) {
 $panel=new class($pages) {
  public string $action='upload';
  public function __construct(public object $parent){}
- public function run(){include dirname(__DIR__).'/panels/cms/010_pages/upload/actions.php';}
- public function move(){include dirname(__DIR__).'/panels/cms/010_pages/mml/actions.php';}
+ public function run(){include dirname(__DIR__).'/panels/admin/010_pages/upload/actions.php';}
+ public function move(){include dirname(__DIR__).'/panels/admin/010_pages/mml/actions.php';}
 };
 try {
  http::$get=['node_id'=>42,'group'=>'all']; // Cannot bypass the real replacement group.

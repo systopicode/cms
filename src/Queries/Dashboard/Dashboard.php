@@ -7,7 +7,7 @@ namespace Systopic\Cms\Queries\Dashboard;
 use Systopic\Db\Scope;
 
 /**
- * What the dashboard widgets of cms/pages show — figures, page lists and the
+ * What the dashboard widgets of admin/pages show — figures, page lists and the
  * newest media. Loose values only: the widgets print them, nothing is changed.
  */
 final class Dashboard

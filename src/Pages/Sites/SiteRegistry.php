@@ -25,7 +25,7 @@ use Systopic\Cms\Tables\Sites\Model as Site;
  * Read once per request, right after the database connection, and handed to
  * `Config::useSites()` — the instance files say WHERE a site answers, this
  * table says WHICH sites there are. Written by the pages panel
- * (cms/pages: add menu, site editor in main).
+ * (admin/pages: add menu, site editor in main).
  */
 final class SiteRegistry
 {

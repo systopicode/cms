@@ -12,7 +12,7 @@ try {
   sys.core.server.call=function(input){calls.push(input)};
   sys.core.server.call.prototype.send=function(){calls.at(-1).background=this.background;return {done(fn){fn(reply);return this},fail(){return this}}};
  });
- const source=await readFile('panels/cms/010_pages/pages.js','utf8');
+ const source=await readFile('panels/admin/010_pages/pages.js','utf8');
  await page.addScriptTag({content:source.slice(source.indexOf('// Advisory only:'))});
  assert.match(await page.locator('[data-editor-presence]').innerText(),/[Aa]lso open: Another editor/);
  assert.equal(await page.locator('#pageEditConflict').count(),0);

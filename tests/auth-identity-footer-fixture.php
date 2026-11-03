@@ -5,6 +5,6 @@ namespace Systopic\System\Auth {
 namespace {
  class http {static function get($key,$default=''){return $default;}}
  class message {static function flush(...$args){return '';}}
- $context=new class {public $scope;public $href='/cms/auth/';function pendingAccount(){return (object)['fullname'=>'Fixture User','name'=>'Fixture'];}function render(){include __DIR__.'/../../system/panels/cms/auth/identify.tpl.php';}};
+ $context=new class {public $scope;public $href='/admin/auth/';function pendingAccount(){return (object)['fullname'=>'Fixture User','name'=>'Fixture'];}function render(){include __DIR__.'/../../system/panels/admin/auth/identify.tpl.php';}};
  $context->render();
 }

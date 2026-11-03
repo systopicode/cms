@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 const {chromium}=await import(pathToFileURL(process.env.FLUXO_PLAYWRIGHT_MODULE).href);
 const system=new URL('../../system/',import.meta.url);
 const css=(await Promise.all((await readdir(new URL('public/css/',system))).filter(n=>n.endsWith('.css')).sort().map(n=>readFile(new URL('public/css/'+n,system),'utf8')))).join('\n');
-const projectCSS=await readFile(new URL('panels/cms/030_settings/project.css',system),'utf8');
-const mmlCSS=await readFile(new URL('../panels/cms/010_pages/pages.mml.css',import.meta.url),'utf8');
+const projectCSS=await readFile(new URL('panels/admin/030_settings/project.css',system),'utf8');
+const mmlCSS=await readFile(new URL('../panels/admin/010_pages/pages.mml.css',import.meta.url),'utf8');
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try {
  const page=await browser.newPage({viewport:{width:1440,height:1000}});

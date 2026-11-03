@@ -8,7 +8,7 @@ try {
  await page.setContent('<article class=cmsContent><div class="editor mediaDroppable" contenteditable=true data-on_drop=insertItemInEditor style="width:500px;min-height:300px;padding:20px"><p>Before</p><img id=move width=80 height=80 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"><p>After</p></div></article>');
  await page.addScriptTag({path:'../system/public/js/ext/jquery.js'});
  await page.evaluate(()=>{window.settings={siteRoot:'/'};window.changed=0;window.wysiwyg={changed(){changed++}};window.sys={lib:{applyParentConstructor(){},add(setup,ctor){window.upload={};ctor.call(upload)}}};});
- await page.addScriptTag({path:'panels/cms/010_pages/upload/panel.js'});
+ await page.addScriptTag({path:'panels/admin/010_pages/upload/panel.js'});
  await page.evaluate(()=>{const media=document.querySelector('#move');const r=media.getBoundingClientRect();window.editorBeginMediaMove(media,{clientX:r.x+10,clientY:r.y+10,pointerType:'touch'});});
  assert.equal(await page.locator('.editorMediaHold').count(),1,'shared insertItemInEditor supports media movement');
  await page.mouse.move(60,45);await page.mouse.up();

@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 const {chromium}=await import(process.env.FLUXO_PLAYWRIGHT_MODULE);
 let css=(await Promise.all((await fs.readdir('../system/public/css')).filter(n=>n.endsWith('.css')).sort().map(n=>fs.readFile('../system/public/css/'+n,'utf8')))).join('\n');
-css+='\n'+await fs.readFile('../system/panels/cms/auth/auth.css','utf8');
-css+='\n'+await fs.readFile('../system/panels/cms/user/profile.css','utf8');
-css+='\n'+await fs.readFile('panels/cms/010_pages/panel.css','utf8');
+css+='\n'+await fs.readFile('../system/panels/admin/auth/auth.css','utf8');
+css+='\n'+await fs.readFile('../system/panels/admin/user/profile.css','utf8');
+css+='\n'+await fs.readFile('panels/admin/010_pages/panel.css','utf8');
 const form=execFileSync('php',['-r',`class http {public static $root='/';} class message {static function flush(...$args){return '';}} $authTitle='Reset password';$authLead='We email you a code.';$authForm='<form><input aria-label="Email"><button class="button highlight">Send code</button></form>';include '../system/src/Auth/form.card.tpl.php';`],{encoding:'utf8'});
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try {
@@ -31,7 +31,7 @@ try {
  const remote=execFileSync('php',['-r',`class http {public static $root='/';} class message {static function flush(...$args){return '';}} class qr {static function payload(...$a){return '';}static function svgMarkup(...$a){return '<svg></svg>';}} $authMethod='device';$authCodes=true;$authPairUrl='/fixture/';$authPair=['expires'=>time()-1,'code'=>'TEST-TEST'];include '../system/src/Auth/login.card.tpl.php';`],{encoding:'utf8'});
  const expiry=await browser.newPage();await expiry.setContent(`<style>${css}</style><body class="cms auth"><div class=authCard>${remote}</div></body>`);await expiry.addScriptTag({path:'../system/public/js/gui/code-until.js'});
  assert.equal(await expiry.locator('[data-code-live]').isVisible(),false);assert.equal(await expiry.locator('[data-code-expired] .warning').isVisible(),true,'expired remote code uses shared warning');assert.ok(!remote.includes('on the phone'),'remote instructions use device');await expiry.close();
- const standalone=execFileSync('php',['../system/panels/cms/090_tools/010_system/systemcheck/systemcheck.php'],{encoding:'utf8'});
+ const standalone=execFileSync('php',['../system/panels/admin/090_tools/010_system/systemcheck/systemcheck.php'],{encoding:'utf8'});
  const standalonePage=await browser.newPage({viewport:{width:1194,height:834}});await standalonePage.setContent(standalone);
  const alignments=await standalonePage.locator('li').evaluateAll(es=>es.map(e=>{const a=e.children[0].getBoundingClientRect(),b=e.children[1].getBoundingClientRect();return Math.abs(a.y+a.height/2-b.y-b.height/2)}));assert.ok(alignments.every(n=>n<1),'standalone symbols vertically centered alongside wrapped text');await standalonePage.screenshot({path:'/private/tmp/fluxo-standalone-check.png'});await standalonePage.close();
  console.log('PASS final shared UI: auth footer insets, transparent buttons, white QR, dialog footer alignment, external icon order, used-on hover at 390/1194/1440 light/dark');

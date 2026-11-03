@@ -9,7 +9,7 @@ try {
  const page=await browser.newPage({viewport:{width:1180,height:820},hasTouch:true});
  await page.setContent('<body class="cms"><ul class="tree"><li class="active" data-node_id="11"><label>First</label></li></ul></body>');
  await page.evaluate(()=>{window.sys={lib:{add:(s,c)=>window.panelConstructor=c,applyParentConstructor:()=>{}}};window.scrolls=[];window.scrollTree=(...args)=>scrolls.push(args);});
- await page.addScriptTag({content:await read('../panels/cms/010_pages/panel.js')});
+ await page.addScriptTag({content:await read('../panels/admin/010_pages/panel.js')});
  await page.evaluate(()=>{window.panel={};panelConstructor.call(panel);panel.onUpdateTree();panel.onUpdateTree();});
  assert.equal(await page.evaluate(()=>scrolls.length),0,'unchanged remote selection does not scroll');
  await page.evaluate(()=>{window.menuCloses=0;window.closeAllMenus=()=>menuCloses++;panel.onUpdateTree();});
@@ -64,7 +64,7 @@ try {
  await navigation.route('https://tree.test/**',route=>route.fulfill({contentType:'text/html',body:'<body class="cms"><div class="tree" style="height:60px;overflow:auto"><ul class="tree">'+Array.from({length:20},(_,i)=>`<li data-node_id="${i+1}"><label style="display:block;height:30px">Page ${i+1}</label></li>`).join('')+'</ul></div></body>'}));
  await navigation.goto('https://tree.test/?id=1');
  await navigation.evaluate(()=>{window.sys={onDocumentReady(){},core:{server:{revealScroll(el,top){el.scrollTop=top;}}}};});
- await navigation.addScriptTag({content:await read('../panels/cms/010_pages/pages.js')});
+ await navigation.addScriptTag({content:await read('../panels/admin/010_pages/pages.js')});
  await navigation.evaluate(()=>{history.pushState({},'', '?id=20');onAfterHisotryPush();});await navigation.waitForTimeout(100);
  assert.ok(await navigation.locator('div.tree').evaluate(e=>e.scrollTop)>0,'local selection reaches actual selected row');
  await navigation.locator('div.tree').evaluate(e=>e.scrollTop=0);await navigation.evaluate(()=>onAfterHisotryPush());await navigation.waitForTimeout(100);

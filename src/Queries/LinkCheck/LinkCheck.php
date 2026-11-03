@@ -13,7 +13,7 @@ use Systopic\Db\Scope;
  * A reference (page:43, media:293, {page:43.label}) is checked by its id.
  * Older texts still store paths and data-node_id; those are checked too.
  * Outside links are only collected - asking every host takes the maintenance
- * panel's button (cms/tools/website/links/).
+ * panel's button (admin/tools/website/links/).
  */
 final class LinkCheck
 {
@@ -251,7 +251,7 @@ final class LinkCheck
             return null;
         }
         $path = trim((string) parse_url(substr($target, strlen($root)), PHP_URL_PATH), '/');
-        if ($path === '' || str_starts_with($path, 'cms/')) {
+        if ($path === '' || str_starts_with($path, 'admin/') || str_starts_with($path, 'cms/')) {
             return null;
         }
         if (str_starts_with($path, 'var/')) {

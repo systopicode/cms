@@ -30,7 +30,7 @@ final class SiteAccess
         }
         Session::rememberReturn((string) (\http::ajax() ? ($_SERVER['HTTP_REFERER'] ?? '') : ($_SERVER['REQUEST_URI'] ?? '')));
         $own = \fs::isDir(rtrim((string) \fs::$projectRoot, '/') . '/panels/auth');
-        $target = \http::$root . ($own ? 'auth/' : 'cms/auth/');
+        $target = \http::$root . ($own ? 'auth/' : 'admin/auth/');
         // nothing of the page may follow, also not in an ajax answer
         if (\http::ajax()) {
             header('Content-type: application/json; charset=utf-8');

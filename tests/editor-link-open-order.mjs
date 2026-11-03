@@ -5,7 +5,7 @@ const source=await readFile(new URL('../../system/public/js/gui/HTMLeditor.funcs
 const start=source.indexOf('function createHTMLeditorLink(event)');
 const end=source.indexOf('/** "Save" in the link dialog',start);
 let idle;const sent=[];
-const ctx={document:{activeElement:null},queueMicrotask,wysiwyg:{linkFor:()=>({text:'Selected text'})},location:{pathname:'/cms/pages/',search:'?id=9'},settings:{siteRoot:'/'},sys:{core:{server:{onIdle(fn){idle=fn},sendCall(...args){sent.push(args)}}}}};
+const ctx={document:{activeElement:null},queueMicrotask,wysiwyg:{linkFor:()=>({text:'Selected text'})},location:{pathname:'/admin/pages/',search:'?id=9'},settings:{siteRoot:'/'},sys:{core:{server:{onIdle(fn){idle=fn},sendCall(...args){sent.push(args)}}}}};
 vm.runInNewContext(source.slice(start,end),ctx);
 ctx.createHTMLeditorLink({data:{target:{}}});
 await Promise.resolve();assert.equal(sent.length,0,'dialog cannot overtake the blur-save');

@@ -9,7 +9,7 @@ const cmsRoot=resolve(new URL('..',import.meta.url).pathname),sysRoot=resolve(cm
 const artifacts=process.env.FLUXO_GUI_ARTIFACTS||resolve(tmpdir(),'fluxo-gui-followup');await mkdir(artifacts,{recursive:true});
 for(const scenario of ['site','global','editor']){const out=scenario==='editor'?'site-editor.html':'defaults-'+scenario+'.html';await writeFile(resolve(artifacts,out),execFileSync(process.env.FLUXO_PHP||'php',[cmsRoot+'/tests/gui-followup-fixture.php',scenario]));}
 const sheets=(await readdir(sysRoot+'/public/css')).filter(n=>/^\d.*\.css$/.test(n)||n==='x_responsive.css');
-const headers='<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CMS component review</title>'+sheets.map(n=>'<link rel="stylesheet" href="/public/css/'+n+'">').join('')+'<link rel="stylesheet" href="/cms/pages.mml.css"><link rel="stylesheet" href="/cms/panel.css"><style>:root{--cmsMainColor:#203d48;--cmsTextColor:#172024;--cmsCanvas:#fff;--cmsLine:#dbe1e3;--cmsError:#b32630;--cmsConfirm:#17662b;--cmsSuccess:#17662b;--cmsCardPadding:1.5rem;--cmsRadius:8px}body{margin:0}footer.cmsStatusbar{position:fixed;bottom:0;left:0;right:0;height:32px}.mmlContent{display:none}body.cms main{padding:1rem}.siteEditor{max-width:850px;margin:auto}.cmslightbox footer{display:flex} [hidden]{display:none!important}</style><body class="cms"><main><button id="opener">Open overview</button><div class="mmlContent"><div><ul><li id="tile">Upload tile</li></ul></div></div></main><footer class="cmsStatusbar"><span class="cmsJobs"></span></footer>';
+const headers='<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CMS component review</title>'+sheets.map(n=>'<link rel="stylesheet" href="/public/css/'+n+'">').join('')+'<link rel="stylesheet" href="/admin/pages.mml.css"><link rel="stylesheet" href="/admin/panel.css"><style>:root{--cmsMainColor:#203d48;--cmsTextColor:#172024;--cmsCanvas:#fff;--cmsLine:#dbe1e3;--cmsError:#b32630;--cmsConfirm:#17662b;--cmsSuccess:#17662b;--cmsCardPadding:1.5rem;--cmsRadius:8px}body{margin:0}footer.cmsStatusbar{position:fixed;bottom:0;left:0;right:0;height:32px}.mmlContent{display:none}body.cms main{padding:1rem}.siteEditor{max-width:850px;margin:auto}.cmslightbox footer{display:flex} [hidden]{display:none!important}</style><body class="cms"><main><button id="opener">Open overview</button><div class="mmlContent"><div><ul><li id="tile">Upload tile</li></ul></div></div></main><footer class="cmsStatusbar"><span class="cmsJobs"></span></footer>';
 const receipts=new Set(),attempts=[],created=[];let releaseHeld;
 const server=createServer(async(req,res)=>{
  try{
@@ -21,8 +21,8 @@ const server=createServer(async(req,res)=>{
   if(d.name==='second.png'&&!created.includes(d.name)){created.push(d.name);receipts.add(d.uploadKey);res.writeHead(503);res.end('response unavailable');return;}
   receipts.add(d.uploadKey);created.push(d.name);res.setHeader('Content-Type','application/json');res.end('{}');return;
  }
- let path=req.url.startsWith('/public/')?sysRoot+req.url:cmsRoot+'/panels/cms/010_pages/'+req.url.replace('/cms/','');
- if(!path.startsWith(sysRoot+'/public/')&&!path.startsWith(cmsRoot+'/panels/cms/010_pages/'))throw Error();
+ let path=req.url.startsWith('/public/')?sysRoot+req.url:cmsRoot+'/panels/admin/010_pages/'+req.url.replace('/admin/','');
+ if(!path.startsWith(sysRoot+'/public/')&&!path.startsWith(cmsRoot+'/panels/admin/010_pages/'))throw Error();
  res.setHeader('Content-Type',({'.css':'text/css','.svg':'image/svg+xml','.js':'text/javascript','.woff2':'font/woff2'})[extname(path)]||'application/octet-stream');res.end(await readFile(path));
  }catch{res.writeHead(404);res.end();}
 });
@@ -34,13 +34,13 @@ try{
  await page.goto(origin);
  const prepare=()=>{
   window.$=()=>({keydown(){}});window.calls=[];
-  window.sys={lib:{applyParentConstructor(){},add(setup,construct){if(setup.route==='panels.cms.pages.upload'){window.upload={};construct.call(upload);}else if(setup.route==='panels.cms.pages'){window.pages={};construct.call(pages);}}},core:{server:{}}};
+  window.sys={lib:{applyParentConstructor(){},add(setup,construct){if(setup.route==='panels.admin.pages.upload'){window.upload={};construct.call(upload);}else if(setup.route==='panels.admin.pages'){window.pages={};construct.call(pages);}}},core:{server:{}}};
   sys.core.server.call=class{constructor(data){this.data=data||{};}send(){const result={};const p=fetch('/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(this.data)}).then(r=>{if(!r.ok)throw Error('Request failed');return r.json();});result.done=fn=>{result.doneFn=fn;return result;};result.fail=fn=>{p.then(d=>result.doneFn?.(d)).catch(fn);return result;};return result;}};
  };
  await page.evaluate(prepare);
  await page.addScriptTag({path:sysRoot+'/public/js/ext/jquery.js'});
  for(const name of ['ui','icons','jobs'])await page.addScriptTag({path:sysRoot+'/public/js/gui/'+name+'.js'});
- await page.addScriptTag({path:cmsRoot+'/panels/cms/010_pages/upload/panel.js'});
+ await page.addScriptTag({path:cmsRoot+'/panels/admin/010_pages/upload/panel.js'});
  await page.evaluate(()=>{upload.refreshLibrary=()=>{};document.querySelector('#opener').onclick=()=>upload.queueDirect(['first.png','second.png','third.png'].map(name=>new File(['fixture'],name,{type:'image/png'})),{accept:'.png',node_parent_node_id:10,group:'main'},document.querySelector('#tile'));});
  await page.locator('#opener').click();
  
@@ -80,14 +80,14 @@ try{
  for(const scenario of ['site','global']){
   await page.evaluate(html=>document.body.insertAdjacentHTML('beforeend',html),await readFile(resolve(artifacts,'defaults-'+scenario+'.html'),'utf8'));
   await page.waitForFunction(()=>document.querySelector('.metaDefaults')?.getAttribute('role')==='dialog');
-  assert.equal(await page.locator('a:has-text("Edit theme share image")').getAttribute('href'),'/public/cms/settings/theme/');
-  if(scenario==='site')assert.equal(await page.locator('a:has-text("Edit site defaults")').first().getAttribute('href'),'/public/cms/pages/?site=default');
+  assert.equal(await page.locator('a:has-text("Edit theme share image")').getAttribute('href'),'/public/admin/settings/theme/');
+  if(scenario==='site')assert.equal(await page.locator('a:has-text("Edit site defaults")').first().getAttribute('href'),'/public/admin/pages/?site=default');
   else assert.ok(await page.locator('a:has-text("Edit global defaults")').count()>0);
   await page.screenshot({path:resolve(artifacts,'meta-'+scenario+'.png')});
   await page.evaluate(()=>document.querySelector('.metaDefaults').remove());
  }
  await page.evaluate(html=>document.querySelector('body > main').innerHTML=html,await readFile(resolve(artifacts,'site-editor.html'),'utf8'));
- await page.addScriptTag({path:cmsRoot+'/panels/cms/010_pages/panel.js'});
+ await page.addScriptTag({path:cmsRoot+'/panels/admin/010_pages/panel.js'});
  await page.evaluate(()=>{window.renameCalls=[];document.querySelector('[data-on_click=reviewSiteRename]').onclick=function(){pages.reviewSiteRename({element:this,data:{dataset:{site_id:'3'}},executeAction(action){renameCalls.push(action);}});};});
  await page.locator('input[name=siteName]').fill('renamed.test');assert.equal(await page.evaluate(()=>renameCalls.length),0);
  let review='';page.once('dialog',async d=>{review=d.message();await d.dismiss();});
@@ -116,7 +116,7 @@ try{
  const touch=await touchContext.newPage();touch.on('pageerror',e=>errors.push(e.message));await touch.goto(origin);await touch.evaluate(prepare);
  await touch.addScriptTag({path:sysRoot+'/public/js/ext/jquery.js'});
  for(const name of ['ui','icons','jobs'])await touch.addScriptTag({path:sysRoot+'/public/js/gui/'+name+'.js'});
- await touch.addScriptTag({path:cmsRoot+'/panels/cms/010_pages/upload/panel.js'});
+ await touch.addScriptTag({path:cmsRoot+'/panels/admin/010_pages/upload/panel.js'});
  await touch.evaluate(()=>{
   upload.refreshLibrary=()=>{};
   const input=document.createElement('input');input.type='file';input.multiple=true;input.id='touch-picker';input.accept='.png';input.setAttribute('aria-label','Upload files');document.body.append(input);

@@ -146,7 +146,7 @@ final class Rewritepaths
     public string $link {
         get {
             if ($this->params->inCms) {
-                return $this->params->root . 'cms/pages/?id=' . $this->page->node->id
+                return $this->params->root . 'admin/pages/?id=' . $this->page->node->id
                      . '&lang=' . $this->params->lang;
             }
             $target = $this->page->redirectsTo;

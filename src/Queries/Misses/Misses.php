@@ -21,7 +21,7 @@ use Systopic\Cms\Tables\Pages\Model as PageRow;
 final class Misses
 {
     /** First segments that belong to the CMS or to files, never to a page. */
-    private const SKIP = ['cms', 'auth', 'var', 'assets', 'css', 'js', 'img', 'fonts', 'system', 'packages'];
+    private const SKIP = ['admin', 'cms', 'auth', 'var', 'assets', 'css', 'js', 'img', 'fonts', 'system', 'packages'];
 
     public static function note(Scope $scope, string $path, ?int $siteNodeId): void
     {

@@ -2,7 +2,7 @@
 
 /**
  * systopic/cms — the website: pages, paths, sites, page settings, the page
- * panels in /cms/, site.php and sitemap.xml. Not needed by projects without
+ * panels in /admin/, site.php and sitemap.xml. Not needed by projects without
  * pages (pwk, spaceticker).
  *
  * Composer `autoload.files`: tells the system what the package brings. The
@@ -22,7 +22,7 @@ require_once __DIR__ . '/lib/media.video.php';
 require_once __DIR__ . '/lib/media.types.php';
 require_once __DIR__ . '/lib/media.tags.php';
 
-// panels/cms/… — merged into the system's /cms/ (pages, page settings, path maintenance)
+// panels/admin/… — merged into the system's /admin/ (pages, page settings, path maintenance)
 Packages::addPanels('systopic/cms', 'Systopic\Cms\Panels');
 
 // public/css/ — page-only additions to the system GUI (page header, preview), in every panel head
@@ -37,7 +37,7 @@ Packages::addFrontend(new \Systopic\Cms\Frontend());
 // the tables of the CMS — scanned by the ORM on the first Scope
 Registry::addTables(__DIR__ . '/src/Tables', 'Systopic\Cms\Tables');
 
-// cms/search/ (Cmd+K): pages and media
+// admin/search/ (Cmd+K): pages and media
 // A removed media node may be a page's share image (Meta::$shareImageId).
 // Runs inside the removal's transaction.
 Hooks::on('mediaRemoved', static function (\Systopic\Db\Scope $scope, array $nodeIds): void {

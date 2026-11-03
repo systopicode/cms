@@ -16,7 +16,7 @@ try{
   await page.setContent(`<base href="https://fixture.test/"><style>${css}</style><body class=cms><select name=imageEditorFormat><option value=tile>Tile</option><option value=other>Other</option></select><div class=frameView><img id=original></div></body>`);
   await page.evaluate(()=>window.sys={});await page.addScriptTag({content:'sys.longPress = '+holdSource});await page.addScriptTag({path:'../system/public/js/ext/jquery.js'});await page.addScriptTag({path:'../system/public/js/gui/dropdownMenus.js'});await page.addScriptTag({path:'../system/public/js/gui/imageEditor.js'});
   await page.evaluate(html=>{window.settings={siteRoot:'/'};window.requests=[];window.fetch=url=>{requests.push(url);return url.includes('getImageEditor')?Promise.resolve({json:()=>Promise.resolve({html})}):Promise.resolve({ok:true,headers:new Headers({'X-Image-Edit':'saved'})});};},markup);
-  const open=()=>page.evaluate(()=>runImageEditor({unified:true,saveUrl:'/cms/pages/editor/file/',formats:[{key:'tile',label:'Tile'},{key:'other',label:'Other'}],src:'/var/formats/tile/1/2/test.jpg',display_width:360,display_height:240,offset_left:40,offset_top:140,domObj:$('#original')}));
+  const open=()=>page.evaluate(()=>runImageEditor({unified:true,saveUrl:'/admin/pages/editor/file/',formats:[{key:'tile',label:'Tile'},{key:'other',label:'Other'}],src:'/var/formats/tile/1/2/test.jpg',display_width:360,display_height:240,offset_left:40,offset_top:140,domObj:$('#original')}));
   await open();await page.locator('.unifiedImageEditor').waitFor();await page.waitForTimeout(220);
   assert.equal(await page.locator('.cropHandles').isVisible(),false,'crop is initially inactive');
   const holdBox=await page.locator('.unifiedImageEditor img').first().boundingBox();

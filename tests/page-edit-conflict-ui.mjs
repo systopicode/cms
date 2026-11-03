@@ -5,7 +5,7 @@ const browser=await chromium.launch({channel:'chrome',headless:true});
 try {
  const page=await browser.newPage();
  await page.setContent('<div class=editor data-node_id=9 data-language_iso=en data-field=text01 data-field_version=old contenteditable=true>My unsaved text</div>');
- const source=await readFile('panels/cms/010_pages/pages.js','utf8');
+ const source=await readFile('panels/admin/010_pages/pages.js','utf8');
  await page.addScriptTag({content:source.slice(source.indexOf('// Optimistic field versions:'))});
  await page.evaluate(()=>{window.saves=[];document.querySelector('.editor').addEventListener('blur', e=>saves.push([e.target.textContent,e.target.dataset.field_version]));pageEditConflict(9,'en','text01','newer',{author:'Test editor',at:'2026-10-30 12:00:00'});});
  assert.equal(await page.locator('#pageEditConflict').count(),1);

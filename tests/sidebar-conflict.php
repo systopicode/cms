@@ -7,7 +7,7 @@ class Work { public int $writes=0; function __construct(public object $connectio
 class SidebarFixture {
  public object $parent;
  function action(): Closure {
-  $source=file_get_contents(dirname(__DIR__).'/panels/cms/010_pages/sidebar/actions.settings.php');
+  $source=file_get_contents(dirname(__DIR__).'/panels/admin/010_pages/sidebar/actions.settings.php');
   $a=strpos($source,'$settingGuard =');$b=strpos($source,'switch ($this->action)', $a);
   return eval(substr($source,$a,$b-$a).'return $commitSetting;');
  }

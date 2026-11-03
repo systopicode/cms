@@ -15,7 +15,7 @@ class TestWork {
  function persist($row){return $this;}
  function commit($guard){$guard($this->connection);$this->writes++;}
 }
-$source=file_get_contents(dirname(__DIR__).'/panels/cms/010_pages/panel.php');
+$source=file_get_contents(dirname(__DIR__).'/panels/admin/010_pages/panel.php');
 $start=strpos($source,'function updateField(');$end=strpos($source,"\n\t/**",$start);
 $method=str_replace('PageOperator::','TestOperator::',substr($source,$start,$end-$start));
 eval('class TestEditor {public object $scope;public object $shown;public TestWork $work;function pageIn($id,$lang){return $this->shown;}function uow(){return $this->work;}function userId(){return 1;}' . $method . '}');

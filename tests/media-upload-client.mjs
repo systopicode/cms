@@ -8,9 +8,9 @@ const doc={addEventListener:(name,fn)=>{(listeners[name]??=[]).push(fn);},body:{
 const group={getAttribute:name=>name==='data-media_group'?'images':'.png,.jpg,.jpeg'};
 const root={getAttribute:()=>10};
 const tile={querySelector:()=>null,closest:selector=>selector==='li.title'?group:selector==='[data-node_parent_node_id]'?root:null};
-vm.runInNewContext(await readFile(new URL('../panels/cms/010_pages/upload/panel.js',import.meta.url),'utf8'),{
+vm.runInNewContext(await readFile(new URL('../panels/admin/010_pages/upload/panel.js',import.meta.url),'utf8'),{
  sys:{lib:{applyParentConstructor(){},add:(setup,construct)=>{upload={};construct.call(upload);}},core:{server:{sendGet:()=>{opened=true;throw new Error('Rejected file opened lightbox');},call:class {constructor(){this.data={};} send(){return {done:callback=>{callback({error:'Server rejected this file.'});return {fail(){}};}};}}}}},
- window:{addEventListener(){}},document:doc,location:{pathname:'/cms/pages/',search:'',origin:'https://fixture.test'},
+ window:{addEventListener(){}},document:doc,location:{pathname:'/admin/pages/',search:'',origin:'https://fixture.test'},
  alert:text=>alerts.push(text),crypto:webcrypto,Blob,URL,FileReader:class {readAsArrayBuffer(){this.result=new ArrayBuffer(0);this.onload();}},console
 });
 upload.showError=text=>alerts.push(text);

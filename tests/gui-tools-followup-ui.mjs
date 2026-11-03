@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';import assert from 'node:assert/strict';
 const {chromium}=await import(process.env.FLUXO_PLAYWRIGHT_MODULE);
 let css=(await Promise.all((await fs.readdir('../system/public/css')).filter(n=>n.endsWith('.css')).sort().map(n=>fs.readFile('../system/public/css/'+n,'utf8')))).join('\n');
-for(const path of ['panels/cms/user/profile.css','panels/cms/090_tools/tools.css','panels/cms/030_settings/project.css'])css+='\n'+await fs.readFile('../system/'+path,'utf8');
+for(const path of ['panels/admin/user/profile.css','panels/admin/090_tools/tools.css','panels/admin/030_settings/project.css'])css+='\n'+await fs.readFile('../system/'+path,'utf8');
 const masks=[...new Set([...css.matchAll(/url\("\.\.\/icons\/([^"?]+)(?:\?[^\"]*)?"\)/g)].map(m=>m[1]))];
 for(const name of masks){const data='data:image/svg+xml;base64,'+(await fs.readFile('../system/public/icons/'+name)).toString('base64');css=css.split('../icons/'+name).join(data);}
 const browser=await chromium.launch({channel:'chrome',headless:true});try{

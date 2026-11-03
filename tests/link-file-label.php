@@ -1,7 +1,7 @@
 <?php
 // Exercise the actual template's file row with an unlabeled download.
 require __DIR__ . '/../../system/src/Media/Presentation.php';
-$source = file_get_contents(__DIR__ . '/../panels/cms/010_pages/editor/editLink/lightbox.tpl.php');
+$source = file_get_contents(__DIR__ . '/../panels/admin/010_pages/editor/editLink/lightbox.tpl.php');
 $start = strpos($source, '<?php foreach ($files as $i => $file) {');
 $end = strpos($source, '</ul>', $start);
 $files = [(object) ['label' => ' ', 'filename' => 'Archive & report.zip', 'mimetype' => 'application/zip']];

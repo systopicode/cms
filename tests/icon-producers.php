@@ -1,9 +1,9 @@
 <?php
 require dirname(__DIR__,2).'/system/tests/bootstrap.php';
 use Systopic\System\Ui\Icons;
-require_once dirname(__DIR__,2).'/system/panels/cms/panel.php';
-require_once dirname(__DIR__).'/panels/cms/010_pages/panel.php';
-$panel=(new ReflectionClass(\Systopic\Cms\Panels\Root\Cms\Pages\Panel::class))->newInstanceWithoutConstructor();
+require_once dirname(__DIR__,2).'/system/panels/admin/panel.php';
+require_once dirname(__DIR__).'/panels/admin/010_pages/panel.php';
+$panel=(new ReflectionClass(\Systopic\Cms\Panels\Root\Admin\Pages\Panel::class))->newInstanceWithoutConstructor();
 foreach (['image','video','application'] as $type) {
     $media=new \Systopic\System\Tables\Medias\Model(); $media->type=$type;
     check('actual broken media producer '.$type, isset(Icons::registry()['outline'][$panel->brokenIcon($media)]));

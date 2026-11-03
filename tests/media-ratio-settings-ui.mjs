@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';import assert from 'node:assert/strict';import {execFileSync} from 'node:child_process';
 const {chromium}=await import(process.env.FLUXO_PLAYWRIGHT_MODULE);
-let css=(await Promise.all((await fs.readdir('../system/public/css')).filter(n=>n.endsWith('.css')).sort().map(n=>fs.readFile('../system/public/css/'+n,'utf8')))).join('\n');css+='\n'+await fs.readFile('../system/panels/cms/030_settings/project.css','utf8');
+let css=(await Promise.all((await fs.readdir('../system/public/css')).filter(n=>n.endsWith('.css')).sort().map(n=>fs.readFile('../system/public/css/'+n,'utf8')))).join('\n');css+='\n'+await fs.readFile('../system/panels/admin/030_settings/project.css','utf8');
 const html=execFileSync('php',['tests/media-ratio-settings-fixture.php'],{encoding:'utf8'});
 const browser=await chromium.launch({channel:'chrome',headless:true});try{
 for(const width of [1440,1194,1024,390])for(const dark of [false,true]){

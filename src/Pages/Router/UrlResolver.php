@@ -109,7 +109,7 @@ final class UrlResolver
         // The legacy applied this fallback to any unmatched path, which was
         // harmless because it ran inside site.php, after the dispatcher had
         // already decided. Here resolution runs BEFORE that decision, so an
-        // unconditional fallback would resolve every panel URL (/cms/pages/,
+        // unconditional fallback would resolve every panel URL (/admin/pages/,
         // /auth/, …) to some page and hand the request to site.php. A path
         // that matches no rewritepath must stay unresolved and let the panel
         // tree have it.

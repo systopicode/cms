@@ -11,7 +11,7 @@ $panel=new class($pages) {
  public object $mediaRow;
  public function __construct(public object $owner){$this->mediaRow=(object)['node'=>null,'type'=>'image','url'=>''];}
  public function pages(){return $this->owner;}
- public function run(){include dirname(__DIR__).'/panels/cms/010_pages/editor/file/actions.php';}
+ public function run(){include dirname(__DIR__).'/panels/admin/010_pages/editor/file/actions.php';}
 };
 $panel->run();
 check('real edit action rejects a forged native type change',$panel->mediaRow->type==='image'&&count(message::$errors)===1);

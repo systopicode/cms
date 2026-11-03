@@ -4,7 +4,7 @@ Stand: 25. Oktober 2026. Grundlage: `fluxo-mobile-konzept.md`, beigefügte GUI-R
 
 ## 1. Bestehende Architektur
 
-Die gemeinsame CMS-Hülle liegt in `../system/panels/cms/body.tpl.php`. Sie rendert Hauptnavigation, Pilon, Content mit Controls, optionale Sidebar, Statusleiste und Lightbox. Die mobile Lösung muss hier ansetzen, damit auch Users, Settings und Tools dieselbe Navigation erhalten.
+Die gemeinsame CMS-Hülle liegt in `../system/panels/admin/body.tpl.php`. Sie rendert Hauptnavigation, Pilon, Content mit Controls, optionale Sidebar, Statusleiste und Lightbox. Die mobile Lösung muss hier ansetzen, damit auch Users, Settings und Tools dieselbe Navigation erhalten.
 
 `../system/public/css/x_responsive.css` und das Inline-Script in der Hülle implementieren bereits vier mobile Panes: Menu, Tree, Edit und Side. Unter 860 px werden ganze Bereiche mit `display: none` umgeschaltet. Die DOM-Knoten bleiben dabei grundsätzlich bestehen, aber die Arbeitsfläche bleibt visuell nicht hinter den Werkzeugen erhalten. Verfügbare Pane-Buttons werden momentan nur beim Start geprüft; nach partiellen DOM-Updates kann diese Auswahl veralten. Die mobile Statusleiste wird vollständig ausgeblendet.
 
@@ -12,10 +12,10 @@ Im Pages-Modul sind die Rollen konkret:
 
 | Bereich | Bestehende Quelle | Aufgabe |
 | --- | --- | --- |
-| Pilon | `panels/cms/010_pages/pylon.tpl.php` | Suche, Seitenbaum, neue Seite, Mediathek im Footer |
-| Arbeitsfläche | `panels/cms/010_pages/main.tpl.php` | Seitenvorschau und Inline-Bearbeitung, alternativ Site-Editor |
-| Eigenschaften | `panels/cms/010_pages/sidebar/` | Content, SEO & KI, Publishing; zusätzliche Templates landen unter More |
-| Element-/Dateieditor | `panels/cms/010_pages/editor/` | Vorhandene Bearbeitungsdialoge |
+| Pilon | `panels/admin/010_pages/pylon.tpl.php` | Suche, Seitenbaum, neue Seite, Mediathek im Footer |
+| Arbeitsfläche | `panels/admin/010_pages/main.tpl.php` | Seitenvorschau und Inline-Bearbeitung, alternativ Site-Editor |
+| Eigenschaften | `panels/admin/010_pages/sidebar/` | Content, SEO & KI, Publishing; zusätzliche Templates landen unter More |
+| Element-/Dateieditor | `panels/admin/010_pages/editor/` | Vorhandene Bearbeitungsdialoge |
 
 Für die mobile Anordnung bleibt der Pilon mit Suche und Seitenbaum die konstante Arbeitsfläche. Die bisherige Content-Ansicht mit Seitenvorschau und Bearbeitung wird zu Page Edit als Overlay; die MML erhält ein eigenes Overlay. Ihre bisherige Lage im Pilon-Footer ist eine technische Kopplung, die für diese Darstellung gezielt aufgelöst werden muss. Inhalte, Aktionen und Panel-Identitäten werden weiterverwendet.
 
@@ -90,7 +90,7 @@ Abnahme: schmale Smartphones, größere Smartphones, Tablet hoch/quer und Deskto
 
 ## 8. Umsetzungsstand
 
-Die alte Pane-Navigation und die zunächst eingeführte untere Werkzeugleiste wurden in `system/panels/cms/body.tpl.php` und `system/public/css/x_responsive.css` ersetzt. `system/panels/cms/mobile.js` steuert die Präsentation bestehender DOM-Bereiche: Pilon als Basis, Content und MML als getrennte Bottom-Fenster, Hauptnavigation als Drawer. Baumklick öffnet Edit. Die bestehenden Sprach- und Geräte-Schalter, Eigenschaften und MML sind über das `…`-Menü in dessen vorhandener Kopfzeile erreichbar. Mobile Debug-Darstellung ist ausgeblendet. Keine duplizierten Formulare, keine neue serverseitige State-Schicht. Eigenschaften bleiben im Edit-Fenster erreichbar. Medien schließen zurück zur Bearbeitung, wenn sie von dort geöffnet wurden.
+Die alte Pane-Navigation und die zunächst eingeführte untere Werkzeugleiste wurden in `system/panels/admin/body.tpl.php` und `system/public/css/x_responsive.css` ersetzt. `system/panels/admin/mobile.js` steuert die Präsentation bestehender DOM-Bereiche: Pilon als Basis, Content und MML als getrennte Bottom-Fenster, Hauptnavigation als Drawer. Baumklick öffnet Edit. Die bestehenden Sprach- und Geräte-Schalter, Eigenschaften und MML sind über das `…`-Menü in dessen vorhandener Kopfzeile erreichbar. Mobile Debug-Darstellung ist ausgeblendet. Keine duplizierten Formulare, keine neue serverseitige State-Schicht. Eigenschaften bleiben im Edit-Fenster erreichbar. Medien schließen zurück zur Bearbeitung, wenn sie von dort geöffnet wurden.
 
 Enthalten: dynamische Verfügbarkeit nach Panel-Updates, Fokusbegrenzung, Escape, Browser-Zurück für gleichbleibende URLs, Griffgeste, Safe Areas, Tastaturhöhenanpassung und reduzierte Bewegung. Der kompakte Modus gilt zunächst bis 1024 CSS-Pixel; Tablet-Andocken anhand modulspezifischer Breiten ist noch nicht umgesetzt.
 

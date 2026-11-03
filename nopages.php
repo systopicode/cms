@@ -2,12 +2,12 @@
 
 /**
  * A site without a single page yet (Frontend::notFound()) — a fresh project.
- * The first page is made in the cms: <root>/cms/pages/.
+ * The first page is made in the cms: <root>/admin/pages/.
  */
 
 http_response_code(404);
 header('Content-Type: text/html; charset=utf-8');
-$cmsUrl = htmlspecialchars(http::$root . 'cms/pages/', ENT_QUOTES, 'UTF-8');
+$cmsUrl = htmlspecialchars(http::$root . 'admin/pages/', ENT_QUOTES, 'UTF-8');
 ?>
 <!DOCTYPE html>
 <html lang="en">

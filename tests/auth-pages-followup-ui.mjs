@@ -3,8 +3,8 @@ import fs from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
 const {chromium}=await import(process.env.FLUXO_PLAYWRIGHT_MODULE);
 const browser=await chromium.launch({channel:'chrome',headless:true});
-const source=await fs.readFile('panels/cms/010_pages/pages.js','utf8');
-const css=(await Promise.all((await fs.readdir('../system/public/css')).filter(x=>x.endsWith('.css')).sort().map(x=>fs.readFile('../system/public/css/'+x,'utf8')))).join('\n')+await fs.readFile('../system/panels/cms/auth/auth.css','utf8')+await fs.readFile('panels/cms/010_pages/pages.mml.css','utf8');
+const source=await fs.readFile('panels/admin/010_pages/pages.js','utf8');
+const css=(await Promise.all((await fs.readdir('../system/public/css')).filter(x=>x.endsWith('.css')).sort().map(x=>fs.readFile('../system/public/css/'+x,'utf8')))).join('\n')+await fs.readFile('../system/panels/admin/auth/auth.css','utf8')+await fs.readFile('panels/admin/010_pages/pages.mml.css','utf8');
 const card=execFileSync('php',['-r',`class http {public static $root='/';} class message {static function flush(...$args){return '';}} $authMethod='code';$authCodes=true;$authCode='ZZZZ-ZZZZ';$authCodeAttempted=true;include '../system/src/Auth/login.card.tpl.php';`],{encoding:'utf8'});
 try {
  for(const width of [390,1194,1440]){

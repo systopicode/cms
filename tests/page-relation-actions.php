@@ -23,7 +23,7 @@ $sidebar = new class {
     public function updateView(string $name): void {}
     public function run(object $pages): void {
         $page = (object)['id'=>10]; $row = true;
-        include dirname(__DIR__) . '/panels/cms/010_pages/sidebar/actions.relations.php';
+        include dirname(__DIR__) . '/panels/admin/010_pages/sidebar/actions.relations.php';
     }
 };
 $sidebar->run($pages);

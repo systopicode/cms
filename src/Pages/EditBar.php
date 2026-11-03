@@ -22,7 +22,7 @@ final class EditBar
         }
         $identity = Session::current();
         $config = [
-            'cms' => \http::$root . 'cms/',
+            'cms' => \http::$root . 'admin/',
             'page' => ['id' => $pageId, 'lang' => $lang],
             'name' => $identity->fullname !== '' ? $identity->fullname : $identity->name,
             'portrait' => Portrait::src((int) $identity->id, $identity->user?->email),

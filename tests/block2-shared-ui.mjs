@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const {chromium}=await import(process.env.FLUXO_PLAYWRIGHT_MODULE);
 const system='../system/';
-const css=(await Promise.all((await fs.readdir(system+'public/css')).filter(n=>n.endsWith('.css')).sort().map(n=>fs.readFile(system+'public/css/'+n,'utf8')))).join('\n')+await fs.readFile('panels/cms/010_pages/pages.mml.css','utf8');
+const css=(await Promise.all((await fs.readdir(system+'public/css')).filter(n=>n.endsWith('.css')).sort().map(n=>fs.readFile(system+'public/css/'+n,'utf8')))).join('\n')+await fs.readFile('panels/admin/010_pages/pages.mml.css','utf8');
 const browser=await chromium.launch({channel:'chrome',headless:true});
 try {
  const page=await browser.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));

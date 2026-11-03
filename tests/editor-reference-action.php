@@ -10,7 +10,7 @@ $panel=new class($row) {
  public string $action='resolveEditorLink';
  public function __construct(public object $medium){}
  public function mediaOfNode($id){return $id===42?$this->medium:null;}
- public function run(){include dirname(__DIR__).'/panels/cms/010_pages/actions.php';}
+ public function run(){include dirname(__DIR__).'/panels/admin/010_pages/actions.php';}
 };
 $panel->run();
 check('real reference action returns original file URL',client::$data['url']==='/public/var/original/000/07/archive.zip');

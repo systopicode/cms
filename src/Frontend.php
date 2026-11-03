@@ -14,7 +14,7 @@ use Systopic\Cms\Pages\Router\UrlResolver;
  *
  * A panel selected by the URL path wins before this is asked (loader.php):
  * a page id can also arrive as ?id=, the CMS's own page selector, and
- * /cms/pages/?id=20 must open the editor, not page 20.
+ * /admin/pages/?id=20 must open the editor, not page 20.
  */
 final class Frontend implements \Systopic\System\Sys\Frontend
 {
@@ -67,7 +67,7 @@ final class Frontend implements \Systopic\System\Sys\Frontend
     /**
      * A site without a single page answers 404 with a word about it, instead
      * of an empty page — a fresh project, before the first page is made in
-     * cms/pages. Any other URL nobody claims stays as it was.
+     * admin/pages. Any other URL nobody claims stays as it was.
      */
     public function notFound(): ?string
     {
