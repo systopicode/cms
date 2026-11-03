@@ -53,5 +53,5 @@ if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
 					</div>
 				</div>
 			</div></footer>
-	<div data-drag_type='none' data-on_draginit='draginitPylonwidth'></div>
+	<div class='pylonResizeHandle' data-drag_type='none' data-on_draginit='draginitPylonwidth'></div>
 </div>

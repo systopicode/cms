@@ -11,16 +11,6 @@ main > div.content > article {
     height: 100%;
 }
 
-[data-on_draginit="draginitPylonwidth"]
-{
-	width: 28px;
-	position: absolute;
-	height: 100%;
-	right: -18px;
-	z-index: 30;
-	cursor: col-resize;
-	touch-action: none;
-}
 [data-on_draginit="draginitSidebarwidth"]
 {
 	width: 22px;
