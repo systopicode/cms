@@ -108,7 +108,7 @@ header.cms .pageTitleEdit:hover{
 }
 
 header.cms .pageTitle[contenteditable="plaintext-only"]{
-    outline: 1px dashed var(--cmsTextColor);
+    outline: 2px dashed var(--cmsMuted);
     outline-offset: 3px;
     background: transparent;
     cursor: text;

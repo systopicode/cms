@@ -56,10 +56,10 @@ $items = static fn(string $key): array => match ($key) {
 						default => 'links/',
 					};
 					?>
-					<a class="ajax" href="<?= $e(\http::$root . 'admin/tools/maintenance/' . $tool) ?>"><?= $count ?><i class="cmsIcon cmsIcon-chevron-right"></i></a>
+					<a class="ajax" href="<?= $e(\http::$root . 'admin/tools/maintenance/' . $tool) ?>"><?= $count ?><span class="button transparent icononly summaryToggle dashForward" aria-hidden="true"><i class="cmsIcon cmsIcon-chevron-right"></i></span></a>
 				<?php } else { ?>
 					<details>
-						<summary class="button transparent"><?= $count ?><i class="cmsIcon cmsIcon-chevron-down" aria-hidden="true"></i></summary>
+						<summary><?= $count ?></summary>
 						<?php if ($hint !== '') { ?><p><?= $e($hint) ?></p><?php } ?>
 						<ul>
 							<?php foreach ($items($key) as [$link, $text, $small]) { ?>
