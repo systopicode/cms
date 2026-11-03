@@ -30,7 +30,7 @@ if ($this->childSelected && isset($this->childSelected->state->pylonWidth)) {
 				<?php } else { ?>
 					<li><a class="ajax put" href="closeAllFolds" title="Close all folders"><i class="cmsIcon cmsIcon-folder-minus"></i></a></li>
 					<li><button type="button" data-cms-action onclick='scrollTree("smooth", false, false)' title="Show the open page"><i class="cmsIcon cmsIcon-crosshairs"></i></button></li>
-					<li><a href='../tools/cleanup/trash/' title="Show Trash"><i class="cmsIcon cmsIcon-trash"></i></a></li>
+					<li><a href='../tools/cleanup/trash/' data-cms-open-sheet title="Show Trash"><i class="cmsIcon cmsIcon-trash"></i></a></li>
 				<?php } ?>
 			</ul>
 			<button type="button" data-cms-action class="button submit icononly" data-on_click="new" title="Add Page"><i class="cmsIcon cmsIcon-plus"></i></button>

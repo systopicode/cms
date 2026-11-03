@@ -79,3 +79,52 @@ body.cms.pages ul.tree label > i.acl.none{
 	width: 1.25rem;
 	opacity: .7;
 }
+
+
+body.cmsMobile.pages > main > .pylon > nav {
+	--pages-tree-toolbar-height: 4rem;
+	padding-top: 0;
+}
+
+body.cmsMobile.pages > main > .pylon > nav > .pylonTitle {
+	position: relative;
+	z-index: 2;
+	height: var(--pages-tree-toolbar-height);
+	padding-top: 1.25rem;
+	margin-bottom: 0;
+	border-bottom-color: transparent;
+	background: color-mix(in srgb, var(--cmsBgColor) 70%, transparent);
+	backdrop-filter: blur(18px);
+	-webkit-backdrop-filter: blur(18px);
+}
+
+body.cmsMobile.pages > main > .pylon > nav.cmsHeaderScrolled > .pylonTitle {
+	border-bottom-color: var(--cmsLine);
+}
+
+body.cmsMobile.pages > main > .pylon > nav > .tree {
+	margin-top: calc(-1 * var(--pages-tree-toolbar-height));
+	padding-top: var(--pages-tree-toolbar-height);
+	scroll-padding-top: var(--pages-tree-toolbar-height);
+}
+
+body.cmsMobile.pages > main > .pylon > nav > .tree:has([contenteditable="plaintext-only"]) {
+	padding-bottom: var(--pages-rename-occlusion, 0px);
+}
+
+body.cmsMobile.pages .pylon ul.tree li > label {
+	min-height: 44px;
+}
+
+body.cmsMobile.pages .pylon ul.tree li > label > :is(.fold, .treeGrip, .treeMenu) {
+	flex-basis: 36px;
+	width: 36px;
+	height: 34px;
+	align-self: center;
+	border-radius: var(--cmsRadius);
+}
+
+/* iOS zooms on focus when the editable label is smaller than 16px. */
+body.cmsMobile.pages .pylon ul.tree .treeLabelEdit > .label[contenteditable="plaintext-only"] {
+	font-size: max(16px, 1rem);
+}

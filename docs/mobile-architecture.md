@@ -114,3 +114,27 @@ Die mobile Hülle übernimmt Petrolrahmen, Rundungen und Schatten der Desktop-Ob
 - Die CMS-PWA verwendet `CMS_PAGE_TITLE_OVERRIDE` beziehungsweise `fluxo`, unabhängig vom öffentlichen `PUBLIC_APP_NAME`. Manifest-URLs sind versioniert; Theme- und Bild-Overrides werden weiterhin über die bestehenden Resolver ausgewählt.
 
 Validierung: erweiterte Browserprüfung einschließlich mehrfacher Initialisierung, unveränderter Eingaben, normaler Settings-Links, Suche, Dashboard, Menü, Kontextaktionen und Desktop-Rückkehr. Standalone-PHP-Test prüft PWA-Name, Theme-/Icon-Overrides, Scope und Manifest-Versionierung. Zusätzlich wurde der laufende lokale Manifest-Endpunkt ohne Anmeldung abgerufen: Name `fluxo`; ein ausgeliefertes Android-Icon wurde als Fluxo-PNG mit HTTP 200 geprüft. Installation auf realen Android-/iOS-Geräten ist damit noch nicht praktisch verifiziert.
+
+### Pages auf Smartphone und Tablet
+
+Im mobilen Page Edit öffnen zwei Icons im Header die Eigenschaften und
+die Media Library. Sprache und Vorschaugröße stehen im Dreipunktmenü.
+Die petrolfarbene WYSIWYG-Leiste sitzt am unteren Rand und wächst mit ihren
+Werkzeugen bis zur verfügbaren Breite. Bei mehr Werkzeugen scrollt sie
+horizontal. Sie berücksichtigt den Sicherheitsabstand und die Bildschirmtastatur.
+
+Die Media Library unterscheidet Sortieren durch Ziehen vom Kopieren durch
+Halten und Loslassen an derselben Stelle. Die kopierte Kachel erhält eine
+grüne Kontur. Die Statusanzeige nennt die passenden Einfügeziele.
+Die Zwischenablage enthält
+eine Medienreferenz und gilt im selben Tab auch nach einem Seitenwechsel.
+Im WYSIWYG stehen
+Medienauswahl und Einfügen an der Textposition zur Verfügung. Unter
+SEO & AI lässt sich das Share-Bild über die Ablagefläche oder die
+Medienauswahl setzen. Die Auswahl zeigt nur geeignete Bilder. Beim
+Speichern prüft der Server das Bildformat erneut.
+
+
+Die Page bleibt beim Öffnen von Properties oder Media Library als Blatt
+erhalten. Beide Werkzeuge verwenden die gemeinsame Lightbox. Öffnet Meta
+die Bildauswahl, liegt sie über Properties und kehrt dorthin zurück.

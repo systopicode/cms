@@ -34,9 +34,32 @@
         if (initialActive && treeUi.activeId === null) {
             treeUi.activeId = initialActive.dataset.node_id;
         }
+		function revealTreeRename() {
+			const field = document.activeElement;
+			if (!field?.matches('.pylon .tree [contenteditable="plaintext-only"]')) return;
+			const tree = field.closest('div.tree');
+			const row = field.getBoundingClientRect();
+			const bounds = tree.getBoundingClientRect();
+			const toolbar = tree.previousElementSibling.getBoundingClientRect();
+			const viewport = window.visualViewport;
+			const bottom = Math.min(bounds.bottom, viewport ? viewport.offsetTop + viewport.height : innerHeight) - 12;
+			const top = Math.max(bounds.top, toolbar.bottom) + 8;
+			tree.style.setProperty('--pages-rename-occlusion', Math.max(0, bounds.bottom - bottom) + 'px');
+			if (row.bottom > bottom) tree.scrollTop += row.bottom - bottom;
+			else if (row.top < top) tree.scrollTop -= top - row.top;
+		}
+		const revealAfterViewportChange = () => requestAnimationFrame(revealTreeRename);
+		window.visualViewport?.addEventListener('resize', revealAfterViewportChange);
+		window.visualViewport?.addEventListener('scroll', revealAfterViewportChange);
+		window.addEventListener('resize', revealAfterViewportChange);
+		document.addEventListener('scroll', event => {
+			if (event.target.matches?.('body.pages > main > .pylon > nav > .tree')) {
+				event.target.parentElement.classList.toggle('cmsHeaderScrolled', event.target.scrollTop > 1);
+			}
+		}, true);
 		pagesModule.onUpdateTree = function () {
-			standIn && standIn.remove();
-            standIn = null;
+
+            requestAnimationFrame(revealTreeRename);
             const foldFocus = treeUi.foldFocus;
             delete treeUi.foldFocus;
             if (foldFocus && performance.now() - foldFocus.time < 5000 &&
@@ -53,15 +76,29 @@
             if (selected) scrollTree('smooth', id, true);
 		};
 
-		// iOS opens the keyboard only for a focus within the tap, not after the
-		// answer: a stand-in field takes it now and hands it to the label.
-		var standIn = null;
+		// Focus the actual editor during the tap so iOS can open the keyboard.
 		pagesModule.editLabel = event => {
-			standIn = document.createElement('input');
-			standIn.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px';
-			document.body.appendChild(standIn);
-			standIn.focus({preventScroll: true});
-			sys.core.server.sendEventCall(event);
+			const id = event.element.closest('[data-id]')?.dataset.id;
+			const buttons = id && document.querySelectorAll('div.pylon ul.tree li[data-node_id="' + CSS.escape(id) + '"] > label > button.label');
+			const button = buttons && Array.from(buttons).find(candidate => candidate.getClientRects().length);
+			if (!button) { sys.core.server.sendEventCall(event); return; }
+			const wrapper = document.createElement('span');
+			wrapper.className = 'treeLabelEdit';
+			const icon = button.querySelector('i.type');
+			if (icon) wrapper.append(icon.cloneNode(true));
+			const field = document.createElement('span');
+			field.className = 'label';
+			field.setAttribute('contenteditable', 'plaintext-only');
+			field.dataset.on_blur = 'updateLabel';
+			field.dataset.on_keypress = 'checkKey';
+			field.textContent = button.textContent.trim();
+			wrapper.append(field);
+			button.replaceWith(wrapper);
+			sys.initEvents($(wrapper));
+			closeAllMenus();
+			field.focus({preventScroll: true});
+			selectElementContents(field);
+			revealTreeRename();
 		};
 
 		pagesModule.checkKey = e => {
@@ -126,6 +163,136 @@ document.addEventListener('pointerdown', function (event) {
 	document.addEventListener('pointerup', end, true);
 	document.addEventListener('pointercancel', end, true);
 }, true);
+
+// The clipboard contains a media reference for this browser tab.
+(function () {
+	let clipboard, destination, statusTimer, beforeHold;
+	const tileSelector = '.mmlContent li[data-drag_type="media"][data-media_id]';
+	const storageKey = 'fluxo.pages.mediaClipboard:' + location.pathname.split('/admin/')[0];
+	try { clipboard = JSON.parse(sessionStorage.getItem(storageKey)); } catch {}
+	if (clipboard && !clipboard.token) clipboard.token = String(Date.now()) + Math.random();
+	function updateClipboardStatus() {
+		if (clipboard) document.body.dataset.pageMediaCopied = clipboard.mediaShareImage === '1' ? 'image' : 'media';
+		else document.body.removeAttribute('data-page-media-copied');
+	}
+	updateClipboardStatus();
+	const mobile = () => document.body.classList.contains('cmsMobile');
+	const shareTarget = () => document.querySelector('aside .mediaDrop.shareImage');
+
+	function announce(message) {
+		let status = document.querySelector('.pageMediaStatus');
+		if (!status) {
+			status = document.createElement('div');
+			status.className = 'pageMediaStatus';
+			status.setAttribute('role', 'status');
+			document.body.append(status);
+		}
+		status.textContent = message;
+		clearTimeout(statusTimer);
+		statusTimer = setTimeout(() => status.remove(), 2200);
+	}
+
+	function accepts(tile, target) {
+		const allowed = target.dataset.mediaAccept;
+		if (!allowed || (tile.mediaShareImage === '1' && allowed.split(',').includes('.' + tile.mediaExtension))) return true;
+		announce('Choose a JPG, PNG, GIF or WebP image.');
+		return false;
+	}
+
+	function insert(tile, target, range, consume = false) {
+		if (!target?.isConnected || !tile) return false;
+		if (!accepts(tile, target)) return false;
+		if (range && !target.contains(range.commonAncestorContainer)) return false;
+		const event = new sys.core.event($.Event('click', {target, currentTarget: target}));
+		event.collectElementData();
+		if (range) event.mediaInsertionRange = range.cloneRange();
+		if (consume) {
+			if (range) event.onMediaInserted = () => consumeClipboard(tile.token);
+			else event.data.dataset.media_clipboard = tile.token;
+		}
+		event.data.dragdata = {dataset: tile};
+		event.executeAction(target.dataset.on_drop);
+		return true;
+	}
+
+	function pick(target, range) {
+		if (!target) return;
+		const share = target.matches('.mediaDrop.shareImage');
+		const available = share ? tileSelector + '[data-media-share-image="1"]' : tileSelector;
+		if (!document.querySelector(available)) {
+			announce(share ? 'There are no suitable share images on this page.' : 'There are no media files on this page.');
+			return;
+		}
+		const sharePage = share ? target.closest('[data-node_id]')?.dataset.node_id : null;
+		destination = {target, range, sharePage};
+		document.body.toggleAttribute('data-page-share-picker', share);
+		document.dispatchEvent(new Event('cms-open-media-picker'));
+	}
+
+	function setClipboard(value) {
+		clipboard = value;
+		try {
+			if (value) sessionStorage.setItem(storageKey, JSON.stringify(value));
+			else sessionStorage.removeItem(storageKey);
+		} catch {}
+		updateClipboardStatus();
+		document.querySelector('.mmlContent [data-media-copied]')?.removeAttribute('data-media-copied');
+		if (value) document.querySelector(tileSelector + '[data-node_id="' + CSS.escape(value.node_id) + '"]')?.setAttribute('data-media-copied', '');
+	}
+	function consumeClipboard(token) {
+		if (clipboard && clipboard.token === token) setClipboard(null);
+	}
+	window.consumePagesMediaClipboard = consumeClipboard;
+	sys.pagesMedia = {
+		pick,
+		paste: (target, range) => insert(clipboard, target, range, true),
+		hasClipboard: () => !!clipboard
+	};
+
+	document.addEventListener('cms-media-hold', event => {
+		if (!mobile() || !event.target.matches(tileSelector)) return;
+		const box = event.target.closest('.cmslightbox');
+		if (event.detail === 'cancel') {
+			setClipboard(beforeHold);
+			window.cmsFeedback?.notice('', box);
+		} else if (event.detail === 'start') {
+			beforeHold = clipboard;
+			const {node_id, drag_type, mediaExtension, mediaShareImage} = event.target.dataset;
+			setClipboard({node_id, drag_type, mediaExtension, mediaShareImage, token: String(Date.now()) + Math.random()});
+			const text = mediaShareImage === '1'
+				? 'Copied to clipboard.\nUse Paste media in the editor or Paste image in Meta.'
+				: 'Copied to clipboard.\nUse Paste media in the editor.';
+			window.cmsFeedback?.notice(text, box);
+		} else {
+			beforeHold = null;
+		}
+	});
+	document.addEventListener('click', event => {
+		if (!mobile()) return;
+		const tile = event.target.closest(tileSelector);
+		if (tile && destination && tile.closest('.pageToolBox[data-page-tool="media"]:not([hidden])')) {
+			event.preventDefault();
+			event.stopImmediatePropagation();
+			const {range, sharePage} = destination;
+			const target = sharePage
+				? document.querySelector('aside [data-node_id="' + CSS.escape(sharePage) + '"] .mediaDrop.shareImage')
+				: destination.target;
+			if (!target?.isConnected) { destination = null; return; }
+			if (!accepts(tile.dataset, target)) return;
+			destination = null;
+			document.dispatchEvent(new Event('cms-close-media-picker'));
+			insert({...tile.dataset}, target, range);
+		} else if (event.target.closest('[data-page-media-picker], aside .mediaDrop.shareImage') && !event.target.closest('a, input, [data-on_click]')) {
+			pick(shareTarget());
+		} else if (event.target.closest('[data-page-media-paste]')) {
+			insert(clipboard, shareTarget(), null, true);
+		}
+	}, true);
+	document.addEventListener('cms-media-closed', () => {
+		destination = null;
+		document.body.removeAttribute('data-page-share-picker');
+	});
+})();
 
 // Touch: the first tap on a thumb opens its overlay, a tap elsewhere closes it.
 document.addEventListener('click', function (event) {

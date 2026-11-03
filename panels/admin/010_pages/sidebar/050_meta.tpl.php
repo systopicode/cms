@@ -34,6 +34,8 @@ $robots = [
     </li>
 	<li class="seperator">Share image</li>
 	<li>
+		<button type="button" class="button cmsMobileOnly" data-page-media-picker="share">Choose image</button>
+		<button type="button" class="button cmsMobileOnly" data-page-media-paste="share"><i class="cmsIcon cmsIcon-copy"></i> Paste image</button>
 		<div class="mediaDrop shareImage" data-media-accept=".jpg,.jpeg,.png,.gif,.webp" data-drop_accept="media" data-on_drop="sidebar/updateShareImage"><?= $this->shareImage() ?></div>
 	</li>
 	<li class="seperator">Robots</li>

@@ -10,6 +10,13 @@ composer require systopic/cms
 Requires PHP 8.4, [systopic/system](https://github.com/systopicode/system)
 and [systopic/db](https://github.com/systopicode/db).
 
+## Administration
+
+Pages opens at `/admin/pages/` relative to the site root. The legacy
+`/cms/` entry redirects there. Use `panels/admin/` for project panel
+overrides, `Root\Admin` in PHP panel namespaces and `panels.admin` in
+JavaScript route keys. The Composer package remains `systopic/cms`.
+
 ## Documentation
 
 - [Publishing, media and editing safety](docs/tools-and-edit-safety.md)

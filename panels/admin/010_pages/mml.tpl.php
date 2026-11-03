@@ -46,6 +46,7 @@ $siteRoot = (string) http::$siteRoot;
 					'drag_type' => 'media', 'node_id' => $id,
 					// without a medium these stay off, as in the legacy markup
 					'media-extension' => GroupPolicy::extension($filename),
+					'media-share-image' => GroupPolicy::shareImageAllowed($filename, $mime) ? '1' : '0',
                     'media_id' => $media?->id, 'type' => $media?->type, 'value' => $media?->label,
 					'on_contextmenu' => 'mml/getMmlContextmenu',
 				]) ?>>

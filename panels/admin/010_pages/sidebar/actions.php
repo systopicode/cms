@@ -124,6 +124,8 @@ switch ($this->action) {
 			$row->metaShareImage = $mediaNodeId;
 			$save([$row]);
 			client::replaceInner('aside div.mediaDrop.shareImage', $this->shareImage());
+			$clipboardToken = (string) http::dataset('media_clipboard', '');
+			if ($clipboardToken !== '') client::callFunction('consumePagesMediaClipboard', [$clipboardToken]);
 			$this->refreshSeoPreview();
 		}
 		break;

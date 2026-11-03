@@ -34,7 +34,7 @@ $title = $page?->label->plain ?? '';
         <div class="pageTitleRow">
 			<h1 class="pageTitle" contenteditable="false" data-on_blur="updateLabel"><?= $title !== '' ? $title : '- - - -' ?></h1>
 			<?php if (\Systopic\Cms\Pages\PageAccess::mayEdit($page)) { ?>
-				<button type="button" class="pageTitleEdit" data-page-title-edit title="Edit title"><i class="cmsIcon cmsIcon-pen"></i></button>
+				<button type="button" class="pageTitleEdit" data-page-title-edit title="Edit or confirm title" aria-label="Edit or confirm title"><i class="cmsIcon cmsIcon-pen"></i><i class="cmsIcon cmsIcon-check pencilConfirm"></i></button>
 			<?php } else { ?>
 				<i class="cmsIcon cmsIcon-lock pageTitleLock" title="Read only: you may not change this page"></i>
 			<?php } ?>
@@ -55,8 +55,10 @@ $flag = static fn(array $language, string $key): string => \Systopic\System\Sett
 $current = Languages::activated()[$this->state->lang] ?? null;
 ?>
 <div class="cmsPageTools">
-	<button type="button" class="cmsMobileOnly cmsMobileMore" data-cms-more aria-label="Page tools" aria-expanded="false">…</button>
-	<div class="cmsPageToolsMenu">
+	<button type="button" class="button transparent icononly cmsMobileOnly" data-cms-window="media" aria-label="Media Library" title="Media Library"><i class="cmsIcon cmsIcon-photo-film"></i></button>
+	<button type="button" class="button transparent icononly cmsMobileOnly" data-cms-properties aria-label="Properties" title="Properties"><i class="cmsIcon cmsIcon-sliders"></i></button>
+	<button type="button" class="button transparent icononly cmsMobileOnly" data-cms-page-more aria-label="More page tools" aria-controls="cmsPageToolsMenu" aria-expanded="false" title="More page tools"><i class="cmsIcon cmsIcon-ellipsis"></i></button>
+	<div id="cmsPageToolsMenu" class="cmsPageToolsMenu" role="group" aria-label="Page tools">
 <div class="leftAlign">
 	<div class="splitApply langSwitch">
 		<button type="button" class="splitApplyMenu" aria-expanded="false" aria-label="<?= htmlspecialchars((string) ($current['label'] ?? 'Language'), ENT_QUOTES) ?>">
@@ -89,7 +91,5 @@ $current = Languages::activated()[$this->state->lang] ?? null;
 </div>
 <?php } ?>
 
-		<button type="button" class="cmsMobileOnly" data-cms-properties><i class="cmsIcon cmsIcon-sliders"></i> Properties</button>
-		<button type="button" class="cmsMobileOnly" data-cms-window="media"><i class="cmsIcon cmsIcon-images"></i> Media Library</button>
 	</div>
 </div>

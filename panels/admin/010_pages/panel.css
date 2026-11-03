@@ -512,3 +512,73 @@ header.cms .pageTitleLock{
 	padding: 0 0.5rem;
 	color: var(--cmsMuted);
 }
+
+body.cms.cmsMobile [data-page-media-picker],
+body.cms.cmsMobile[data-page-media-copied="image"] [data-page-media-paste] {
+	display: inline-flex;
+	margin-block-end: 0.4rem;
+}
+
+.pageMediaStatus {
+	position: fixed;
+	z-index: 2600;
+	inset-inline: 1rem;
+	inset-block-end: max(1rem, env(safe-area-inset-bottom));
+	width: fit-content;
+	margin-inline: auto;
+	padding: 0.5rem 0.8rem;
+	border-radius: 0.4rem;
+	background: var(--cmsMainColor);
+	color: white;
+	pointer-events: none;
+}
+
+body[data-page-share-picker] .mmlContent > div > ul > li:not(:has([data-media-share-image="1"])),
+body[data-page-share-picker] .mmlContent > div > ul > li > ul > li:not([data-media-share-image="1"]),
+body[data-page-share-picker] .mmlContent .thumbActions,
+body[data-page-share-picker] .mmlContent .mediaGroupInfo {
+	display: none;
+}
+
+body.cmsMobile .mmlContent [data-media-copied] {
+	outline: 2px solid var(--cmsFeedbackSuccess, var(--cmsSuccess));
+	outline-offset: -2px;
+}
+
+.pageToolBox > section > main > aside.cms {
+	width: 100%;
+	min-width: 0;
+	max-width: none;
+	height: auto;
+	border: 0;
+	background: transparent;
+}
+
+body.cms .cmslightbox.pageToolBox > section > header.cmsMobileEditHeader {
+	width: 100%;
+	justify-content: space-between;
+}
+
+.pageToolBox aside.cms .pathMeta {
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.pageToolBox aside.cms > .sidebarFlag,
+.pageToolBox aside.cms [data-on_draginit="draginitSidebarwidth"],
+.pageToolBox.cms div.mmlContent > label {
+	display: none;
+}
+
+.pageToolBox .mmlContent,
+.pageToolBox .mmlContent > div,
+.pageToolBox.cms aside.cms :is(.flexContainer, .scrollContainer) {
+	flex: none;
+	position: relative;
+	height: auto;
+	overflow: visible;
+}
+
+body.cmsMobile .pageToolBox.cms div.mmlContent ul li ul li:not(.touchOpen) .thumbActions {
+	display: none;
+}

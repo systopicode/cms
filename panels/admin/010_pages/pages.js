@@ -45,14 +45,15 @@ function scrollTree(running = 'instant', id = false, magick = true) {
 	}
 	var itemRect = (activeElement.querySelector(':scope > label') || activeElement).getBoundingClientRect();
 	var box = scroller.getBoundingClientRect();
-	var above = itemRect.top < box.top;
+	var visibleTop = box.top + (parseFloat(getComputedStyle(scroller).scrollPaddingTop) || 0);
+	var above = itemRect.top < visibleTop;
 	var below = itemRect.bottom > box.bottom;
 	if (magick && !above && !below) {
 		return;
 	}
 	var delta = magick
-		? (above ? itemRect.top - box.top : itemRect.bottom - box.bottom)
-		: itemRect.top - box.top - 4;
+		? (above ? itemRect.top - visibleTop : itemRect.bottom - box.bottom)
+		: itemRect.top - visibleTop - 4;
 	var top = Math.max(0, Math.min(scroller.scrollHeight - scroller.clientHeight, scroller.scrollTop + delta));
     if (Math.abs(top - scroller.scrollTop) < 2) return;
     scrollTree.targets ||= new WeakMap();
