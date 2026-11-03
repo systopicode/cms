@@ -404,13 +404,13 @@ final class PageTree implements Stringable
      */
     private function aclIcons(PageTreeNode $entry, bool $may): string
     {
-        $html = $may ? '' : "<i class='acl readonly fa-regular fa-lock' title='Read only: you may not change this page'></i>";
+        $html = $may ? '' : "<i class='acl readonly cmsIcon cmsIcon-lock' title='Read only: you may not change this page'></i>";
         if ($entry->isSite || !defined('PAGE_ACL') || !\PAGE_ACL || !Session::isSuperuser()) {
             return $html;
         }
         $node = $entry->node;
         if ($node->relationId('acl') === null) {
-            return $html . "<i class='acl none fa-regular fa-user-lock' title='No content group: only the owner and superusers'></i>";
+            return $html . "<i class='acl none cmsIcon cmsIcon-user-lock' title='No content group: only the owner and superusers'></i>";
         }
         if ($node->aclInherit || $entry->parent === null) {
             return $html;   // a topmost page has its own anyway: no news
@@ -423,7 +423,7 @@ final class PageTree implements Stringable
         }
         $names = array_map(fn(int $id): string => $this->groupNames[$id] ?? "#$id", AclOperator::groupIds($node->acl));
         $title = htmlspecialchars('Own content groups: ' . implode(', ', $names), ENT_QUOTES);
-        return $html . "<i class='acl own fa-regular fa-users' title='$title'></i>";
+        return $html . "<i class='acl own cmsIcon cmsIcon-users' title='$title'></i>";
     }
 
     private function foldIcon(int $id, bool $hasChildren, bool $open): string

@@ -15,7 +15,7 @@ try {
  await page.evaluate(()=>{window.menuCloses=0;window.closeAllMenus=()=>menuCloses++;panel.onUpdateTree();});
  assert.equal(await page.evaluate(()=>menuCloses),0,'background tree refresh keeps editor toolbar open');
  await page.evaluate(()=>{document.querySelector('.tree li').classList.add('menuTarget');panel.onUpdateTree();document.querySelector('.tree li').classList.remove('menuTarget');});
- assert.equal(await page.evaluate(()=>menuCloses),1,'tree menu still closes when its tree is refreshed');
+ assert.equal(await page.evaluate(()=>menuCloses),0,'tree refresh leaves menu dismissal to the shared opener lifecycle');
  await page.evaluate(()=>{document.querySelector('li').dataset.node_id='12';panel.onUpdateTree();window.rebuilt={};panelConstructor.call(rebuilt);rebuilt.onUpdateTree();});
  assert.deepEqual(await page.evaluate(()=>scrolls),[['smooth','12',true]],'only actual local selection change scrolls, not module rebuild');
  await page.evaluate(()=>{

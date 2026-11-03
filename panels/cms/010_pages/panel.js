@@ -35,8 +35,6 @@
             treeUi.activeId = initialActive.dataset.node_id;
         }
 		pagesModule.onUpdateTree = function () {
-            // Presence/tree refreshes must not dismiss an active editor toolbar.
-            if (document.querySelector('.tree .menuTarget') && typeof closeAllMenus === 'function') closeAllMenus();
 			standIn && standIn.remove();
             standIn = null;
             const foldFocus = treeUi.foldFocus;

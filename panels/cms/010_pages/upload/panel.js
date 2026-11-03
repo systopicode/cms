@@ -285,7 +285,21 @@
             box = document.createElement('div');
             box.className = 'cmslightbox cms uploadSummary';
             box.dataset.size = '2';
-            box.innerHTML = '<section><header><h1>Uploads</h1><ul class="barmenu"><li><button type="button" class="button transparent icononly" data-box-close data-lightbox-close title="Close" aria-label="Close"><i class="cmsIcon cmsIcon-xmark" aria-hidden="true"></i></button></li></ul></header><main><p class="uploadQueueHint">Results remain available until this page is reloaded. Closing this overview does not stop uploads.</p><label>Upload batch<select class="uploadBatchPicker"></select></label><p class="uploadQueueStatus" role="status" aria-live="polite"></p><ul class="uploadQueueFiles"></ul></main><footer><button type="button" class="button uploadQueueRetry">Retry failed and pending files</button></footer></section>';
+            box.innerHTML = `<section>
+                <header>
+                    <h1>Uploads</h1>
+                    <ul class="barmenu"><li><button type="button" class="button transparent icononly" data-box-close data-lightbox-close title="Close" aria-label="Close"><i class="cmsIcon cmsIcon-xmark" aria-hidden="true"></i></button></li></ul>
+                </header>
+                <main>
+                    <p class="hint uploadQueueHint">Closing this overview keeps uploads running. Results are available until you reload the page.</p>
+                    <label class="uploadQueueBatch">Upload batch<select class="uploadBatchPicker"></select></label>
+                    <section class="widget is-list">
+                        <header><h2>Files</h2><p class="uploadQueueStatus" role="status" aria-live="polite"></p></header>
+                        <ul class="uploadQueueFiles"></ul>
+                    </section>
+                </main>
+                <footer><button type="button" class="button uploadQueueRetry"><i class="cmsIcon cmsIcon-arrows-rotate" aria-hidden="true"></i>Retry failed and pending files</button></footer>
+            </section>`;
             box.querySelector('[data-box-close]').onclick = () => box.remove();
             const picker = box.querySelector('select');
             upload.queues.forEach((b, index) => { const o = document.createElement('option');o.value = index;o.textContent = 'Batch ' + (index + 1) + ' · ' + b.entries.length + ' files';o.selected = b === batch;picker.append(o); });
@@ -301,7 +315,7 @@
             const labels = {pending:'Pending',uploading:'Uploading',success:'Uploaded',failed:'Failed',rejected:'Not allowed'};
             const list = box.querySelector('.uploadQueueFiles');
             if (list.children.length !== batch.entries.length) {
-                list.replaceChildren(...batch.entries.map(() => { const li=document.createElement('li');li.innerHTML='<strong></strong><span></span><small></small>';return li; }));
+                list.replaceChildren(...batch.entries.map(() => { const li=document.createElement('li');li.innerHTML='<strong></strong><span class="uploadQueueFileStatus"></span><small></small>';return li; }));
             }
             batch.entries.forEach((entry,index) => {
                 const li=list.children[index];li.dataset.state=entry.state;

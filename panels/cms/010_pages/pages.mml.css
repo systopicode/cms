@@ -709,6 +709,10 @@ div.mml .spinner:before {
 	position: relative;
 }
 
+aside .mediaDrop.shareImage:empty {
+	background-color: var(--cmsCanvas);
+}
+
 aside .mediaDrop{
 	margin-bottom: 10px;
 	height: auto;
@@ -779,9 +783,14 @@ body.dragging .mediaDrop .dropActions button:where(:not([data-cms-action])){
 
 .mediaDrop:empty:after{
 	font-size: 20px;
-	margin-top:-40px;
-	content: ""; width: 1em; height: 1em; background-color: currentColor; -webkit-mask: var(--icon-photo) center / contain no-repeat; mask: var(--icon-photo) center / contain no-repeat;
-	font-family: inherit;
+	inset: 50% auto auto 50%;
+	transform: translate(-50%, -2em);
+	padding: 0;
+	content: "";
+	width: 1em;
+	height: 1em;
+	background-color: currentColor;
+	pointer-events: none;
 }
 
 /* Finger sized: bigger tiles, buttons far enough apart to hit the right one */
@@ -851,12 +860,29 @@ body.mediaDragging .mediaDrop.dropRejected::after { content: ""; position: absol
 
 /* The existing lightbox presents the session's upload batches. */
 .uploadSummary main { overflow:auto; }
-.uploadQueueFiles { list-style:none; padding:0; margin:1rem 0; }
-.uploadQueueFiles li { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.25rem 1rem; padding:.75rem 0; border-bottom:1px solid var(--cmsLine); }
-.uploadQueueFiles strong, .uploadQueueFiles small { overflow-wrap:anywhere; }
-.uploadQueueFiles small { grid-column:1 / -1; }
-.uploadQueueFiles li[data-state=failed] span, .uploadQueueFiles li[data-state=rejected] span { color:var(--cmsError); }
-.uploadQueueFiles li[data-state=success] span { color:var(--cmsConfirm); }
+.uploadSummary .uploadQueueHint { margin: 0 0 1rem; color: var(--cmsMuted); }
+.uploadQueueBatch { display: grid; gap: .35rem; margin-bottom: 1rem; }
+.uploadSummary .uploadQueueStatus { margin: 0; color: var(--cmsMuted); font-size: .875rem; }
+.uploadQueueFiles { list-style: none; padding: 0; margin: 0; }
+.uploadQueueFiles li {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: center;
+	gap: .25rem .75rem;
+	padding: .65rem var(--cmsCardPadding);
+}
+.uploadQueueFiles li + li { border-top: 1px solid var(--cmsLine); }
+.uploadQueueFiles strong, .uploadQueueFiles small { overflow-wrap: anywhere; }
+.uploadQueueFiles small { grid-column: 1 / -1; color: var(--cmsMuted); }
+.uploadQueueFiles small:empty { display: none; }
+.uploadQueueFileStatus {
+	border-radius: 999px;
+	padding: .15rem .5rem;
+	background: var(--cmsPanelAlt);
+	font-size: .8rem;
+}
+.uploadQueueFiles :is([data-state=failed], [data-state=rejected]) .uploadQueueFileStatus { color: var(--cmsError); }
+.uploadQueueFiles [data-state=success] .uploadQueueFileStatus { background: color-mix(in srgb, var(--cmsConfirm) 16%, var(--cmsCanvas)); }
 .uploadQueueOpen { position:fixed; right:.75rem; bottom:calc(2.5rem + env(safe-area-inset-bottom)); z-index:7900; min-height:44px; flex-shrink:0; }
 @media (max-width:767px) { .uploadQueueOpen { position:fixed; right:.75rem; bottom:calc(.75rem + env(safe-area-inset-bottom)); z-index:7900; } }
 
@@ -868,4 +894,17 @@ body.cms .cmslightbox.uploadSummary section > header li:has(.cmsIcon-xmark) { di
 .cms .mediaDrop .dropActions :is(a,button) {
     min-width:0; min-height:0; box-sizing:border-box; aspect-ratio:1;
     border:0; border-radius:50%; padding:0; color:var(--cmsMainColor);
+}
+
+.cmslightbox.uploadSummary > section > main > .widget > header {
+	padding: .65rem var(--cmsCardPadding);
+	gap: .5rem;
+	flex-wrap: wrap;
+}
+.cmslightbox.uploadSummary > section > main > .widget > header > h2 {
+	margin: 0;
+	font-size: 1rem;
+	text-transform: none;
+	letter-spacing: normal;
+	color: var(--cmsTextColor);
 }

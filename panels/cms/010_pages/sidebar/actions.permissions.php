@@ -12,6 +12,7 @@
 
 use Systopic\Cms\Pages\PageAccess;
 use Systopic\System\Auth\Session;
+use Systopic\System\Queries\NodeAcls\NodeAcls;
 use Systopic\System\Tables\Acls\Operator as AclOperator;
 use Systopic\System\Tables\Nodes\Operator as NodeOperator;
 
@@ -20,6 +21,10 @@ $node = $this->parent->page?->node;
 if (in_array($this->action, ['aclInherit', 'aclToggle'], true) && $node !== null && PageAccess::refuses($node)) {
 	$this->updateView('045_permissions');
 	return;
+}
+
+if ($node !== null && in_array($this->action, ['aclInherit', 'aclToggle'], true)) {
+    NodeAcls::prepareWrite($this->parent->scope, (int) $node->id);
 }
 
 switch ($this->action) {

@@ -28,21 +28,18 @@ $isRoot = (int) $node->relationId('parentNode') === 0;
 $superuser = Session::isSuperuser();
 $writable = Session::current()->writeGroupIds;
 ?>
-<h3>Permissions</h3>
-<ul>
-	<li>
-		<label class="checkbox">
-			<span>Inherit from parent page</span>
-			<input type=checkbox class=switch data-on_change='sidebar/aclInherit'
-				   name=acl_inherit value=1 <?php if ($inherit) { ?> checked='checked' <?php } ?> />
-			<div>
-				<div></div>
-			</div>
-		</label>
-	</li>
-</ul>
+<div class="sidebarPermissions">
+	<label class="checkbox">
+		<span>Inherit from parent page</span>
+		<input type=checkbox class=switch data-on_change='sidebar/aclInherit'
+			   name=acl_inherit value=1 <?php if ($inherit) { ?> checked='checked' <?php } ?> />
+		<div>
+			<div></div>
+		</div>
+	</label>
 <?php if ($groups === []) { ?>
 	<p class="hint">There are no content groups yet.</p>
+</div>
 	<?php return;
 } ?>
 <div class="tags aclGroups">
@@ -129,3 +126,5 @@ $writable = Session::current()->writeGroupIds;
 		</tbody>
 	</table>
 <?php } ?>
+
+</div>

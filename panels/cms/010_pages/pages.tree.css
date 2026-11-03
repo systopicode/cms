@@ -7,8 +7,8 @@ body.pages > main > div.pylon > .pylon{
 	min-width: 18rem;
 }
 
-.cms .pylonTitle .treeNavi,
-.cms .pylonTitle .button.icononly{
+body.cms.pages .pylonTitle .treeNavi,
+body.cms.pages .pylonTitle .button.icononly{
 	flex-shrink: 0;
 }
 
@@ -59,12 +59,23 @@ body.pages ul.searchHits li.none span.label{
 
 /* Content groups (PageAccess): a page the user may read but not change is
    pale with a lock; a superuser sees where the groups change */
-.cms ul.tree li.readonly > label a.label{
+body.cms.pages ul.tree li.readonly > label .label{
 	opacity: 0.6;
 }
-.cms ul.tree label > i.acl.own{
+body.cms.pages ul.tree label > i.acl.own{
 	color: var(--cmsTextColor);
 }
-.cms ul.tree label > i.acl.none{
+body.cms.pages ul.tree label > i.acl.none{
 	color: var(--cmsRedirect);
+}
+
+.cms.pages ul.tree .treeGrip {
+	touch-action: none;
+}
+
+:root[data-pointer="touch"] body.pages ul.tree label > .treeGrip {
+	display: flex;
+	flex-basis: 1.25rem;
+	width: 1.25rem;
+	opacity: .7;
 }
