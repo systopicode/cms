@@ -7,6 +7,11 @@ await page.evaluate(()=>{const e=document.querySelector('.editor'),r=document.cr
 await page.evaluate(()=>{window.settings={siteRoot:'/'};window.cmsMenuSequence=0;window.contextMenus=[];window.closeAllMenus=()=>document.querySelectorAll('.HTMLeditorMenu').forEach(e=>e.parentElement.remove());window.prepareMenuKeyboard=()=>{};window.editorFormats={image:{tile:'Tile'},video:{}};window.mediaFormatOf=()=> 'original';window.wysiwyg={canStep:()=>false,active:()=>false,blockFor:()=>null,inline:()=>false};window.openedMedia=null;window.formatImage=event=>{openedMedia=event.data.target.id};});
 await page.addScriptTag({path:'../system/public/js/gui/HTMLeditor.contextmenu.js'});await page.addScriptTag({path:'../system/public/js/gui/HTMLeditor.menus.js'});
 await page.evaluate(()=>{editorPointer='touch';const target=document.querySelector('#linked').parentElement;HTMLeditorRightClick('anchor',{target,clientX:120,clientY:160});});
-assert.equal(await page.getByRole('button',{name:'Select text',exact:true}).count(),0,'touch media offers no text-selection action');assert.equal(await page.getByRole('button',{name:'Type',exact:true}).count(),0,'touch media offers no keyboard action');await page.getByRole('button',{name:'Crop and adjust',exact:true}).click();assert.equal(await page.evaluate(()=>openedMedia),'linked','linked media edit targets image, not anchor');assert.deepEqual(errors,[]);
+assert.equal(await page.getByRole('button',{name:'Select text',exact:true}).count(),0,'touch media offers no text-selection action');assert.equal(await page.getByRole('button',{name:'Type',exact:true}).count(),0,'touch media offers no keyboard action');await page.getByRole('button',{name:'Crop and adjust',exact:true}).click();assert.equal(await page.evaluate(()=>openedMedia),'linked','linked media edit targets image, not anchor');await page.evaluate(()=>{initContenteditableContextMenus();HTMLeditorRightClick('image',{target:document.querySelector('#linked')});});
+await page.evaluate(()=>document.querySelector('article').dispatchEvent(new Event('scroll')));
+assert.equal(await page.locator('.HTMLeditorMenu').count(),1,'layout/caret scroll does not dismiss editor tools');
+await page.evaluate(()=>closeAllMenus());
+assert.equal(await page.locator('.HTMLeditorMenu').count(),0,'explicit dismissal still removes editor tools');
+assert.deepEqual(errors,[]);
 console.log('PASS media insertion caret, linked-media editing action and touch toolbar without Type/Select text');
 }finally{await browser.close()}

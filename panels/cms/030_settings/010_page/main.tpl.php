@@ -54,14 +54,7 @@ $addLabel = match ($parentType) {
 };
 ?>
 <?php if ($selected !== null) { ?>
-	<nav class="crumbs settingCrumbs">
-		<a class="ajax" href="?">Template Settings</a>
-		<i class="cmsIcon cmsIcon-chevron-right"></i>
-		<?php foreach ($ancestors as $crumb) { ?>
-			<a class="ajax" href="?id=<?= (int) $crumb->nodeId ?>"><?= $e($crumb->label !== '' ? $crumb->label : 'Untitled') ?></a>
-			<i class="cmsIcon cmsIcon-chevron-right"></i>
-		<?php } ?>
-	</nav>
+	<p class="settingBack"><a class="ajax button" href="?id=<?= $selected->parent ? (int) $selected->parent->nodeId : 1 ?>"><i class="cmsIcon cmsIcon-arrow-left"></i><span><?= $e($selected->parent?->label ?: 'Template Settings') ?></span></a></p>
 <?php } ?>
 <h1><?= $e($heading) ?></h1>
 <p class="tagsHint"><?= $e($note) ?></p>

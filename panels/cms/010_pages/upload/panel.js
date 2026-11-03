@@ -654,8 +654,7 @@
                     editor.setAttribute('inputmode', 'none');
                     editor.blur();
                 }
-				var cap = Math.round(Math.min(window.innerHeight * 0.45, 280));
-				hold.style.height = (coarse && box.height > cap ? 28 : Math.max(1, Math.round(box.height))) + 'px';
+				hold.style.height = Math.max(1, Math.round(box.height)) + 'px';
 				hold.style.verticalAlign = shown.verticalAlign;
                 // A non-interactive source ghost preserves both position and context.
                 var ghost = media.cloneNode(true);
@@ -698,7 +697,8 @@
                     if(rejectedEditor && rejectedEditor!==rejected)rejectedEditor.classList.remove('dropRejected');
                     rejectedEditor=rejected;
                     rejectedEditor?.classList.add('dropRejected');
-                    if(dest!==hoverEditor){hoverEditor=dest;hoverSince=performance.now();}
+                    if(dest!==hoverEditor){hoverEditor?.classList.remove('dropTarget');hoverEditor=dest;hoverSince=performance.now();}
+                    dest?.classList.add('dropTarget');
 					var spot = dest && upload.rangeAt(dest, point.x, point.y, true);
                     lastSpot = null;
                     document.body.classList.toggle('editorMediaDropInvalid', !dest);
@@ -707,6 +707,22 @@
 					}
 					var rects = lastSpot && lastSpot.getClientRects ? lastSpot.getClientRects() : [];
 					var rect = rects.length ? rects[0] : null;
+                    // Empty paragraphs and element boundaries have no collapsed caret rect.
+                    if (lastSpot && (!rect || rect.height < 4)) {
+                        var probe = lastSpot.cloneRange();
+                        var node = probe.startContainer, offset = probe.startOffset;
+                        if (node.nodeType === Node.TEXT_NODE && node.length) {
+                            probe.setStart(node, Math.min(offset, node.length - 1));
+                            probe.setEnd(node, Math.min(offset + 1, node.length));
+                            var textRect = probe.getBoundingClientRect();
+                            rect = {left: offset === node.length ? textRect.right : textRect.left, top: textRect.top, height: textRect.height};
+                        } else {
+                            var child = node.childNodes[offset] || node.childNodes[offset - 1];
+                            var element = child?.nodeType === 1 ? child : node.nodeType === 1 ? node : node.parentElement;
+                            var bounds = element?.getBoundingClientRect();
+                            if (bounds) rect = {left: bounds.left, top: bounds.top, height: Math.min(bounds.height || 20, parseFloat(getComputedStyle(dest).lineHeight) || 20)};
+                        }
+                    }
 					if (!rect || rect.height < 4) {
 						line.hidden = true;
 						return;
@@ -764,6 +780,7 @@
 					document.removeEventListener('pointercancel', stop, true);
 					line.remove();
                     rejectedEditor?.classList.remove('dropRejected');
+                    hoverEditor?.classList.remove('dropTarget');
 					document.body.classList.remove('editorMediaDrop', 'editorMediaDropInvalid');
 					var x = e && e.clientX !== undefined ? e.clientX : point.x;
 					var y = e && e.clientY !== undefined ? e.clientY : point.y;
@@ -779,8 +796,8 @@
 						spot.insertNode(media);
 						hold.remove();
 						if (window.wysiwyg && wysiwyg.changed) {
-							wysiwyg.changed(editor);
-							dest !== editor && wysiwyg.changed(dest);
+							wysiwyg.changed(editor, true);
+							dest !== editor && wysiwyg.changed(dest, true);
 						}
 					} else if (hold.isConnected) {
 						hold.replaceWith(media);

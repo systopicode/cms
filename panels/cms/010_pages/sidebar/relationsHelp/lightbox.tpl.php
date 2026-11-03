@@ -1,7 +1,7 @@
 <?php $pages = $this->parent->parent; ?>
 <div class="cmslightbox cms relationsHelp" data-transient-info>
     <section>
-        <header><h1>Aliases &amp; Redirects</h1><ul class="barmenu"><li><a class="ajax" data-history="false" href="<?= htmlspecialchars($pages->currentViewHref(), ENT_QUOTES) ?>" aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></a></li></ul></header>
+        <header><h1>Aliases &amp; Redirects</h1><ul class="barmenu"><li><button type="button" data-box-close aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></button></li></ul></header>
         <main>
             <h2><i class="cmsIcon cmsIcon-file-import"></i> Alias</h2>
             <p>An alias shows the original page's content at another place in the page tree. It is a second view of the same content, rather than an independent copy.</p>

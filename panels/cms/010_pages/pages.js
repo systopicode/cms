@@ -80,7 +80,7 @@ function focusPageRelations(part = '') {
             else scroller.scrollTop = top;
         }
         section.querySelector('summary')?.focus({preventScroll: true});
-        scrollTree('smooth', false, false);
+        scrollTree('smooth', false, true);
     }); });
 }
 
@@ -104,7 +104,7 @@ function revealRequestedPageRelations() {
     if (params.get('relations') === 'aliases') focusPageRelations('aliases');
     if (params.get('reveal') === 'tree' || params.get('relations') === 'aliases') {
         requestAnimationFrame(function () { requestAnimationFrame(function () {
-            scrollTree('smooth', false, false);
+            scrollTree('smooth', false, true);
         }); });
     }
 }

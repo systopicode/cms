@@ -110,7 +110,7 @@ class Panel extends CmsPanel {
 		}
 		$html .= '</dl>';
 		$html .= '<p class="hint">What a search engine and an AI read for this page. It is written from the fields above.</p>';
-		$html .= '<p class="hint"><a class="cmsTextLink cmsExternalLink" href="' . $e($root . 'sitemap.xml') . '" target="_blank" rel="noopener">sitemap.xml<i class="cmsIcon cmsIcon-arrow-up-right-from-square" aria-hidden="true"></i></a> lists the pages. <a class="cmsTextLink cmsExternalLink" href="' . $e($root . 'llms.txt') . '" target="_blank" rel="noopener">llms.txt<i class="cmsIcon cmsIcon-arrow-up-right-from-square" aria-hidden="true"></i></a> is that list in plain text, for an AI. Both are written when they are opened.</p>';
+		$html .= '<p class="hint"><a class="cmsTextLink cmsExternalLink" href="' . $e($root . 'sitemap.xml') . '" target="_blank" rel="noopener">sitemap.xml <i class="cmsIcon cmsIcon-arrow-up-right-from-square" aria-hidden="true"></i></a> lists the pages. <a class="cmsTextLink cmsExternalLink" href="' . $e($root . 'llms.txt') . '" target="_blank" rel="noopener">llms.txt <i class="cmsIcon cmsIcon-arrow-up-right-from-square" aria-hidden="true"></i></a> is that list in plain text, for an AI. Both are written when they are opened.</p>';
 		return $html;
 	}
 

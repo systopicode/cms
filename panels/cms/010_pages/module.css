@@ -441,7 +441,7 @@ aside.cms .pageRelations .relationLink small { word-break: break-all; overflow-w
 
 .cmslightbox.pageConflict > section { width: min(40rem, 100%); min-width:0; max-width:40rem; }
 
-.cmsPreview > .pageEditorNotice:not([hidden]) { background:color-mix(in srgb,var(--cmsInteractive) 14%,var(--cmsCanvas)); }
+.cmsPreview > .pageEditorNotice:not([hidden]) { background:color-mix(in srgb,var(--cmsInteractive) 24%,var(--cmsCanvas)); border-block:1px solid var(--cmsInteractive); }
 .cmsPreview > .pageEditorNotice > i { color:var(--cmsInteractive); }
 
 .cmsPreview > .pageEditorNotice { order: -1; }

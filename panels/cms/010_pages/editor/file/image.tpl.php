@@ -17,9 +17,12 @@
 		// every re-render showed the first format while the image kept the one
 		// the user picked.
 		$selectedFormat = (string) http::get('format', $this->state->format ?? '');
-		if (!isset($visibleFormats[$selectedFormat])) {
+		if ($selectedFormat !== 'original' && !isset($visibleFormats[$selectedFormat])) {
 			$selectedFormat = (string) array_key_first($visibleFormats);
 		}
+		?>
+        <option value="original"<?= $selectedFormat === 'original' ? ' selected' : '' ?>>Original</option>
+        <?php
 		foreach ($visibleFormats as $key => $image_format) {
 			$format_info = mediaFormats::sizeLabel($image_format);
 			?>
@@ -28,7 +31,7 @@
 		}
 		?>
 	</select>
-<button type="button" class="button submit" data-edit-image aria-label="Edit image"><i class="cmsIcon cmsIcon-pen"></i>Edit</button>
+<button type="button" class="button submit" data-edit-image<?= $selectedFormat === 'original' ? ' disabled' : '' ?> aria-label="Edit image"><i class="cmsIcon cmsIcon-pen"></i>Edit</button>
 </div>
 <div class="fileFrame imageCropAlignContainer">
 	<div class="frameView" hidden>
@@ -45,6 +48,9 @@
  const img=document.querySelector('img.srcToChange'),view=img?.closest('.frameView'),stage=img?.closest('.fileStage');
  if(!img || !view || !stage)return;
  const formats=stage.querySelector('select[name="imageEditorFormat"]');
+ const editButton=stage.querySelector('[data-edit-image]');
+ const updateEdit=()=>{editButton.disabled=formats.value==='original';};
+ formats.addEventListener('change',updateEdit);updateEdit();
  let zoom=1,pan={x:0,y:0},drag=null,pinch=null;
  const frame=view.parentElement;
  function fit(){
@@ -58,10 +64,11 @@
  img.addEventListener('load',reset);img.addEventListener('cropend',reset);img.addEventListener('error',()=>view.hidden=true);
  if(img.complete)fit();new ResizeObserver(fit).observe(view.parentElement);
  function edit(){
+  if(formats.value==='original')return;
   const r=img.getBoundingClientRect();
-  runImageEditor({unified:true,domObj:$(img),src:img.src,display_width:r.width,display_height:r.height,offset_left:r.left+scrollX,offset_top:r.top+scrollY,
+  runImageEditor({unified:true,startCropping:true,domObj:$(img),src:img.src,display_width:r.width,display_height:r.height,offset_left:r.left+scrollX,offset_top:r.top+scrollY,
    targetId:<?= (int) $this->targetId ?>,saveUrl:<?= json_encode(rtrim((string) http::$root, '/') . '/' . ltrim($this->getPath(), '/')) ?>,
-   formats:[...formats.options].map(o=>({key:o.value,label:o.textContent}))});
+   formats:[...formats.options].filter(o=>o.value!=='original').map(o=>({key:o.value,label:o.textContent}))});
  }
  stage.querySelector('[data-edit-image]').addEventListener('click',edit);
  frame.querySelectorAll('[data-preview-zoom]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.previewZoom==='fit')reset();else{zoom=Math.max(.25,Math.min(8,zoom*(button.dataset.previewZoom==='in'?1.25:.8)));fit();}}));

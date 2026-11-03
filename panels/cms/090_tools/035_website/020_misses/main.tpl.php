@@ -35,7 +35,7 @@ $pages = $this->pages;
 						$when = $miss->lastAt?->format(\Systopic\System\Sys\LocalTime::DATETIME) ?? '';
 						?>
 						<tr>
-							<td>&#47;<?= $e($miss->path) ?><?php if ($when !== '') { ?><small class="muted"><?= $e($when) ?></small><?php } ?></td>
+							<td>&#47;<?= $e($miss->path) ?><?php if ($when !== '') { ?><br><small class="muted"><?= $e($when) ?></small><?php } ?></td>
 							<td class="muted"><?= (int) $miss->hits ?></td>
 							<td>
 								<select>

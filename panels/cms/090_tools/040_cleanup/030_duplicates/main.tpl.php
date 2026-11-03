@@ -123,7 +123,13 @@ usort($crops, static function ($a, $b): int {
     <?php if ($result = $this->fileDuplicates) { ?>
         <?php if ($result['remaining'] || $result['unreadable']) { ?><p><i class="cmsIcon cmsIcon-triangle-exclamation is-warning"></i> Partial result: <?= (int) $result['remaining'] ?> candidates were not fully checked within the time limit; <?= (int) $result['unreadable'] ?> files could not be read. This is not a complete all-clear.</p><?php } ?>
         <?php if (!$result['groups']) { ?><p>No identical files found among the checked originals.</p><?php } ?>
-        <?php foreach ($result['groups'] as $group) { ?><ul><?php foreach ($group as $file) { ?><li><?= $e($file['label']) ?> <small class="muted">Media #<?= (int) $file['id'] ?></small></li><?php } ?></ul><?php } ?>
     <?php } ?>
     </main>
+    <?php if (!empty($result['groups'])) { ?>
+    <div class="tableScroll"><table><thead><tr><th>File</th><th>Media ID</th><th>Match group</th></tr></thead><tbody>
+        <?php foreach ($result['groups'] as $index => $group) { foreach ($group as $file) { ?>
+        <tr><td><?= $e(trim((string) $file['label']) ?: 'Untitled') ?></td><td><?= (int) $file['id'] ?></td><td><?= (int) $index + 1 ?></td></tr>
+        <?php } } ?>
+    </tbody></table></div>
+    <?php } ?>
 </section>

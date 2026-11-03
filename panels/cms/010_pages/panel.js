@@ -29,25 +29,14 @@
 			parentDraginitFooterHeight(event);
 		};
 
-		// A tree click replaces the tree markup, so the row that was clicked is
-		// gone. This runs after the new markup is in the document. A new
-		// selection is aligned like the crosshairs button; a fold or a rename
-		// only moves the scroller when the selection fell out of view.
-		var treeUi = sys.pagesTreeUi || (sys.pagesTreeUi = {activeId: null, position: null});
-        function selectedPosition(active) {
-            var path = [];
-            for (var row = active; row && row.matches('li[data-node_id]'); row = row.parentElement.closest('li[data-node_id]')) {
-                path.unshift(row.dataset.node_id + ':' + Array.from(row.parentElement.children).indexOf(row));
-            }
-            return path.join('/');
-        }
+		var treeUi = sys.pagesTreeUi || (sys.pagesTreeUi = {activeId: null});
         var initialActive = document.querySelector('.cms ul.tree li.active');
         if (initialActive && treeUi.activeId === null) {
             treeUi.activeId = initialActive.dataset.node_id;
-            treeUi.position = selectedPosition(initialActive);
         }
 		pagesModule.onUpdateTree = function () {
-            if (typeof closeAllMenus === 'function') closeAllMenus();
+            // Presence/tree refreshes must not dismiss an active editor toolbar.
+            if (document.querySelector('.tree .menuTarget') && typeof closeAllMenus === 'function') closeAllMenus();
 			standIn && standIn.remove();
             standIn = null;
             const foldFocus = treeUi.foldFocus;
@@ -62,11 +51,8 @@
 			}
 			var id = active.getAttribute('data-node_id');
 			var selected = treeUi.activeId !== null && id !== treeUi.activeId;
-            var position = selectedPosition(active);
-            var moved = treeUi.activeId === id && treeUi.position !== null && treeUi.position !== position;
             treeUi.activeId = id;
-            treeUi.position = position;
-            if (selected || moved) scrollTree('smooth', id, false);
+            if (selected) scrollTree('smooth', id, true);
 		};
 
 		// iOS opens the keyboard only for a focus within the tap, not after the

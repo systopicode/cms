@@ -12,14 +12,18 @@ try {
  await page.addScriptTag({content:await read('../panels/cms/010_pages/panel.js')});
  await page.evaluate(()=>{window.panel={};panelConstructor.call(panel);panel.onUpdateTree();panel.onUpdateTree();});
  assert.equal(await page.evaluate(()=>scrolls.length),0,'unchanged remote selection does not scroll');
+ await page.evaluate(()=>{window.menuCloses=0;window.closeAllMenus=()=>menuCloses++;panel.onUpdateTree();});
+ assert.equal(await page.evaluate(()=>menuCloses),0,'background tree refresh keeps editor toolbar open');
+ await page.evaluate(()=>{document.querySelector('.tree li').classList.add('menuTarget');panel.onUpdateTree();document.querySelector('.tree li').classList.remove('menuTarget');});
+ assert.equal(await page.evaluate(()=>menuCloses),1,'tree menu still closes when its tree is refreshed');
  await page.evaluate(()=>{document.querySelector('li').dataset.node_id='12';panel.onUpdateTree();window.rebuilt={};panelConstructor.call(rebuilt);rebuilt.onUpdateTree();});
- assert.deepEqual(await page.evaluate(()=>scrolls),[['smooth','12',false]],'only actual local selection change scrolls, not module rebuild');
+ assert.deepEqual(await page.evaluate(()=>scrolls),[['smooth','12',true]],'only actual local selection change scrolls, not module rebuild');
  await page.evaluate(()=>{
   const active=document.querySelector('li.active');
   const before=document.createElement('li');before.dataset.node_id='10';active.before(before);
   rebuilt.onUpdateTree();rebuilt.onUpdateTree();
  });
- assert.equal(await page.evaluate(()=>scrolls.length),2,'selected row moving scrolls once; unchanged live update does not');
+ assert.equal(await page.evaluate(()=>scrolls.length),1,'moving the same selected row does not scroll');
  await page.addScriptTag({content:await read('../../system/public/js/ext/jquery.js')});
  await page.addScriptTag({content:await read('../../system/public/js/core/lib/obj.js')});
  await page.evaluate(()=>{sys.core={};for(const name of ['l','p','t','c','f'])window[name]=()=>({open(){}});});
@@ -65,6 +69,8 @@ try {
  assert.ok(await navigation.locator('div.tree').evaluate(e=>e.scrollTop)>0,'local selection reaches actual selected row');
  await navigation.locator('div.tree').evaluate(e=>e.scrollTop=0);await navigation.evaluate(()=>onAfterHisotryPush());await navigation.waitForTimeout(100);
  assert.equal(await navigation.locator('div.tree').evaluate(e=>e.scrollTop),0,'same selection keeps independent scroll position');
+ await navigation.evaluate(()=>{history.pushState({},'', '?id=1');onAfterHisotryPush();});await navigation.waitForTimeout(100);
+ assert.equal(await navigation.locator('div.tree').evaluate(e=>e.scrollTop),0,'a visible selection does not scroll');
  await navigation.close();
  console.log('ok: remote updates keep local tree state; touch drop carries distinct source and target');
 } finally {await browser.close();}

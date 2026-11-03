@@ -49,8 +49,13 @@ uasort($entries, function (array $a, array $b): int {
 							: \http::$siteRoot . '?id=' . (int) $nodeId . '&lang=' . rawurlencode((string) $primary->languageIso) . '&showtrashed';
 						?>
 						<tr>
-							<td><?= $e($title) ?></td>
-							<td class="muted">
+							<td><span><?= $e($title) ?></span><?php foreach ($pages as $page) {
+                                $iso = (string) $page->languageIso;
+                                if ($iso !== '' && $iso !== '*') {
+                                    ?><span class="logPill" data-table-mobile-only><?= $e(strtoupper($iso)) ?></span><?php
+                                }
+                            } ?></td>
+							<td class="muted" data-table-desktop-only>
 								<?php foreach ($pages as $page) {
 									$iso = (string) $page->languageIso;
 									$langName = (string) ($langs[$iso]['label'] ?? ($iso === '*' ? '' : strtoupper($iso)));

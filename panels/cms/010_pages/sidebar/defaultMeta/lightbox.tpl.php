@@ -51,7 +51,7 @@ $source = static function (string $key, string $constant) use ($configSite, $sit
 		<header>
 			<h1>Site defaults</h1>
 			<ul class="barmenu">
-				<li><a class="ajax" data-history="false" aria-label="Close" href="<?= $e($pages->currentViewHref()) ?>"><i class="cmsIcon cmsIcon-xmark"></i></a></li>
+				<li><button type="button" data-box-close aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></button></li>
 			</ul>
 		</header>
 		<main>

@@ -59,7 +59,7 @@ $items = static fn(string $key): array => match ($key) {
 					<a class="ajax" href="<?= $e(\http::$root . 'cms/tools/maintenance/' . $tool) ?>"><?= $count ?><i class="cmsIcon cmsIcon-chevron-right"></i></a>
 				<?php } else { ?>
 					<details>
-						<summary><?= $count ?><i class="cmsIcon cmsIcon-chevron-down"></i></summary>
+						<summary class="button transparent"><?= $count ?><i class="cmsIcon cmsIcon-chevron-down" aria-hidden="true"></i></summary>
 						<?php if ($hint !== '') { ?><p><?= $e($hint) ?></p><?php } ?>
 						<ul>
 							<?php foreach ($items($key) as [$link, $text, $small]) { ?>

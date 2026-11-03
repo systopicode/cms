@@ -33,6 +33,21 @@ try {
   assert.equal(await page.locator('.editor:not(.plaintext) #move').count(),1,'all media restored on rejected drop '+tag);
   assert.equal(await page.locator('.plaintext #move').count(),0);
  }
+ // Cross-field moves must commit both fields, including a focused source.
+ await page.setContent('<article class=cmsContent style="display:flex"><div id="source" class="editor mediaDroppable" contenteditable=true style="width:400px;min-height:350px"><img id="move" width="80" height="320"><p>Source</p></div><div id="destination" class="editor mediaDroppable" contenteditable=true style="width:400px;min-height:350px"><p>Destination text</p></div></article>');
+ await page.addStyleTag({path:'../system/public/css/12_HTMLeditor.css'});
+ await page.addStyleTag({content:':root{--cmsHighlightColor:#ffb600}'});
+ await page.locator('#move').evaluate(img=>img.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="320"><rect width="80" height="320" fill="teal"/></svg>'));
+ await page.evaluate(()=>{window.commits=[];window.wysiwyg.changed=(editor,commit)=>commits.push([editor.id,commit]);const media=document.querySelector('#move');editorBeginMediaMove(media,{clientX:30,clientY:30,pointerType:'touch'});});
+ assert.equal(Math.round((await page.locator('.editorMediaHold').boundingBox()).height),320,'touch source ghost keeps full media height');
+ await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,clientX:450,clientY:20,pointerType:'touch'})));
+ await page.waitForTimeout(280);
+ assert.equal(await page.locator('.editorMediaLine').isVisible(),true,'insertion caret visible over destination text');
+ await page.screenshot({path:'/private/tmp/fluxo-editor-drag-caret.png'});
+ await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,clientX:450,clientY:20,pointerType:'touch'})));
+ assert.equal(await page.locator('#source img').count(),0,'source media removed');
+ assert.equal(await page.locator('#destination img').count(),1,'destination contains media exactly once');
+ assert.deepEqual(await page.evaluate(()=>commits),[['source',true],['destination',true]],'both fields explicitly committed');
  await page.setContent('<article class=cmsContent><div class="editor" contenteditable=true style="width:600px;padding:40px;margin-top:240px"><p>Select this text without opening a keyboard.</p></div></article>');
  await page.evaluate(()=>{window.cmsMenuSequence=0;window.contextMenus=[];window.closeAllMenus=()=>document.querySelectorAll('.HTMLeditorMenu').forEach(e=>e.parentElement.remove());window.prepareMenuKeyboard=()=>{};window.HTMLeditorRightClick=(kind,event)=>new contextMenuWW(kind==='selectedWord'?{bold:{title:'Bold',className:'cmsIcon cmsIcon-bold'}}:{},event);});
  await page.addScriptTag({path:'../system/public/js/gui/HTMLeditor.contextmenu.js'});
