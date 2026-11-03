@@ -38,10 +38,6 @@ class Panel extends CmsPanel {
 
 	public $icon = 'cmsIcon cmsIcon-duotone cmsIcon-files';
 
-	public function buildGranted() {
-		return \Systopic\System\Auth\Session::hasOneRole('cmsAdmin', 'cmsEditor', 'cmsPageEditor');
-	}
-
 	/**
 	 * The request's scope: connection, identity map, result cache. Everything
 	 * this panel reads and writes goes through it, so the tree, the page and
