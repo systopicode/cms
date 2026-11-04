@@ -49,7 +49,7 @@
 				'<a class="who" href="' + esc(config.cms) + 'user/"' + blank + '><img referrerpolicy="no-referrer" src="' + esc(config.portrait) + '" alt=""><span>' + esc(config.name) + '<small>Your account</small></span></a>' +
 				'<a href="' + esc(config.cms) + '"' + blank + '>' + iconMarkup('grid-2') + 'Dashboard</a>' +
 				'<div class="sections"></div>' +
-				'<hr><a class="out" href="#">' + iconMarkup('arrow-right-from-bracket') + 'Log out</a>' +
+				'<hr><a class="out" href="#">' + iconMarkup('arrow-right-from-bracket') + 'Sign out</a>' +
 				'</div></div>';
 
 			var brand = root.querySelector('.brand');
