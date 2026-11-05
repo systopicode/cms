@@ -23,12 +23,14 @@ body.pages > main > div.pylon{
 
 /* One window with the content, like settings: round only at the outer corners, the lines level */
 body.pages > main > div.pylon nav{
-	border-radius: var(--cmsRadiusLg) 0 0 0;
+	border-top-left-radius: var(--cmsRadiusLg);
+	border-top-right-radius: 0;
 }
 
 body.pages > main > div.content,
 body.pages > main > div.content > header{
-	border-radius: 0 var(--cmsRadiusLg) 0 0;
+	border-top-left-radius: 0;
+	border-top-right-radius: var(--cmsRadiusLg);
 }
 
 body.pages .pylonTitle{
@@ -127,4 +129,22 @@ body.cmsMobile.pages .pylon ul.tree li > label > :is(.fold, .treeGrip, .treeMenu
 /* iOS zooms on focus when the editable label is smaller than 16px. */
 body.cmsMobile.pages .pylon ul.tree .treeLabelEdit > .label[contenteditable="plaintext-only"] {
 	font-size: max(16px, 1rem);
+}
+
+/* The media pane and editor paint over the shared desktop window corners. */
+@media (min-width:1025px) and (orientation:landscape), (min-width:1401px) {
+    body.pages > main > .pylon > footer > .mml,
+    body.pages > main > .pylon > footer > .mml > .mmlContent {
+        border-bottom-left-radius:inherit;
+    }
+    body.pages > main > .content > .flexRow > aside.cms {
+        border-bottom-right-radius:inherit;
+    }
+    body.pages > main > .content > .flexRow:has(> aside.cms:not(.collapsed)) > .flexColumn {
+        border-bottom-right-radius:0;
+    }
+    body.pages .cmsPreview,
+    body.pages .cmsPreview > .cmsContent {
+        border-bottom-right-radius:inherit;
+    }
 }
