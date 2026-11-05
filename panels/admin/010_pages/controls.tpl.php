@@ -57,6 +57,7 @@ $current = Languages::activated()[$this->state->lang] ?? null;
 <div class="cmsPageTools">
 	<button type="button" class="button transparent icononly cmsMobileOnly" data-cms-window="media" aria-label="Media Library" title="Media Library"><i class="cmsIcon cmsIcon-photo-film"></i></button>
 	<button type="button" class="button transparent icononly cmsMobileOnly" data-cms-properties aria-label="Properties" title="Properties"><i class="cmsIcon cmsIcon-sliders"></i></button>
+	<div class="splitApply cmsPageMore">
 	<button type="button" class="button transparent icononly cmsMobileOnly" data-cms-page-more aria-label="More page tools" aria-controls="cmsPageToolsMenu" aria-expanded="false" title="More page tools"><i class="cmsIcon cmsIcon-ellipsis"></i></button>
 	<div id="cmsPageToolsMenu" class="cmsPageToolsMenu" role="group" aria-label="Page tools">
 <div class="leftAlign">
@@ -92,4 +93,5 @@ $current = Languages::activated()[$this->state->lang] ?? null;
 <?php } ?>
 
 	</div>
+</div>
 </div>

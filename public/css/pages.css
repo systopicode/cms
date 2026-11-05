@@ -124,7 +124,7 @@ header.cms:has(.pageHead) .leftAlign{
 }
 
 /* Vorschaubreite */
-header.cms .deviceSwitch{
+:is(header.cms, .cmsPageToolsMenu) .deviceSwitch{
     display: flex;
     flex: 0 0 auto;
     gap: 2px;
@@ -133,7 +133,7 @@ header.cms .deviceSwitch{
     background: var(--cmsButtonBg);
 }
 
-header.cms .deviceSwitch button{
+:is(header.cms, .cmsPageToolsMenu) .deviceSwitch button{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -150,14 +150,14 @@ header.cms .deviceSwitch button{
     cursor: pointer;
 }
 
-header.cms .deviceSwitch button:hover{
+:is(header.cms, .cmsPageToolsMenu) .deviceSwitch button:hover{
     color: var(--cmsTextColor);
 }
 
-body[data-cms-device="fit"] header.cms .deviceSwitch button[data-cms-device="fit"],
-body[data-cms-device="desktop"] header.cms .deviceSwitch button[data-cms-device="desktop"],
-body[data-cms-device="tablet"] header.cms .deviceSwitch button[data-cms-device="tablet"],
-body[data-cms-device="mobile"] header.cms .deviceSwitch button[data-cms-device="mobile"]{
+body[data-cms-device="fit"] :is(header.cms, .cmsPageToolsMenu) .deviceSwitch button[data-cms-device="fit"],
+body[data-cms-device="desktop"] :is(header.cms, .cmsPageToolsMenu) .deviceSwitch button[data-cms-device="desktop"],
+body[data-cms-device="tablet"] :is(header.cms, .cmsPageToolsMenu) .deviceSwitch button[data-cms-device="tablet"],
+body[data-cms-device="mobile"] :is(header.cms, .cmsPageToolsMenu) .deviceSwitch button[data-cms-device="mobile"]{
     background: var(--cmsCanvas);
     color: var(--cmsTextColor);
     box-shadow: 0 1px 2px rgba(0,0,0,.12);
@@ -346,3 +346,6 @@ body[data-cms-device="mobile"] article.cmsContent{
         gap: 0;
     }
 }
+
+/* Keep the desktop controls in their existing header row. */
+.cms .cmsPageMore { display: contents; }

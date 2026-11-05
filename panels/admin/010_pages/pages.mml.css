@@ -820,14 +820,6 @@ body.dragging .mediaDrop .dropActions button:where(:not([data-cms-action])){
 .cms div.mmlContent li.title > h4 { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: .5rem; }
 .cms div.mmlContent h4 .mediaGroupInfo { justify-self: end; margin: 0; min-height: 1.25rem; min-width: 1.25rem; padding: .125rem; font-size: .8rem; }
 
-.mediaGroupCapabilities { margin: 1rem 0; display: grid; grid-template-columns: auto 1fr; gap: .5rem 1rem; }
-.mediaGroupCapabilities dd { margin: 0; color: var(--cmsSubText); }
-
-.mediaGroupHelp .hint { color: var(--cmsSubText); font-size: .85rem; }
-
-.cmslightbox.mediaGroupHelp > section { width: min(36rem, 100%); min-width: 0; max-width: 36rem; }
-.mediaGroupHelp .mediaGroupCapabilities { margin: 1rem 0; gap: 0 1rem; }
-.mediaGroupCapabilities dt, .mediaGroupCapabilities dd { padding: .55rem 0; border-bottom: 1px solid var(--cmsLine); }
 .cms div.mmlContent > div > ul > li.mmlUploadMessages { display: block; list-style: none; width: 100%; height: auto; padding: .75rem; box-sizing: border-box; }
 .mmlUploadMessages > div.cms.message { margin: 0; }
 
@@ -907,4 +899,17 @@ body.cms .cmslightbox.uploadSummary section > header li:has(.cmsIcon-xmark) { di
 	text-transform: none;
 	letter-spacing: normal;
 	color: var(--cmsTextColor);
+}
+
+/* The group rules span the same surface as the lightbox header. */
+.cms.pageToolBox[data-page-tool="media"] > section > main {
+    padding: 0;
+}
+
+.cms.pageToolBox[data-page-tool="media"] .mmlContent li.title > h4 {
+    padding-inline: var(--cmsInsetLeft, var(--cmsCardPadding));
+}
+
+.cms.pageToolBox[data-page-tool="media"] .mmlContent li.title > ul {
+    padding-inline: var(--cmsInsetLeft, var(--cmsCardPadding));
 }

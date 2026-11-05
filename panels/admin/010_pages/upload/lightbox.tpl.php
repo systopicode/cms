@@ -17,7 +17,7 @@ $currentFormat = $replacement && (int) $media->width > 0
 	? (int) $media->width . ' × ' . (int) $media->height . ' px · ' . $currentSize
 	: $currentSize;
 ?>
-<div class="cmslightbox cms upload<?= $replacement ? ' replacement' : '' ?>" data-size="3">
+<div class="cmslightbox cms cmsNestedDialog upload<?= $replacement ? ' replacement' : '' ?>" data-size="3">
 	<section>
 		<header>
 			<h1><?= $replacement ? 'Replace file' : 'Upload file' ?></h1>

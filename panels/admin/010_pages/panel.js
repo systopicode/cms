@@ -172,10 +172,12 @@ document.addEventListener('pointerdown', function (event) {
 	try { clipboard = JSON.parse(sessionStorage.getItem(storageKey)); } catch {}
 	if (clipboard && !clipboard.token) clipboard.token = String(Date.now()) + Math.random();
 	function updateClipboardStatus() {
+		if (!document.body) return;
 		if (clipboard) document.body.dataset.pageMediaCopied = clipboard.mediaShareImage === '1' ? 'image' : 'media';
 		else document.body.removeAttribute('data-page-media-copied');
 	}
 	updateClipboardStatus();
+	if (!document.body) document.addEventListener('DOMContentLoaded', updateClipboardStatus, {once: true});
 	const mobile = () => document.body.classList.contains('cmsMobile');
 	const shareTarget = () => document.querySelector('aside .mediaDrop.shareImage');
 
@@ -218,11 +220,6 @@ document.addEventListener('pointerdown', function (event) {
 	function pick(target, range) {
 		if (!target) return;
 		const share = target.matches('.mediaDrop.shareImage');
-		const available = share ? tileSelector + '[data-media-share-image="1"]' : tileSelector;
-		if (!document.querySelector(available)) {
-			announce(share ? 'There are no suitable share images on this page.' : 'There are no media files on this page.');
-			return;
-		}
 		const sharePage = share ? target.closest('[data-node_id]')?.dataset.node_id : null;
 		destination = {target, range, sharePage};
 		document.body.toggleAttribute('data-page-share-picker', share);
@@ -236,8 +233,14 @@ document.addEventListener('pointerdown', function (event) {
 			else sessionStorage.removeItem(storageKey);
 		} catch {}
 		updateClipboardStatus();
-		document.querySelector('.mmlContent [data-media-copied]')?.removeAttribute('data-media-copied');
-		if (value) document.querySelector(tileSelector + '[data-node_id="' + CSS.escape(value.node_id) + '"]')?.setAttribute('data-media-copied', '');
+		const previous = document.querySelector('.mmlContent [data-media-copied]');
+		previous?.removeAttribute('data-media-copied');
+		previous?.removeAttribute('data-save-state');
+		const tile = value && document.querySelector(tileSelector + '[data-node_id="' + CSS.escape(value.node_id) + '"]');
+		if (tile) {
+			tile.setAttribute('data-media-copied', '');
+			tile.setAttribute('data-save-state', 'saved');
+		}
 	}
 	function consumeClipboard(token) {
 		if (clipboard && clipboard.token === token) setClipboard(null);
@@ -259,9 +262,7 @@ document.addEventListener('pointerdown', function (event) {
 			beforeHold = clipboard;
 			const {node_id, drag_type, mediaExtension, mediaShareImage} = event.target.dataset;
 			setClipboard({node_id, drag_type, mediaExtension, mediaShareImage, token: String(Date.now()) + Math.random()});
-			const text = mediaShareImage === '1'
-				? 'Copied to clipboard.\nUse Paste media in the editor or Paste image in Meta.'
-				: 'Copied to clipboard.\nUse Paste media in the editor.';
+			const text = 'Copied to clipboard.';
 			window.cmsFeedback?.notice(text, box);
 		} else {
 			beforeHold = null;

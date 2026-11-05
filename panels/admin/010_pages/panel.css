@@ -540,11 +540,6 @@ body[data-page-share-picker] .mmlContent .mediaGroupInfo {
 	display: none;
 }
 
-body.cmsMobile .mmlContent [data-media-copied] {
-	outline: 2px solid var(--cmsFeedbackSuccess, var(--cmsSuccess));
-	outline-offset: -2px;
-}
-
 .pageToolBox > section > main > aside.cms {
 	width: 100%;
 	min-width: 0;
@@ -581,4 +576,14 @@ body.cms .cmslightbox.pageToolBox > section > header.cmsMobileEditHeader {
 
 body.cmsMobile .pageToolBox.cms div.mmlContent ul li ul li:not(.touchOpen) .thumbActions {
 	display: none;
+}
+
+/* The moved media library has one scroll surface, below its fixed header. */
+body.cms .cmslightbox.pageToolBox[data-page-tool="media"] > section[style*="--cmsGlassHeader"] > main {
+    margin-top: 0;
+    padding: 0;
+}
+.pageToolBox.cms div.mmlContent > div > ul {
+    height: auto;
+    overflow: visible;
 }

@@ -15,7 +15,7 @@ $embed = $this->mediaRow ? \Systopic\System\Tables\Medias\External::embedOf($thi
 if ($embed !== null) echo \fsLoader::includeScriptFiles(\fs::toInternal(dirname(__DIR__, 5) . '/public/site/embedConsent.js'));
 $split = $embed !== null || in_array($media->mimetype, ['image/svg+xml', 'image/svg', 'video/mp4'], true);
 ?>
-<div class="cmslightbox cms fileEditor" data-size="3">
+<div class="cmslightbox cms cmsNestedDialog fileEditor" data-size="3">
     <section>
 		<header>
 			<h1><?= htmlspecialchars($this->lightboxTitle, ENT_QUOTES, 'UTF-8') ?></h1>
