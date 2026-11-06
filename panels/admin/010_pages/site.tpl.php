@@ -34,8 +34,10 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 		$nodeId = $site->relationId('node');
 		// a site that came in with a backup has its row but not its folder
 		$hasFolder = \fs::isDir((string) \fs::$projectRoot . 'sites/' . $site->name);
-		// ... and no rules in the instance files of the other machines
-		$missingRules = SiteRegistry::filesWithoutHostRules($site->name);
+		// ... and no rule on this installation: the settings have them
+		$missingRule = SiteRegistry::needsLocalHostRule($site->name) && \Systopic\System\Auth\Session::hasRole('cmsAdmin');
+		// ... and no link on this machine: projects/<site> → this project
+		$missingLinks = SiteRegistry::missingLinks($site->name);
 		?>
 		<div data-site_id="<?= (int) $site->id ?>">
 			<h1>
@@ -50,6 +52,7 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
             <p><?= $this->sitePageCount($site) ?> pages directly below this site.</p>
             <details><summary>Technical details</summary>
                 <p>Folder <code>sites/<?= $e($site->name) ?>/</code>: <?= $hasFolder ? 'present' : '<b>missing</b>' ?>.</p>
+                <?php foreach ($missingLinks as $path) { ?><p>Link <code><?= $e($path) ?></code>: <b>missing</b>.</p><?php } ?>
                 <p>Stage addresses (RC, DEV) are configured in instance files. Site aliases below redirect to the site's domain.</p>
             </details>
 			<label class="_8_8" data-on_change="updateSiteMeta">Site metadata (JSON: title, appName, author, description, keywords, robots, titleSeparator, shareImage)
@@ -63,19 +66,23 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
                 <button type="button" class="button" data-on_click="reviewSiteRename">Rename site…</button>
                 <p class="hint">Renaming can change the site directory and local links. The review lists the affected locations.</p>
             </div>
-			<?php if (!$hasFolder || $missingRules || $nodeId !== NULL) { ?>
+			<?php if (!$hasFolder || $missingLinks || $missingRule || $nodeId !== NULL) { ?>
 				<p>
-				<?php if (!$hasFolder) { ?>
+				<?php if ($missingLinks) { ?>
+					<button type="button" data-cms-action class="button submit" data-on_click="createSiteLink" data-site_id="<?= (int) $site->id ?>"
+					   title="<?= $e(implode(', ', $missingLinks)) ?> → this project<?= $hasFolder ? '' : ', and sites/' . $e($site->name) . '/' ?>">
+						<i class="cmsIcon cmsIcon-link"></i> <?= $hasFolder ? 'Create site link' : 'Create site link and folder' ?>
+					</button>
+				<?php } elseif (!$hasFolder) { ?>
 					<button type="button" data-cms-action class="button submit" data-on_click="createSiteFolder" data-site_id="<?= (int) $site->id ?>"
 					   title="sites/<?= $e($site->name) ?>/templates/{document,components,pages,layout}/ create">
 						<i class="cmsIcon cmsIcon-folder-plus"></i> Create site folder
 					</button>
 				<?php } ?>
-				<?php if ($missingRules) { ?>
-					<button type="button" data-cms-action class="button submit" data-on_click="addSiteHostRules" data-site_id="<?= (int) $site->id ?>"
-					   title="No rule for <?= $e($site->name) ?> in <?= $e(implode(', ', $missingRules)) ?> — copy another site’s path rule">
-						<i class="cmsIcon cmsIcon-route"></i> Add host rule
-					</button>
+				<?php if ($missingRule) { ?>
+					<a class="button" href="<?= $e(\http::$root . 'admin/settings/environment/') ?>" title="This installation has no rule for <?= $e($site->name) ?>">
+						<i class="cmsIcon cmsIcon-route"></i> Add host rule in settings
+					</a>
 				<?php } ?>
 				<?php if ($nodeId !== NULL) { ?>
 					<button type="button" data-cms-action class="button submit" data-on_click="userConfirm" data-action="removeSite"

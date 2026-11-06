@@ -56,7 +56,7 @@ $savePage = function (PageRow $row): void {
 };
 
 // A site is its node; a new one goes onto the topmost level.
-if (in_array($this->action, ['createSite', 'updateSiteMeta', 'updateSiteAliases', 'renameSite', 'createSiteFolder', 'addSiteHostRules', 'removeSite'], true)
+if (in_array($this->action, ['createSite', 'updateSiteMeta', 'updateSiteAliases', 'renameSite', 'createSiteFolder', 'createSiteLink', 'removeSite'], true)
     && PageAccess::refuses($this->action === 'createSite' ? null : $this->actionSite?->node)) {
     $this->updateView('main');
     return;
@@ -265,20 +265,21 @@ switch ($this->action) {
         }
         break;
 
-    case 'addSiteHostRules':
-        // the same rules createSite writes - missing on a site from a backup
+    case 'createSiteLink':
+        // a site that came over by sync or a backup: the link of this machine, and its folder when that is missing too
         if ($this->actionSite) {
-            $isDefault = $this->actionSite->isDefault;
-            $nodeId = $this->actionSite->relationId('node');
-            $log = \Systopic\Cms\Pages\Sites\SiteRegistry::addHostRules($this->scope, $this->actionSite->name);
-            foreach ($log as $line) {
-                message::confirm("config/$line");
+            try {
+                $name = $this->actionSite->name;
+                if (\Systopic\Cms\Pages\Sites\SiteRegistry::createFolders($name)) {
+                    message::confirm("Folder sites/$name/ created.");
+                }
+                foreach (\Systopic\Cms\Pages\Sites\SiteRegistry::createLinks($name) as $path => $outcome) {
+                    $outcome === 'created' ? message::confirm("Link $path created.") : message::error($outcome);
+                }
+            } catch (\RuntimeException $e) {
+                message::error($e->getMessage());
             }
-            if ($log === []) {
-                message::info('No instance file changed: the rules already exist, or no matching rules were found.');
-            }
-            // a fresh request: the config of this one does not know the rule yet
-            http::redirect($isDefault ? './?site=default' : './?id=' . $nodeId);
+            $this->updateView('main');
         }
         break;
 

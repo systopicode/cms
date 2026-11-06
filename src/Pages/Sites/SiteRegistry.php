@@ -198,17 +198,27 @@ final class SiteRegistry
     }
 
     /**
-     * The rules of the instance files for a site — a copy of another site's
-     * path rule, where a file has one. A file that already has a rule for
-     * the site is left alone, so this also mends a site that came in with a
-     * backup and never got its rules.
+     * The rules of the instance files for a new site — a copy of another site's
+     * path rule, where a file has one. A file that already has a rule for the
+     * site is left alone.
      *
      * @return list<string> what was written, or why not
      */
-    public static function addHostRules(Scope $scope, string $name, ?string $projectRoot = null): array
+    private static function addHostRules(Scope $scope, string $name, ?string $projectRoot = null): array
     {
         $known = array_map(static fn(Site $s) => $s->name, self::all($scope));
         return InstanceFiles::addSite(self::configDir($projectRoot), $name, array_values(array_diff($known, [$name])));
+    }
+
+    /**
+     * Does the installation running here lack a rule for the site? The other
+     * instance files are no business of this one: it cannot make a rule work
+     * on another machine. An instance without any rules answers on every name.
+     */
+    public static function needsLocalHostRule(string $name, ?string $projectRoot = null): bool
+    {
+        $instance = Config::current()?->instance->name;
+        return $instance !== null && in_array("$instance.config.json", self::filesWithoutHostRules($name, $projectRoot), true);
     }
 
     /** @return list<string> the instance files with rules, but none for the site */
@@ -387,6 +397,34 @@ final class SiteRegistry
         }
         header('Location: ' . $target, true, 301);
         exit;
+    }
+
+    /**
+     * The directory links of a site that are missing on this machine: its path
+     * entries, e.g. projects/expo-systems.de → this project. A site with hosts
+     * only (RC) needs none.
+     *
+     * @return list<string>
+     */
+    public static function missingLinks(string $name, ?string $projectRoot = null): array
+    {
+        $config = Config::current();
+        $site = $config?->sites->byName($name);
+        if ($site === null) {
+            return [];
+        }
+        return \Systopic\System\Config\SiteLinks::missing($config->sites, $site->entries, (string) ($_SERVER['DOCUMENT_ROOT'] ?? ''), self::projectDir($projectRoot));
+    }
+
+    /** @return array<string, string> link path => 'created' or why not */
+    public static function createLinks(string $name, ?string $projectRoot = null): array
+    {
+        return \Systopic\System\Config\SiteLinks::create(self::missingLinks($name, $projectRoot), self::projectDir($projectRoot));
+    }
+
+    private static function projectDir(?string $projectRoot): string
+    {
+        return \fs::toNative(rtrim(str_replace('\\', '/', $projectRoot ?? (string) \fs::$projectRoot), '/'));
     }
 
     /**
