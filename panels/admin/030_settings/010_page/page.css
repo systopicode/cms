@@ -30,10 +30,6 @@
     flex: 1 1 auto;
 }
 
-.pageSettings > header .button{
-    margin: 0 0.35rem 0 auto;
-}
-
 .pageSettings .settingLabel{
     display: flex;
     flex-direction: column;
@@ -79,7 +75,7 @@ body.settingDragging .pageSettings div.sort{
 }
 
 .cmslightbox.pageSettingDialog > section{
-    width: min(40rem, 100%);
+    width: min(48rem, 100%);
 }
 
 .templatePick{
@@ -133,3 +129,18 @@ body.settingDragging .pageSettings div.sort{
 
 .cms .pageSettings td.pageSettingDrag { padding: 0.25rem; width: 2rem; min-width: 2rem; max-width: 2rem; text-align: center; }
 .cms .pageSettings td.pageSettingDrag > i { display: inline-flex; justify-content: center; align-items: center; width: 1.5rem; height: 2rem; margin: 0; }
+
+/* Definition editor uses the standard fields, widgets, footer and dialog shell. */
+.pageSettingDialog .settingKinds,
+.pageSettingDialog .settingTemplates { border: 0; padding: 0; margin: 0; min-width: 0; }
+.pageSettingDialog legend { font-weight: 600; margin-bottom: .75rem; }
+.pageSettingDialog .settingKinds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.pageSettingDialog .settingKinds > label { display: flex; align-items: flex-start; gap: .65rem; border: 1px solid var(--cmsLine); border-radius: var(--cmsRadius, .5rem); padding: .75rem; cursor: pointer; margin: 0; }
+.pageSettingDialog .settingKinds > label:has(:checked) { border-color: var(--cmsHighlightColor); background: var(--cmsSelectedBg, var(--cmsHover)); }
+.pageSettingDialog .settingKinds small { display: block; margin-top: .25rem; color: var(--cmsSubText); }
+.pageSettingDialog .settingTemplates > label { display: flex; gap: .5rem; align-items: center; margin-bottom: .5rem; }
+.pageSettingDialog .templatePick { margin-top: .75rem; }
+.pageSettingDialog .settingChildren,
+.pageSettingDialog .settingPreview { margin-top: var(--cmsCardPadding); }
+.pageSettingDialog details > .fieldGrid { margin-top: .75rem; }
+@media (max-width: 600px) { .pageSettingDialog .settingKinds { grid-template-columns: 1fr; } }

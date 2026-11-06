@@ -1,162 +1,74 @@
 <?php
-
 /** @var \Systopic\Cms\Panels\Root\Admin\Settings\Page\Edit\Panel $this */
-
-use Systopic\Cms\Queries\SettingTree\Definition;
-
+use Systopic\Cms\Queries\SettingTree\SettingTree;
+use Systopic\Cms\Settings\TemplateEditor;
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 $d = $this->definition;
-
-$feld = static function (?Definition $d, string $name): string {
-	if ($d === null) {
-		return '';
-	}
-	return match ($name) {
-		'name' => (string) $d->setting->name,
-		'label' => (string) $d->setting->label,
-		'description' => (string) ($d->setting->description ?? ''),
-		'type' => (string) $d->setting->type,
-		'datatype' => (string) $d->setting->datatype,
-		default => '',
-	};
-};
-
-$vorgabe = static function (?Definition $d, string $name): string {
-	$j = $d?->defaultJunction;
-	if ($j === null) {
-		return '';
-	}
-	return match ($name) {
-		'varchar' => (string) ($j->varchar ?? ''),
-		'int' => $j->int === null ? '' : (string) $j->int,
-		'decimal' => $j->decimal === null ? '' : (string) $j->decimal,
-		default => '',
-	};
-};
-
-$field = static function (string $action, string $name, string $label, string $value, string $hint = '', string $wide = '') use ($e): void {
-	echo '<label class="field' . ($wide !== '' ? " $wide" : '') . '" data-on_input="' . $action . '">';
-	echo '<span>' . $e($label) . '</span>';
-	echo '<input' . ($name === 'name' ? ' data-setting-key pattern="[A-Za-z_][A-Za-z0-9_]*" required title="Use letters, digits and underscores; start with a letter or underscore."' : '') . ' name="' . $e($name) . '" value="' . $e($value) . '" autocomplete="off">';
-	if ($hint !== '') {
-		echo '<small>' . $e($hint) . '</small>';
-	}
-	echo '</label>';
-};
-
-$choice = static function (string $name, string $label, string $value, array $options, string $hint = '') use ($e): void {
-	echo '<label class="field"><span>' . $e($label) . '</span>';
-	echo '<select name="' . $e($name) . '" data-on_change="updateSetting">';
-	if ($value !== '' && !array_key_exists($value, $options)) {
-		$options = [$value => $value] + $options;
-	}
-	foreach ($options as $key => $text) {
-		$selected = (string) $key === $value ? ' selected' : '';
-		echo '<option value="' . $e($key) . '"' . $selected . '>' . $e($text) . '</option>';
-	}
-	echo '</select>';
-	if ($hint !== '') {
-		echo '<small>' . $e($hint) . '</small>';
-	}
-	echo '</label>';
-};
+$parent = $d?->parent ?? SettingTree::byNodeId($this->scope, (int) \http::get('parent_id'));
+$base = $this->parent->href;
+$back = $parent ? $base . 'edit/?id=' . $parent->nodeId : $base;
+$option = $parent?->type === 'select';
+$title = $d?->label ?: ($option ? 'Add option' : ($parent ? 'Add field' : 'Add setting'));
+$kind = $d ? TemplateEditor::kind($d) : 'text';
+$isValue = $d && ($d->type === 'input' || !$d->type);
 ?>
+<form id="templateSettingForm" class="ajax" method="put" data-feedback="parameters" action="<?= $e($this->href . ($d ? 'saveSetting?id=' . $d->nodeId : 'createSetting?parent_id=' . (int) ($parent?->nodeId ?? 0))) ?>">
 <div class="cmslightbox cms pageSettingDialog">
-	<section data-doc="box">
-		<header class="tagEditTitle">
-			<h1><?= $d ? $e($d->label !== '' ? $d->label : 'Untitled') : 'Setting' ?></h1>
-			<?php if ($d) { ?>
-                <button type="button" class="tagGroupRename" onclick="renameUserAdminTitle(this)" data-rename-field="label" data-rename-url="<?= $e($this->href . 'updateSetting?id=' . (int) $d->nodeId) ?>" title="Rename" aria-label="Rename"><i class="cmsIcon cmsIcon-pen"></i></button>
-            <?php } ?>
-			<?php
-			$back = '../';
-			if ($d?->parent) {
-				$back = '../?id=' . (int) $d->parent->nodeId;
-			}
-			?>
-            <ul class="barmenu">
-                <?php if ($d && $d->options === []) { ?><li><button type="button" class="button icononly" data-on_click="userConfirm" data-action="removeSetting?id=<?= (int) $d->nodeId ?>" data-confirm="Delete this setting?" title="Delete" aria-label="Delete"><i class="cmsIcon cmsIcon-trash"></i></button></li><?php } ?>
-                <li><a class="ajax" href="<?= $e($back) ?>" aria-label="Close"><i class="cmsIcon cmsIcon-xmark-large"></i></a></li>
-            </ul>
-		</header>
-		<?php if ($d) { ?>
-			<main>
-				<p class="tagsHint"><?php
-					echo match ((string) ($d->parent?->type ?? '')) {
-						'select' => 'An option is one choice of its select. Name and label are what the sidebar shows in the list. The choice itself is which option a page points at.',
-						'group' => 'A field inside a group stores its own value. Name is what a template reads. Label is what people see. Value type picks the default.',
-						'checkbox' => 'A checkbox has one value. The sidebar stores whether the page has it switched on.',
-						default => 'Name is what a template reads. Label is what people see in the sidebar. Kind is how it behaves. A group, select or checkbox holds what belongs to it one level down: close this dialog and open the row with the folder.',
-					};
-				?></p>
-				<div class="fieldGrid">
-					<?php
-					$field('updateSetting', 'name', 'Key', $feld($d, 'name'), 'Used by templates and stored settings. Renaming does not update references automatically.');
-					$parentKind = (string) ($d->parent?->type ?? '');
-					$kind = $feld($d, 'type');
-					$kinds = match ($parentKind) {
-						'select' => ['option' => 'Option of a select'],
-						'group', 'checkbox' => ['input' => 'Field'],
-						default => [
-							'input' => 'Field',
-							'group' => 'Group of fields',
-							'select' => 'Select',
-							'checkbox' => 'Checkbox',
-						],
-					};
-					if ($kind === '' && isset($kinds['input'])) {
-						$kind = 'input';
-					}
-					if (count($kinds) === 1) {
-						$only = array_key_first($kinds);
-						echo '<label class="field"><span>Kind</span>';
-						echo '<input value="' . $e($kinds[$only]) . '" readonly>';
-						echo '<small>' . $e(match ($parentKind) {
-							'select' => 'A select can only contain options.',
-							'group' => 'A group can only contain fields.',
-							'checkbox' => 'A checkbox can only contain its value.',
-							default => '',
-						}) . '</small></label>';
-					} else {
-						$choice('type', 'Kind', $kind, $kinds, 'Field stores a value. Group, select and checkbox hold children.');
-					}
-					$field('updateSetting', 'description', 'Description', $feld($d, 'description'), '', 'is-wide');
-					$isField = $kind === '' || $kind === 'input' || $parentKind === 'group' || $parentKind === 'checkbox';
-					$datatype = $feld($d, 'datatype') !== '' ? $feld($d, 'datatype') : 'varchar';
-					if ($isField) {
-						$choice('datatype', 'Value type', $datatype, [
-							'varchar' => 'Text',
-							'int' => 'Number',
-							'decimal' => 'Decimal',
-						], 'Which default the sidebar uses.');
-						if ($datatype === 'int') {
-							$field('updateDefault', 'int', 'Default', $vorgabe($d, 'int'), 'Used when a page has not set a number.');
-						} elseif ($datatype === 'decimal') {
-							$field('updateDefault', 'decimal', 'Default', $vorgabe($d, 'decimal'), 'Used when a page has not set a decimal.');
-						} else {
-							$field('updateDefault', 'varchar', 'Default', $vorgabe($d, 'varchar'), 'Used when a page has not set a text.');
-						}
-					}
-					if ($d->parent === null) {
-						$picked = array_values(array_filter(explode(';', (string) ($d->setting->showInTemplates ?? ''))));
-						$templates = (array) \template::getAll();
-						uasort($templates, static fn($a, $b) => strnatcmp((string) ($a->prefix ?? ''), (string) ($b->prefix ?? '')));
-						echo '<div class="templatePick">';
-						echo '<span>Templates</span>';
-						if ($templates === []) {
-							echo '<small>No page templates found.</small>';
-						}
-						foreach ($templates as $name => $template) {
-							$checked = in_array((string) $name, $picked, true) ? ' checked' : '';
-							$shown = trim(str_replace(['_', '-'], ' ', (string) ($template->name ?? $name)));
-							echo '<label><input class="switch" type="checkbox" name="on" data-on_change="updateTemplates" data-template="' . $e($name) . '"' . $checked . '><div><div></div></div><span>' . $e($shown) . '</span></label>';
-						}
-						echo '<small>No tick means this setting is on every template.</small>';
-						echo '</div>';
-					}
-					?>
-				</div>
-			</main>
-		<?php } ?>
-	</section>
+<section>
+    <header>
+        <h1><?= $e($title) ?></h1>
+        <ul class="barmenu"><?php if ($d) { ?><li><button type="button" class="button icononly" aria-label="Delete setting" data-on_click="userConfirm" data-action="removeSetting?id=<?= $d->nodeId ?>" data-confirm="Delete this setting, its fields and all values saved on pages?"><i class="cmsIcon cmsIcon-trash"></i></button></li><?php } ?><li><a class="ajax" href="<?= $e($back) ?>" data-focus-id="template-setting-close" aria-label="Close"><i class="cmsIcon cmsIcon-xmark-large"></i></a></li></ul>
+    </header>
+    <main>
+        <?php if ($parent) { ?><p class="tagsHint">Part of <a class="ajax" href="<?= $e($base . 'edit/?id=' . $parent->nodeId) ?>"><?= $e($parent->label) ?></a></p><?php } ?>
+
+            <div class="fieldGrid is-stack">
+                <label class="field"><span><?= $option ? 'Option name' : 'Name shown in Pages' ?></span><input name="label" required value="<?= $e($d?->label ?? '') ?>" placeholder="<?= $option ? 'For example: Center' : 'For example: Show image' ?>" autocomplete="off"></label>
+                <?php if (!$d && !$option) { ?>
+                    <fieldset class="settingKinds"><legend>What should people be able to do?</legend>
+                    <?php foreach (TemplateEditor::KINDS as $key => [$label, $hint]) {
+                        if ($parent && !in_array($key, ['text', 'number', 'decimal'], true)) continue;
+                    ?><label><input type="radio" name="kind" value="<?= $key ?>" <?= $key === 'text' ? 'checked' : '' ?>><span><b><?= $e($label) ?></b><small><?= $e($hint) ?></small></span></label><?php } ?>
+                    </fieldset>
+                <?php } elseif ($d && !$option) { ?>
+                    <p class="tagsHint">Displayed as: <b><?= $e(TemplateEditor::KINDS[$kind][0]) ?></b></p>
+                <?php } ?>
+                <?php if ($d) { ?>
+                    <label class="field"><span>Description</span><input name="description" value="<?= $e($d->setting->description ?? '') ?>"><small>Describe what this setting controls.</small></label>
+                    <?php if ($isValue && !$parent) { ?><label class="field"><span>Default value</span><input name="default" <?= $d->datatype !== 'varchar' ? 'type="number" step="' . ($d->datatype === 'int' ? '1' : 'any') . '"' : '' ?> value="<?= $e($d->default ?? '') ?>"><small>Used when a page has no value of its own.</small></label><?php } ?>
+                    <?php if (!$parent) { $templates = (array) \template::getAll(); $picked = array_filter(explode(';', (string) $d->setting->showInTemplates)); ?>
+                        <fieldset class="settingTemplates"><legend>Show this setting on</legend>
+                            <label><input type="radio" name="visibility" value="all" <?= !$picked ? 'checked' : '' ?>> All templates</label>
+                            <label><input type="radio" name="visibility" value="selected" <?= $picked ? 'checked' : '' ?>> Only the templates checked below</label>
+                            <div class="templatePick">
+                            <?php foreach ($templates as $name => $template) { ?><label><input type="checkbox" name="templates[]" value="<?= $e($name) ?>" <?= in_array((string) $name, $picked, true) ? 'checked' : '' ?>><span><?= $e(trim(str_replace(['_', '-'], ' ', (string) ($template->name ?? $name)))) ?></span></label><?php } ?>
+                            </div>
+                        </fieldset>
+                    <?php } ?>
+                    <details><summary>Technical connection</summary><div class="fieldGrid is-stack"><label class="field"><span><?= $option ? 'Value read by the template' : 'Template key' ?></span><input name="name" required pattern="[A-Za-z_][A-Za-z0-9_]*" value="<?= $e($d->name) ?>"><small>Keep this unchanged unless you also update the template code. Changing the visible name does not change this key.</small></label></div></details>
+                <?php } else { ?><p class="tagsHint">The technical connection is created automatically. After adding the setting you can configure its options and where it appears.</p><?php } ?>
+            </div>
+        <?php if ($d && in_array($d->type, ['select', 'group'], true)) { ?>
+            <section class="widget pageSettings settingChildren">
+                <header><h2><?= $d->type === 'select' ? 'Options' : 'Fields in this group' ?></h2><a class="ajax button" data-focus-id="setting-child-add" href="<?= $e($this->href . '?parent_id=' . $d->nodeId) ?>"><i class="cmsIcon cmsIcon-plus"></i><span><?= $d->type === 'select' ? 'Add option' : 'Add field' ?></span></a></header>
+                <?php if (!$d->options) { ?><main><p><?= $d->type === 'select' ? 'Add the options people can choose from.' : 'Add the fields that belong together.' ?></p></main><?php } else { ?>
+                <div class="tableScroll"><table><thead><tr><th></th><th>Name in Pages</th><th><?= $d->type === 'select' ? 'Template value' : 'Field type' ?></th><th></th></tr></thead><tbody>
+                <?php foreach ($d->options as $child) { ?><tr><td class="pageSettingDrag"><i class="cmsIcon cmsIcon-grip-dots-vertical" aria-label="Drag to reorder" data-drag_type="setting" data-id="<?= $child->nodeId ?>"></i><div class="sort v insertBefore" data-drop_accept="setting" data-on_drop="<?= $e($base . 'insertBefore') ?>" data-id="<?= $child->nodeId ?>"></div><div class="sort v insertAfter" data-drop_accept="setting" data-on_drop="<?= $e($base . 'insertAfter') ?>" data-id="<?= $child->nodeId ?>"></div></td><td><a class="ajax" data-focus-id="setting-child-<?= $child->nodeId ?>" href="<?= $e($this->href . '?id=' . $child->nodeId) ?>"><?= $e($child->label) ?></a></td><td><?= $e($d->type === 'select' ? $child->name : TemplateEditor::KINDS[TemplateEditor::kind($child)][0]) ?></td><td class="icons"><ul><li><a class="ajax button icononly" aria-label="Edit <?= $e($child->label) ?>" href="<?= $e($this->href . '?id=' . $child->nodeId) ?>"><i class="cmsIcon cmsIcon-pen"></i></a></li><li><button type="button" class="button icononly" aria-label="Delete <?= $e($child->label) ?>" data-on_click="userConfirm" data-action="removeChild?id=<?= $d->nodeId ?>" data-child_id="<?= $child->nodeId ?>" data-confirm="Delete this field and its saved page values?"><i class="cmsIcon cmsIcon-trash"></i></button></li></ul></td></tr><?php } ?>
+                </tbody></table></div><?php } ?>
+            </section>
+        <?php } ?>
+        <?php if ($d && !$parent) { ?>
+            <section class="widget settingPreview"><header><h2>Preview in Pages</h2></header><main>
+                <?php if ($d->type === 'checkbox') { ?><label class="checkbox"><span><?= $e($d->label) ?></span><input type="checkbox" class="switch"><div><div></div></div></label>
+                <?php } elseif ($d->type === 'select') { ?><label class="field"><span><?= $e($d->label) ?></span><select><option>Choose an option</option><?php foreach ($d->options as $o) { ?><option><?= $e($o->label) ?></option><?php } ?></select></label>
+                <?php } elseif ($d->type === 'group') { ?><div class="fieldGrid"><?php foreach ($d->options as $o) { ?><label class="field"><span><?= $e($o->label) ?></span><input <?= $o->datatype !== 'varchar' ? 'type="number"' : '' ?>></label><?php } ?></div>
+                <?php } else { ?><label class="field"><span><?= $e($d->label) ?></span><input value="<?= $e($d->default ?? '') ?>"></label><?php } ?>
+                <p class="tagsHint">Try the control here. This preview does not change any page.</p>
+            </main></section>
+        <?php } ?>
+    </main>
+    <footer><button type="submit" form="templateSettingForm" class="button submit"><i class="cmsIcon cmsIcon-check"></i><span><?= $d ? 'Save changes' : ($option ? 'Add option' : ($parent ? 'Add field' : 'Add setting')) ?></span></button></footer>
+</section>
 </div>
+
+</form>
