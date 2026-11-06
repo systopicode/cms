@@ -17,13 +17,13 @@ $card = match ($parentType) {
 	'select' => 'Choices',
 	'group' => 'Fields',
 	'checkbox' => 'Value',
-	default => 'Shown in the sidebar',
+	default => 'Page settings',
 };
 $note = match ($parentType) {
 	'select' => 'Choices available in this field, in their display order.',
 	'group' => 'Fields available inside this block, in their display order.',
 	'checkbox' => 'Defines the value controlled by this switch. Enabled and disabled states are stored as 1 and 0.',
-	default => 'Defines the settings available in the page sidebar.',
+	default => 'Build the fields people can fill in under Settings in the page editor. Your templates decide how those values affect the website.',
 };
 $columns = match ($parentType) {
 	'select' => ['label', 'value'],
@@ -61,9 +61,9 @@ $addLabel = match ($parentType) {
 <section class="widget pageSettings">
 	<header>
 		<h2><?= $e($card) ?></h2>
-		<button type="button" data-cms-action class="button submit" data-on_click="add" data-id="<?= $addId ?>">
+		<a class="ajax button submit" data-focus-id="template-setting-add" href="<?= htmlspecialchars($this->href, ENT_QUOTES) ?>edit/?parent_id=<?= $selected ? (int) $selected->nodeId : 0 ?>">
 			<i class="cmsIcon cmsIcon-plus"></i><span><?= $e($addLabel) ?></span>
-		</button>
+		</a>
 	</header>
 	<?php if ($this->rows === []) { ?>
 		<main><p>Nothing here yet.</p></main>
@@ -89,7 +89,6 @@ $addLabel = match ($parentType) {
 						} elseif ($parentType === 'group' || $parentType === 'checkbox') {
 							$kind = 'input';
 						}
-						$opens = $parentType === '' && in_array($kind, ['group', 'select', 'checkbox'], true);
 						$label = $row->label !== '' ? $row->label : 'Untitled';
 						$name = (string) $row->name;
 						$typeLabel = match ($row->datatype) {
@@ -119,14 +118,7 @@ $addLabel = match ($parentType) {
 								<td><?php
 									if ($column === 'label') {
 										echo '<span class="settingLabel">';
-										if ($opens) {
-											echo '<a class="ajax" href="?id=' . $id . '">' . $e($label) . '</a>';
-										} else {
-											echo $e($label);
-										}
-										if ($parentType === '' && $name !== '') {
-											echo '<small>' . $e($name) . '</small>';
-										}
+										echo '<a class="ajax" data-focus-id="setting-label-' . $id . '" href="' . $e($this->href) . 'edit/?id=' . $id . '">' . $e($label) . '</a>';
 										echo '</span>';
 									} elseif ($column === 'value' || $column === 'name') {
 										echo $e($name);
@@ -139,10 +131,8 @@ $addLabel = match ($parentType) {
 							<?php } ?>
 							<td class="icons">
 								<ul>
-									<?php if ($opens) { ?>
-										<li><a class="ajax button icononly" title="Open" href="?id=<?= $id ?>"><i class="cmsIcon cmsIcon-folder-open"></i></a></li>
-									<?php } ?>
-									<li><a class="ajax button icononly" title="Edit" href="edit/?id=<?= $id ?>"><i class="cmsIcon cmsIcon-pen"></i></a></li>
+
+									<li><a class="ajax button icononly" data-focus-id="setting-edit-<?= $id ?>" title="Edit" href="<?= $e($this->href) ?>edit/?id=<?= $id ?>"><i class="cmsIcon cmsIcon-pen"></i></a></li>
 									<?php if (!is_array($row->options) || $row->options === []) { ?>
 										<li><button type="button" class="button transparent icononly" title="Delete" data-on_click="userConfirm" data-action="delete" data-id="<?= $id ?>" data-confirm="Delete this setting?"><i class="cmsIcon cmsIcon-trash"></i></button></li>
 									<?php } ?>

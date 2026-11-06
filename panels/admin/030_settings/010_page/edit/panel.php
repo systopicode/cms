@@ -15,6 +15,14 @@ class Panel extends PanelNode {
 
 	public bool $inNavi = false;
 
+    public function onLoadThisClass(): void
+    {
+        // Same dialog, another definition (or a new-field form): redraw its contents.
+        if ($this->inPath() && (\http::$method ?? 'GET') === 'GET') {
+            $this->updateView('lightbox');
+        }
+    }
+
 	public Scope $scope {
 		get => Scope::default();
 	}
