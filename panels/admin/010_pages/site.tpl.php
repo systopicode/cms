@@ -34,8 +34,6 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 		$nodeId = $site->relationId('node');
 		// a site that came in with a backup has its row but not its folder
 		$hasFolder = \fs::isDir((string) \fs::$projectRoot . 'sites/' . $site->name);
-		// ... and no rule on this installation: the settings have them
-		$missingRule = SiteRegistry::needsLocalHostRule($site->name) && \Systopic\System\Auth\Session::hasRole('cmsAdmin');
 		// ... and no link on this machine: projects/<site> → this project
 		$missingLinks = SiteRegistry::missingLinks($site->name);
 		?>
@@ -53,7 +51,7 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
             <details><summary>Technical details</summary>
                 <p>Folder <code>sites/<?= $e($site->name) ?>/</code>: <?= $hasFolder ? 'present' : '<b>missing</b>' ?>.</p>
                 <?php foreach ($missingLinks as $path) { ?><p>Link <code><?= $e($path) ?></code>: <b>missing</b>.</p><?php } ?>
-                <p>Stage addresses (RC, DEV) are configured in instance files. Site aliases below redirect to the site's domain.</p>
+                <p>Where a site answers on a stage (DEV, STAGING, RC) follows from its name and the pattern of the installation (Settings, Environment: Site addresses). Site aliases below redirect to the site's domain.</p>
             </details>
 			<label class="_8_8" data-on_change="updateSiteMeta">Site metadata (JSON: title, appName, author, description, keywords, robots, titleSeparator, shareImage)
 				<textarea name="meta" rows="14" spellcheck="false" style="font-family:monospace"><?= $e(json_encode($site->metaData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></textarea>
@@ -66,7 +64,7 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
                 <button type="button" class="button" data-on_click="reviewSiteRename">Rename site…</button>
                 <p class="hint">Renaming can change the site directory and local links. The review lists the affected locations.</p>
             </div>
-			<?php if (!$hasFolder || $missingLinks || $missingRule || $nodeId !== NULL) { ?>
+			<?php if (!$hasFolder || $missingLinks || $nodeId !== NULL) { ?>
 				<p>
 				<?php if ($missingLinks) { ?>
 					<button type="button" data-cms-action class="button submit" data-on_click="createSiteLink" data-site_id="<?= (int) $site->id ?>"
@@ -78,11 +76,6 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 					   title="sites/<?= $e($site->name) ?>/templates/{document,components,pages,layout}/ create">
 						<i class="cmsIcon cmsIcon-folder-plus"></i> Create site folder
 					</button>
-				<?php } ?>
-				<?php if ($missingRule) { ?>
-					<a class="button" href="<?= $e(\http::$root . 'admin/settings/environment/') ?>" title="This installation has no rule for <?= $e($site->name) ?>">
-						<i class="cmsIcon cmsIcon-route"></i> Add host rule in settings
-					</a>
 				<?php } ?>
 				<?php if ($nodeId !== NULL) { ?>
 					<button type="button" data-cms-action class="button submit" data-on_click="userConfirm" data-action="removeSite"

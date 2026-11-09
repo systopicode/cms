@@ -192,12 +192,9 @@ switch ($this->action) {
             break;
         }
         try {
-            $site = \Systopic\Cms\Pages\Sites\SiteRegistry::create($this->scope, $name, null, $configLog);
+            $site = \Systopic\Cms\Pages\Sites\SiteRegistry::create($this->scope, $name);
             $nodeId = $site->relationId('node');
             message::confirm("Site $name created; folder sites/$name/ created.");
-            foreach ($configLog ?? [] as $line) {
-                message::confirm("config/$line");
-            }
             // a site with a node is selected like any node; the first site is the default site
             http::redirect($nodeId === null ? './?site=default' : './?id=' . $nodeId);
         } catch (\RuntimeException $e) {
@@ -287,11 +284,8 @@ switch ($this->action) {
         if ($this->actionSite) {
             try {
                 $name = $this->actionSite->name;
-                $configLog = \Systopic\Cms\Pages\Sites\SiteRegistry::remove($this->scope, $this->actionSite);
+                \Systopic\Cms\Pages\Sites\SiteRegistry::remove($this->scope, $this->actionSite);
                 message::confirm("Site $name removed. The sites/$name/ directory has been retained.");
-                foreach ($configLog as $line) {
-                    message::confirm("config/$line");
-                }
                 http::redirect('./?site=default');
             } catch (\RuntimeException $e) {
                 message::error($e->getMessage());

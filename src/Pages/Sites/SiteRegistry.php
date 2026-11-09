@@ -6,7 +6,6 @@ namespace Systopic\Cms\Pages\Sites;
 
 use RuntimeException;
 use Systopic\System\Config\Config;
-use Systopic\System\Config\InstanceFiles;
 use Systopic\Db\Scope;
 use Systopic\System\Queries\NodeChildren\NodeChildren;
 use Systopic\Cms\Queries\Sites\Sites;
@@ -23,7 +22,7 @@ use Systopic\Cms\Tables\Sites\Model as Site;
  * has a row without a node: its pages are the topmost pages themselves.
  *
  * Read once per request, right after the database connection, and handed to
- * `Config::useSites()` — the instance files say WHERE a site answers, this
+ * `Config::useSites()` — the installation says WHERE a site answers (`siteAddress`), this
  * table says WHICH sites there are. Written by the pages panel
  * (admin/pages: add menu, site editor in main).
  */
@@ -140,7 +139,7 @@ final class SiteRegistry
             // sites (or the implicit single site) stay in place
             error_log('SiteRegistry::boot: ' . $e->getMessage());
         }
-        // DEV ("linkSites": true in the instance file): the missing junction
+        // DEV ("linkSites": true in config.local.json): the missing junction
         // per site, e.g. projects/beautiful-technology.de → projects/systopic.net
         $config->linkSites((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''), \fs::toNative((string) \fs::$projectRoot));
         $config->resolveSite((string) \http::$host, (string) \http::$root);
@@ -161,10 +160,7 @@ final class SiteRegistry
      *
      * The first site of an installation becomes the default site (no node).
      */
-    /**
-     * @param list<string>|null $log receives what was written to the instance files
-     */
-    public static function create(Scope $scope, string $name, ?string $projectRoot = null, ?array &$log = null): Site
+    public static function create(Scope $scope, string $name, ?string $projectRoot = null): Site
     {
         $name = strtolower(trim($name));
         if (!self::validName($name)) {
@@ -192,47 +188,17 @@ final class SiteRegistry
             $scope->save($site);
         }
 
+        // where it answers needs nothing: the pattern of each installation
+        // (packages.system.siteAddress) takes every site by its name
         self::createFolders($name, $projectRoot);
-        $log = self::addHostRules($scope, $name, $projectRoot);
         return $site;
-    }
-
-    /**
-     * The rules of the instance files for a new site — a copy of another site's
-     * path rule, where a file has one. A file that already has a rule for the
-     * site is left alone.
-     *
-     * @return list<string> what was written, or why not
-     */
-    private static function addHostRules(Scope $scope, string $name, ?string $projectRoot = null): array
-    {
-        $known = array_map(static fn(Site $s) => $s->name, self::all($scope));
-        return InstanceFiles::addSite(self::configDir($projectRoot), $name, array_values(array_diff($known, [$name])));
-    }
-
-    /**
-     * Does the installation running here lack a rule for the site? The other
-     * instance files are no business of this one: it cannot make a rule work
-     * on another machine. An instance without any rules answers on every name.
-     */
-    public static function needsLocalHostRule(string $name, ?string $projectRoot = null): bool
-    {
-        $instance = Config::current()?->instance->name;
-        return $instance !== null && in_array("$instance.config.json", self::filesWithoutHostRules($name, $projectRoot), true);
-    }
-
-    /** @return list<string> the instance files with rules, but none for the site */
-    public static function filesWithoutHostRules(string $name, ?string $projectRoot = null): array
-    {
-        return InstanceFiles::filesWithoutSite(self::configDir($projectRoot), $name);
     }
 
     /**
      * Removes a site — only while no page hangs below it, and never the
      * default site. The folder sites/<name>/ stays: it is code.
      */
-    /** @return list<string> what was written to the instance files */
-    public static function remove(Scope $scope, Site $site): array
+    public static function remove(Scope $scope, Site $site): void
     {
         $nodeId = $site->relationId('node');
         if ($nodeId === null) {
@@ -249,13 +215,6 @@ final class SiteRegistry
         if ($node !== null && $node->type === self::NODE_TYPE) {
             $scope->remove($node);
         }
-        return InstanceFiles::removeSite(self::configDir(), $site->name);
-    }
-
-    /** <project>/config — where the instance files are. */
-    private static function configDir(?string $projectRoot = null): string
-    {
-        return rtrim(str_replace('\\', '/', \fs::toNative($projectRoot ?? (string) \fs::$projectRoot)), '/') . '/config';
     }
 
     /**
@@ -290,14 +249,14 @@ final class SiteRegistry
         }
 
         // the links of this machine: the site's path entries now, and the
-        // same with the name swapped — what InstanceFiles writes below
+        // same with the name swapped — what the pattern makes of the new name
         $config = Config::current();
         $documentRoot = (string) ($_SERVER['DOCUMENT_ROOT'] ?? '');
         $target = \fs::toNative($root);
         $links = [];
         $oldEntries = $config?->sites->byName($oldName)?->entries ?? [];
         if ($documentRoot !== '' && $oldEntries !== []) {
-            $newEntries = array_map(static fn(string $e) => InstanceFiles::renamePath($e, $oldName, $newName), $oldEntries);
+            $newEntries = array_map(static fn(string $e) => self::renamePath($e, $oldName, $newName), $oldEntries);
             $from = \Systopic\System\Config\SiteLinks::pathsOf($oldEntries, $documentRoot);
             $to = \Systopic\System\Config\SiteLinks::pathsOf($newEntries, $documentRoot);
             foreach ($from as $i => $path) {
@@ -325,7 +284,19 @@ final class SiteRegistry
         $site->name = $newName;
         $scope->save($site);
         $log[] = "Name $oldName → $newName";
-        return array_merge($log, InstanceFiles::renameSite(self::configDir($projectRoot), $oldName, $newName));
+        return $log;
+    }
+
+    /** '/projects/old/' → '/projects/new/' — whole segments only. */
+    private static function renamePath(string $path, string $old, string $new): string
+    {
+        $parts = explode('/', $path);
+        foreach ($parts as $i => $part) {
+            if (strtolower($part) === strtolower($old)) {
+                $parts[$i] = $new;
+            }
+        }
+        return implode('/', $parts);
     }
 
     public static function saveMeta(Scope $scope, Site $site, string $json): void

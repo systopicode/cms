@@ -18,7 +18,7 @@ use Systopic\System\Tables\Nodes\Model as Node;
  * pages are the topmost pages themselves.
  *
  * `name` is the domain with TLD ('beautiful-technology.de'). It is what the
- * rules of the instance files name (`"matches": [{ …, "site": "<name>" }]`)
+ * patterns of the installations fill in (`siteAddress`: `/projects/{site}/`)
  * and the name of the site's folder `sites/<name>/`.
  *
  * `meta` is JSON: title, appName, author, description, keywords, robots,
@@ -51,8 +51,8 @@ final class Model extends TableRow
      *
      * They answer next to the name and redirect there with a 301
      * (`SiteRegistry::redirectAlias()`): one address per page. Hosts of a
-     * stage (RC subdomains, DEV paths) do not belong here — they live in the
-     * rules of the instance files (`"matches"`), this list travels with every copy of the
+     * stage (RC subdomains, DEV paths) do not belong here — they follow
+     * from the pattern of each installation (`siteAddress`), this list travels with every copy of the
      * database. Written by `SiteRegistry::saveAliases()`.
      */
     public ?Text $aliases {
