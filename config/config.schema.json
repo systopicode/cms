@@ -8,8 +8,144 @@
 		"siteAddress": {
 			"title": "Site addresses",
 			"description": "How the sites of the project answer here, a regular expression with {site} (the name of the site) or {name} (its name without the TLD). A path starts with /: /projects(\\.[a-z]+)?/{site}/. A host: {name}.systopic.net. One without a placeholder is the address of the default site. Several, separated by commas. Empty: every site on its own domain and aliases, as on LIVE.",
-			"type": ["string", "array"],
-			"items": { "type": "string" }
+			"type": [
+				"string",
+				"array"
+			],
+			"items": {
+				"type": "string"
+			}
+		},
+		"access": {
+			"title": "Access",
+			"description": "Who sees the website and what an editor gets on it.",
+			"type": "object",
+			"x-project": true,
+			"properties": {
+				"public": {
+					"title": "Public",
+					"description": "Off: only signed-in visitors see the website.",
+					"type": [
+						"boolean",
+						"integer"
+					],
+					"default": true,
+					"x-constant": "PAGE_IS_PUBLIC"
+				},
+				"pagePermissions": {
+					"title": "Page permissions",
+					"description": "Pages can be limited to groups of visitors (Pages, Permissions).",
+					"type": [
+						"boolean",
+						"integer"
+					],
+					"default": false,
+					"x-constant": "PAGE_ACL"
+				},
+				"editBar": {
+					"title": "Edit bar",
+					"description": "The bar of the CMS on the website for signed-in editors.",
+					"type": [
+						"boolean",
+						"integer"
+					],
+					"default": true,
+					"x-constant": "FRONTEND_EDIT_BAR"
+				}
+			}
+		},
+		"meta": {
+			"title": "Meta",
+			"description": "The defaults of the meta tags. A site and a page can have their own.",
+			"type": "object",
+			"x-project": true,
+			"properties": {
+				"author": {
+					"title": "Author",
+					"type": "string",
+					"default": "",
+					"x-constant": "META_AUTHOR"
+				},
+				"keywords": {
+					"title": "Keywords",
+					"type": "string",
+					"default": "",
+					"x-constant": "META_KEYWORDS"
+				},
+				"description": {
+					"title": "Description",
+					"type": "string",
+					"default": "",
+					"x-constant": "META_DESCRIPTION"
+				},
+				"topic": {
+					"title": "Topic",
+					"type": "string",
+					"default": "",
+					"x-constant": "META_PAGE_TOPIC"
+				},
+				"robots": {
+					"title": "Robots",
+					"description": "What search engines may do: index, follow.",
+					"type": "string",
+					"default": "index, follow",
+					"x-constant": "META_ROBOTS"
+				}
+			}
+		},
+		"languages": {
+			"title": "Languages",
+			"description": "The languages of the website. A new one is added on every installation; where the database has no content in it yet, its pages are empty.",
+			"type": "object",
+			"x-project": true,
+			"properties": {
+				"default": {
+					"title": "Default language",
+					"description": "The language of a page that names none.",
+					"type": "string",
+					"default": "de",
+					"x-constant": "DEFAULT_LANG"
+				},
+				"autoDetect": {
+					"title": "Detect the language",
+					"description": "The home page opens in the language of the browser.",
+					"type": [
+						"boolean",
+						"integer"
+					],
+					"default": false,
+					"x-constant": "AUTO_LANGUAGE_DETECTION"
+				},
+				"list": {
+					"title": "Languages",
+					"type": "object",
+					"x-constant": "LANGUAGES",
+					"propertyNames": {
+						"description": "The language code: de, en, fr …",
+						"pattern": "^[a-z]{2}(-[A-Za-z]{2})?$"
+					},
+					"additionalProperties": {
+						"title": "Language",
+						"type": "object",
+						"properties": {
+							"label": {
+								"title": "Name",
+								"type": "string"
+							},
+							"code": {
+								"title": "Code",
+								"type": "string",
+								"x-entry-name": true
+							},
+							"activated": {
+								"title": "On",
+								"type": "boolean",
+								"default": true
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }

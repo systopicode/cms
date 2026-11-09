@@ -23,7 +23,7 @@ $themeImage = $image === '' ? \Systopic\System\Settings\ThemeAssets::projectHref
 if ($image === '') $image = 'img/share_default.jpg';
 $imageUrl = $themeImage ?? (preg_match('~^https?://~i', $image) ? $image : rtrim((string) http::$siteUrl, '/') . '/' . ltrim($image, '/'));
 $pages = $this->parent->parent;
-$settings = http::$root . 'admin/settings/pagesettings/';
+$settings = http::$root . 'admin/settings/config/?package=cms';
 $configSite = \Systopic\System\Config\Config::current()?->site();
 $siteRow = $configSite ? \Systopic\Cms\Pages\Sites\SiteRegistry::byName($pages->scope, $configSite->name) : null;
 $siteEdit = $siteRow === null ? null : $pages->href . ($siteRow->isDefault ? '?site=default' : '?id=' . $siteRow->relationId('node'));
@@ -38,10 +38,10 @@ $source = static function (string $key, string $constant) use ($configSite, $sit
         echo '<p class="metaHint">' . $e($label) . ' from site: ' . $e($configSite->name);
         if ($siteEdit !== null) echo ' · <a class="ajax cmsTextLink" href="' . $e($siteEdit) . '">Edit site defaults</a>';
         else echo ' · configured outside the site editor';
-    } elseif (defined($constant)) {
-        echo '<p class="metaHint">' . $e($label) . ' from global Page Settings · <a class="ajax cmsTextLink" href="' . $e($settings) . '">Edit global defaults</a>';
     } else {
-        echo '<p class="metaHint">' . $e($label) . ': built-in fallback · <a class="ajax cmsTextLink" href="' . $e($settings) . '">Set global defaults</a>';
+        // name and separator are the system's (Website), the meta tags the cms's
+        $where = in_array($key, ['title', 'titleSeparator'], true) ? str_replace('package=cms', 'package=system', $settings) : $settings;
+        echo '<p class="metaHint">' . $e($label) . (defined($constant) ? ' from the configuration · <a class="ajax cmsTextLink" href="' . $e($where) . '">Edit global defaults</a>' : ': built-in fallback · <a class="ajax cmsTextLink" href="' . $e($where) . '">Set global defaults</a>');
     }
     echo '</p>';
 };
