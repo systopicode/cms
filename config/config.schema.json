@@ -1,0 +1,15 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"title": "CMS",
+	"description": "packages.cms: the sites of the project and how they are reached on this installation.",
+	"type": "object",
+	"x-icon": "sitemap",
+	"properties": {
+		"siteAddress": {
+			"title": "Site addresses",
+			"description": "How the sites of the project answer here, a regular expression with {site} (the name of the site) or {name} (its name without the TLD). A path starts with /: /projects(\\.[a-z]+)?/{site}/. A host: {name}.systopic.net. One without a placeholder is the address of the default site. Several, separated by commas. Empty: every site on its own domain and aliases, as on LIVE.",
+			"type": ["string", "array"],
+			"items": { "type": "string" }
+		}
+	}
+}
