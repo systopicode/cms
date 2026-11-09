@@ -48,9 +48,16 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 				<?php } ?>
 			</h1>
             <p><?= $this->sitePageCount($site) ?> pages directly below this site.</p>
+			<?php if ($missingLinks) { ?>
+				<div class="cms message is-stay siteLinkMissing"><div class="warning">
+					<p>Site link not created on this machine: <code><?= $e(implode('</code>, <code>', $missingLinks)) ?></code> → this project<?= $hasFolder ? '' : ', and the folder sites/' . $e($site->name) . '/' ?>.</p>
+					<p><button type="button" data-cms-action class="button submit" data-on_click="createSiteLink" data-site_id="<?= (int) $site->id ?>">
+						<i class="cmsIcon cmsIcon-link"></i> <?= $hasFolder ? 'Create site link' : 'Create site link and folder' ?>
+					</button></p>
+				</div></div>
+			<?php } ?>
             <details><summary>Technical details</summary>
                 <p>Folder <code>sites/<?= $e($site->name) ?>/</code>: <?= $hasFolder ? 'present' : '<b>missing</b>' ?>.</p>
-                <?php foreach ($missingLinks as $path) { ?><p>Link <code><?= $e($path) ?></code>: <b>missing</b>.</p><?php } ?>
                 <p>Where a site answers on a stage (DEV, STAGING, RC) follows from its name and the pattern of the installation (Settings, Environment: Site addresses). Site aliases below redirect to the site's domain.</p>
             </details>
 			<label class="_8_8" data-on_change="updateSiteMeta">Site metadata (JSON: title, appName, author, description, keywords, robots, titleSeparator, shareImage)
@@ -64,14 +71,9 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
                 <button type="button" class="button" data-on_click="reviewSiteRename">Rename site…</button>
                 <p class="hint">Renaming can change the site directory and local links. The review lists the affected locations.</p>
             </div>
-			<?php if (!$hasFolder || $missingLinks || $nodeId !== NULL) { ?>
+			<?php if ((!$hasFolder && !$missingLinks) || $nodeId !== NULL) { ?>
 				<p>
-				<?php if ($missingLinks) { ?>
-					<button type="button" data-cms-action class="button submit" data-on_click="createSiteLink" data-site_id="<?= (int) $site->id ?>"
-					   title="<?= $e(implode(', ', $missingLinks)) ?> → this project<?= $hasFolder ? '' : ', and sites/' . $e($site->name) . '/' ?>">
-						<i class="cmsIcon cmsIcon-link"></i> <?= $hasFolder ? 'Create site link' : 'Create site link and folder' ?>
-					</button>
-				<?php } elseif (!$hasFolder) { ?>
+				<?php if (!$hasFolder && !$missingLinks) { ?>
 					<button type="button" data-cms-action class="button submit" data-on_click="createSiteFolder" data-site_id="<?= (int) $site->id ?>"
 					   title="sites/<?= $e($site->name) ?>/templates/{document,components,pages,layout}/ create">
 						<i class="cmsIcon cmsIcon-folder-plus"></i> Create site folder

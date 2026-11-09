@@ -139,9 +139,6 @@ final class SiteRegistry
             // sites (or the implicit single site) stay in place
             error_log('SiteRegistry::boot: ' . $e->getMessage());
         }
-        // DEV ("linkSites": true in config.local.json): the missing junction
-        // per site, e.g. projects/beautiful-technology.de → projects/systopic.net
-        $config->linkSites((string) ($_SERVER['DOCUMENT_ROOT'] ?? ''), \fs::toNative((string) \fs::$projectRoot));
         $config->resolveSite((string) \http::$host, (string) \http::$root);
         self::redirectAlias($config);
     }
