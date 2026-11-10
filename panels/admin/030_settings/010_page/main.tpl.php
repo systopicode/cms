@@ -44,7 +44,7 @@ for ($walker = $selected; $walker instanceof Definition; $walker = $walker->pare
 $ancestors = array_slice($chain, 0, -1);
 $heading = $selected !== null
 	? ($selected->label !== '' ? $selected->label : 'Untitled')
-	: 'Template Settings';
+	: 'Page Settings';
 $addId = $selected ? (int) $selected->nodeId : 1;
 $addLabel = match ($parentType) {
 	'select' => 'Add option',
@@ -54,7 +54,7 @@ $addLabel = match ($parentType) {
 };
 ?>
 <?php if ($selected !== null) { ?>
-	<p class="settingBack"><a class="ajax button" href="?id=<?= $selected->parent ? (int) $selected->parent->nodeId : 1 ?>"><i class="cmsIcon cmsIcon-arrow-left"></i><span><?= $e($selected->parent?->label ?: 'Template Settings') ?></span></a></p>
+	<p class="settingBack"><a class="ajax button" href="?id=<?= $selected->parent ? (int) $selected->parent->nodeId : 1 ?>"><i class="cmsIcon cmsIcon-arrow-left"></i><span><?= $e($selected->parent?->label ?: 'Page Settings') ?></span></a></p>
 <?php } ?>
 <h1><?= $e($heading) ?></h1>
 <p class="tagsHint"><?= $e($note) ?></p>
