@@ -117,13 +117,15 @@ class Panel extends CmsPanel {
 
 	/** The share image of the page in the editor, read from its row: a drop shows at once. */
 	public function shareImage(): string {
+		$picker = '<button type="button" class="cmsMobileOnly shareImagePicker" data-page-media-picker="share" aria-label="Select share image from Media Library"><i class="cmsIcon cmsIcon-image" aria-hidden="true"></i></button>'
+			. '<button type="button" class="button cmsMobileOnly" data-page-media-paste="share"><i class="cmsIcon cmsIcon-copy" aria-hidden="true"></i> Paste image</button>';
 		$id = $this->parent->page?->meta->shareImageId;
 		$media = $id ? \Systopic\System\Tables\Medias\Media::byNodeId(\Systopic\Db\Scope::default(), $id) : null;
 		if ($media === null) {
-			return '';
+			return $picker;
 		}
 		$src = htmlspecialchars((string) $media->setFormat('shareImage')->src, ENT_QUOTES);
-		return "<img src='$src' alt=''><div class='dropActions'>"
+		return $picker . "<img src='$src' alt=''><div class='dropActions'>"
 			. "<a class='ajax' href='editor/file/?target_id=$id&format=shareImage' title='Crop and adjust'><i class='cmsIcon cmsIcon-pen'></i></a>"
 			. "<button type='button' data-on_click='sidebar/resetShareImage' title='Use the site image' aria-label='Use the site image' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-arrow-rotate-left'></i></button>"
 			. "</div>";

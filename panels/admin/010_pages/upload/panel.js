@@ -440,22 +440,17 @@
 			}
 			upload.fileDropBound = true;
 			var depth = 0;
-			// a drag that started on this page (an image moved within a text) is the browser's
 			var innerDrag = false;
-			var moving = null;
-			document.addEventListener('dragstart', (event) => {
-				innerDrag = true;
-				moving = null;
-				var media = event.target.closest && event.target.closest('img, video, iframe');
-				// The picture must not become the drag image. The grip moves it.
-				if (media && editorOf(media)) {
+			var cancelMediaMove;
+			window.addEventListener('dragstart', (event) => {
+				const source = event.target;
+				if (cancelMediaMove || (editorOf(source) && source.matches('img, video, iframe, audio, object, a:has(img, video, iframe)'))) {
 					event.preventDefault();
+					return;
 				}
+				innerDrag = true;
 			}, true);
-			document.addEventListener('dragend', () => {
-				innerDrag = false;
-				moving = null;
-			}, true);
+			document.addEventListener('dragend', () => { innerDrag = false; }, true);
 			var carriesFiles = (event) => {
 				var types = Array.prototype.slice.call((event.dataTransfer && event.dataTransfer.types) || []);
 				return types.indexOf('Files') !== -1
@@ -600,7 +595,7 @@
 				if (!editor) {
 					return;
 				}
-				if (!moving && (innerDrag || !carriesFiles(event))) {
+				if (cancelMediaMove || innerDrag || !carriesFiles(event)) {
 					return;
 				}
 				event.preventDefault();
@@ -608,21 +603,7 @@
 			}, true);
 			window.addEventListener('drop', (event) => {
 				var editor = editorOf(event.target);
-				if (editor && moving && moving.editor === editor) {
-					event.preventDefault();
-					event.stopImmediatePropagation();
-					var spot = (aimed && editor.contains(aimed.startContainer)) ? aimed : upload.rangeAt(editor, event.clientX, event.clientY);
-					aimed = null;
-					if (spot && !moving.media.contains(spot.startContainer)) {
-						spot.insertNode(moving.media);
-						if (window.wysiwyg && wysiwyg.changed) {
-							wysiwyg.changed(editor);
-						}
-					}
-					moving = null;
-					return;
-				}
-				if (!editor || innerDrag) {
+				if (!editor || innerDrag || cancelMediaMove) {
 					return;
 				}
 				var items = upload.mediaIn(event.dataTransfer).filter(showable);
@@ -654,56 +635,27 @@
 				return list;
 			};
 			var beginMove = (media, editor, event) => {
-				var scrollers = scrollersOf(editor);
-				var saved = scrollers.map((el) => ({el: el, top: el.scrollTop, left: el.scrollLeft}));
-				var box = media.getBoundingClientRect();
-				var shown = getComputedStyle(media);
-				var hold = document.createElement('span');
-				hold.className = 'editorMediaHold is-gap';
-				hold.style.display = shown.display === 'inline' ? 'inline-block' : shown.display;
-				hold.style.width = Math.max(1, Math.round(box.width)) + 'px';
-				var coarse = event.pointerType === 'touch';
-                if (coarse) {
-                    editor.removeAttribute('data-typing');
-                    editor.setAttribute('inputmode', 'none');
-                    editor.blur();
-                }
-				hold.style.height = Math.max(1, Math.round(box.height)) + 'px';
-				hold.style.verticalAlign = shown.verticalAlign;
-                // A non-interactive source ghost preserves both position and context.
-                var ghost = media.cloneNode(true);
-                ghost.removeAttribute('id');
-                ghost.querySelectorAll('[id]').forEach(node => node.removeAttribute('id'));
-                ghost.setAttribute('aria-hidden', 'true');
-                ghost.setAttribute('contenteditable', 'false');
-                hold.append(ghost);
-				var selection = getSelection();
-				if (selection.rangeCount && media.contains(selection.anchorNode)) {
-					selection.removeAllRanges();
-				}
-				media.replaceWith(hold);
-				saved.forEach((item) => {
-					item.el.scrollTop = item.top;
-					item.el.scrollLeft = item.left;
-				});
+				cancelMediaMove?.();
+				const coarse = event.pointerType === 'touch';
+				const start = {x: event.clientX, y: event.clientY};
+				const pointerId = event.pointerId;
+				// The release must not be retargeted to an editable element on touch.
+				const capture = coarse ? editor.closest('article.cmsContent') : editor;
+				if (event.isTrusted && pointerId !== undefined) capture.setPointerCapture(pointerId);
+				let moved = false;
+				let edgeDirection = 0;
 				var line = document.createElement('div');
 				line.className = 'editorMediaLine';
 				line.hidden = true;
 				document.body.appendChild(line);
-				document.body.classList.add('editorMediaDrop');
-				var lastSpot = null, hoverEditor = null, hoverSince = 0, rejectedEditor = null;
+				var lastSpot = null, hoverEditor = null, rejectedEditor = null;
 				var point = {x: event.clientX, y: event.clientY};
 				var running = true;
 				var edge = coarse ? 96 : 56;
-				var editorAt = (x, y) => {
-					var stack = document.elementsFromPoint(x, y);
-					for (var i = 0; i < stack.length; i++) {
-						var found = editorOf(stack[i]);
-						if (found) {
-							return found;
-						}
-					}
-					return null;
+				const editorAt = (x, y) => editorOf(document.elementFromPoint(x, y));
+				const rangeAt = (dest, x, y) => {
+					const spot = dest && upload.rangeAt(dest, x, y, true);
+					return spot && !media.contains(spot.startContainer) ? spot : null;
 				};
 				var mark = () => {
 					var dest = editorAt(point.x, point.y);
@@ -711,14 +663,11 @@
                     if(rejectedEditor && rejectedEditor!==rejected)rejectedEditor.classList.remove('dropRejected');
                     rejectedEditor=rejected;
                     rejectedEditor?.classList.add('dropRejected');
-                    if(dest!==hoverEditor){hoverEditor?.classList.remove('dropTarget');hoverEditor=dest;hoverSince=performance.now();}
+                    if (dest !== hoverEditor) hoverEditor?.classList.remove('dropTarget');
+                    hoverEditor = dest;
                     dest?.classList.add('dropTarget');
-					var spot = dest && upload.rangeAt(dest, point.x, point.y, true);
-                    lastSpot = null;
-                    document.body.classList.toggle('editorMediaDropInvalid', !dest);
-					if (performance.now()-hoverSince>=220 && spot && spot.startContainer !== hold && !hold.contains(spot.startContainer)) {
-						lastSpot = spot;
-					}
+					lastSpot = rangeAt(dest, point.x, point.y);
+					document.body.classList.toggle('editorMediaDropInvalid', !dest);
 					var rects = lastSpot && lastSpot.getClientRects ? lastSpot.getClientRects() : [];
 					var rect = rects.length ? rects[0] : null;
                     // Empty paragraphs and element boundaries have no collapsed caret rect.
@@ -754,73 +703,96 @@
 					if (frame.height < 40) {
 						return;
 					}
-					var reach = coarse ? 120 : 24;
-					if (point.y < frame.top + edge && point.y > frame.top - reach) {
-						el.scrollTop -= Math.ceil((frame.top + edge - point.y) / 3);
-					} else if (point.y > frame.bottom - edge && point.y < frame.bottom + reach) {
-						el.scrollTop += Math.ceil((point.y - (frame.bottom - edge)) / 3);
+					const top = Math.max(0, frame.top);
+					const bottom = Math.min(innerHeight, frame.bottom);
+					if (point.y < top || point.y > bottom || point.x < frame.left || point.x > frame.right) return;
+					const band = Math.min(edge, (bottom - top) / 4);
+					if (edgeDirection < 0 && point.y < top + band) {
+						el.scrollTop -= Math.min(14, Math.ceil((top + band - point.y) / 4));
+					} else if (edgeDirection > 0 && point.y > bottom - band) {
+						el.scrollTop += Math.min(14, Math.ceil((point.y - (bottom - band)) / 4));
 					}
 				};
-				var glide = () => {
-					if (!running) {
-						return;
-					}
-					var moving = scrollersOf(editor);
-					var under = editorAt(point.x, point.y);
-					if (under) {
-						scrollersOf(under).forEach((el) => moving.indexOf(el) < 0 && moving.push(el));
-					}
-					moving.forEach(nudge);
+				const glide = () => {
+					if (!running) return;
+					if (!media.isConnected || !editor.contains(media)) { stop(); return; }
+					const scrollers = scrollersOf(editorAt(point.x, point.y) || editor);
+					scrollers.reverse().some(el => {
+						const before = el.scrollTop;
+						nudge(el);
+						return el.scrollTop !== before;
+					});
 					mark();
 					requestAnimationFrame(glide);
 				};
-				var follow = (e) => {
-					if (e.cancelable) {
-						e.preventDefault();
+				const samePointer = e => pointerId === undefined || e.pointerId === pointerId;
+				const follow = e => {
+					if (!samePointer(e)) return;
+					if (e.cancelable) e.preventDefault();
+					if (!moved && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return;
+					if (!moved) {
+						moved = true;
+						document.body.classList.add('editorMediaDrop');
+						getSelection()?.removeAllRanges();
+						requestAnimationFrame(glide);
 					}
-					if (e.clientX !== undefined) {
-						point.x = e.clientX;
-						point.y = e.clientY;
-					}
-					var sel = getSelection();
-					if (sel && sel.rangeCount && !sel.isCollapsed) {
-						sel.removeAllRanges();
-					}
+					if (Math.abs(e.clientY - point.y) >= 1) edgeDirection = Math.sign(e.clientY - point.y);
+					point = {x: e.clientX, y: e.clientY};
 				};
-				var stop = (e) => {
+				const escape = e => {
+					if (e.key === 'Escape') stop();
+				};
+				const stop = e => {
+					if (!running || (e && !samePointer(e))) return;
 					running = false;
+					cancelMediaMove = null;
 					document.removeEventListener('pointermove', follow, true);
 					document.removeEventListener('pointerup', stop, true);
 					document.removeEventListener('pointercancel', stop, true);
+					capture.removeEventListener('lostpointercapture', stop);
+					window.removeEventListener('blur', cancel);
+					document.removeEventListener('keydown', escape, true);
 					line.remove();
-                    rejectedEditor?.classList.remove('dropRejected');
-                    hoverEditor?.classList.remove('dropTarget');
+					rejectedEditor?.classList.remove('dropRejected');
+					hoverEditor?.classList.remove('dropTarget');
 					document.body.classList.remove('editorMediaDrop', 'editorMediaDropInvalid');
-					var x = e && e.clientX !== undefined ? e.clientX : point.x;
-					var y = e && e.clientY !== undefined ? e.clientY : point.y;
-					var dest = e?.type === 'pointercancel' ? null : editorAt(x, y);
-                    if (coarse && dest) {
-                        dest.removeAttribute('data-typing');
-                        dest.setAttribute('inputmode', 'none');
-                        dest.blur();
-                    }
-					var spot = dest && upload.rangeAt(dest, x, y, true);
-					if (spot && (spot.startContainer === hold || hold.contains(spot.startContainer))) spot = null;
-					if (spot && dest && dest.contains(spot.startContainer)) {
-						spot.insertNode(media);
-						hold.remove();
-						if (window.wysiwyg && wysiwyg.changed) {
-							wysiwyg.changed(editor, true);
-							dest !== editor && wysiwyg.changed(dest, true);
-						}
-					} else if (hold.isConnected) {
-						hold.replaceWith(media);
+					if (pointerId !== undefined && capture.hasPointerCapture(pointerId)) capture.releasePointerCapture(pointerId);
+					if (coarse && e?.type === 'pointerup') {
+						e.preventDefault();
+						// Some touch browsers still send a click after a prevented pointerup.
+						const release = new AbortController();
+						const clear = () => release.abort();
+						const options = {capture: true, signal: release.signal};
+						window.addEventListener('pointerdown', clear, options);
+						window.addEventListener('click', click => {
+							if (!click.detail || !capture.contains(click.target)) return;
+							click.preventDefault();
+							click.stopImmediatePropagation();
+							clear();
+						}, options);
+						setTimeout(clear, 400);
 					}
+					if (!moved || e?.type !== 'pointerup' || !editor.contains(media)) return;
+					const dest = editorAt(e.clientX, e.clientY);
+					const spot = rangeAt(dest, e.clientX, e.clientY);
+					if (!spot) return;
+					if (coarse) {
+						dest.removeAttribute('data-typing');
+						dest.setAttribute('inputmode', 'none');
+						if (dest.contains(document.activeElement)) document.activeElement.blur();
+					}
+					spot.insertNode(media);
+					window.wysiwyg?.changed(editor, true);
+					if (dest !== editor) window.wysiwyg?.changed(dest, true);
 				};
+				const cancel = () => stop();
+				cancelMediaMove = cancel;
 				document.addEventListener('pointermove', follow, {capture: true, passive: false});
 				document.addEventListener('pointerup', stop, true);
 				document.addEventListener('pointercancel', stop, true);
-				requestAnimationFrame(glide);
+				capture.addEventListener('lostpointercapture', stop);
+				window.addEventListener('blur', cancel);
+				document.addEventListener('keydown', escape, true);
 			};
 			window.editorBeginMediaMove = (media, event) => {
 				var editor = editorOf(media);

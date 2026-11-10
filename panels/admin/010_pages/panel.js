@@ -283,10 +283,10 @@ document.addEventListener('pointerdown', function (event) {
 			destination = null;
 			document.dispatchEvent(new Event('cms-close-media-picker'));
 			insert({...tile.dataset}, target, range);
-		} else if (event.target.closest('[data-page-media-picker], aside .mediaDrop.shareImage') && !event.target.closest('a, input, [data-on_click]')) {
-			pick(shareTarget());
 		} else if (event.target.closest('[data-page-media-paste]')) {
 			insert(clipboard, shareTarget(), null, true);
+		} else if (event.target.closest('[data-page-media-picker], aside .mediaDrop.shareImage') && !event.target.closest('a, input, [data-on_click]')) {
+			pick(shareTarget());
 		}
 	}, true);
 	document.addEventListener('cms-media-closed', () => {

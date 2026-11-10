@@ -119,6 +119,10 @@ body.mediaDragging:has(.mmlContent li.title.dropTarget) .draghelper{
     visibility: hidden;
 }
 
+body.mediaDragging .draghelper.mmlDragHelper.accept {
+    transition: none;
+}
+
 .cms div.mmlContent li h4 {
     clear: left;
     display: block;
@@ -709,7 +713,7 @@ div.mml .spinner:before {
 	position: relative;
 }
 
-aside .mediaDrop.shareImage:empty {
+aside .mediaDrop.shareImage:not(:has(> img)) {
 	background-color: var(--cmsCanvas);
 }
 
@@ -762,8 +766,8 @@ body.dragging .mediaDrop .dropActions button:where(:not([data-cms-action])){
 	border-style: solid;
 }
 
-.mediaDrop:empty:before,
-.mediaDrop:empty:after{
+.mediaDrop:is(:empty, .shareImage:not(:has(> img)))::before,
+.mediaDrop:is(:empty, .shareImage:not(:has(> img)))::after{
 	content:'Drop Image from Media Library';
 	text-align: center;
 	text-transform: uppercase;
@@ -781,7 +785,7 @@ body.dragging .mediaDrop .dropActions button:where(:not([data-cms-action])){
 	opacity: .5;
 }
 
-.mediaDrop:empty:after{
+.mediaDrop:is(:empty, .shareImage:not(:has(> img)))::after{
 	font-size: 20px;
 	inset: 50% auto auto 50%;
 	transform: translate(-50%, -2em);
@@ -791,6 +795,32 @@ body.dragging .mediaDrop .dropActions button:where(:not([data-cms-action])){
 	height: 1em;
 	background-color: currentColor;
 	pointer-events: none;
+	mask: var(--icon-photo) center / contain no-repeat;
+}
+
+body.cmsMobile .mediaDrop > .shareImagePicker {
+	display: block;
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+}
+body.cmsMobile .shareImage > .dropActions { z-index: 2; pointer-events: none; }
+body.cmsMobile .shareImage > .dropActions :is(a,button) { pointer-events: auto; }
+body.cmsMobile .shareImage:not(:has(> img))::before { content: 'Tap to select from Media Library'; }
+body.cmsMobile .shareImage:not(:has(> img))::after,
+body.cmsMobile .shareImage:has(> img) > .shareImagePicker > .cmsIcon { display: none; }
+body.cmsMobile .shareImagePicker > .cmsIcon {
+	position: absolute;
+	inset: 50% auto auto 50%;
+	transform: translate(-50%, -2em);
+	font-size: 1.25rem;
+	color: var(--cmsMuted);
 }
 
 /* Finger sized: bigger tiles, buttons far enough apart to hit the right one */

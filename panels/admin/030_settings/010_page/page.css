@@ -190,7 +190,7 @@ body:not(.settingDragging) .cms .pageSettings .settingChildrenTable > table > tb
 .pageSettingDialog .settingPreview > main { background:var(--cmsPanelAlt); }
 .pageSettingDialog .settingPreviewControl { border:1px dashed var(--cmsLineStrong); border-radius:var(--cmsRadius); padding:var(--cmsCardPadding); background:var(--cmsCanvas); }
 
-.settingTemplates:has(option[value="all"]:checked) .templatePick { display:none; }
+.settingTemplates:has(input[name="visibility"][value="all"]:checked) .templatePick { display:none; }
 
 /* Keep the normal surfaces visible beneath the insertion line. */
 body.settingDragging .cms .pageSettings .settingChildrenTable > table > tbody > tr:hover > td {

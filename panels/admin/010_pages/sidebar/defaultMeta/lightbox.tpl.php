@@ -78,5 +78,8 @@ $source = static function (string $key, string $constant) use ($configSite, $sit
 				<p class="metaPreview"><?= $e($robots) ?></p>
 			</div>
 		</main>
+		<footer>
+			<a class="ajax button" href="<?= $e($siteEdit ?? $settings) ?>"><i class="cmsIcon cmsIcon-pen" aria-hidden="true"></i> Edit defaults</a>
+		</footer>
 	</section>
 </div>

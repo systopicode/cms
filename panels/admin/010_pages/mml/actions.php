@@ -40,8 +40,13 @@ switch ($this->action) {
 	case 'insertMediaBefore':    // dropped on the left edge of another medium
 	case 'insertMediaAfter':     // … on its right edge
 		$draggedId = (int) http::dragdata('node_id');
+		$sourceTileId = (int) http::dragdata('mml_node_id');
 		$media = $pages->mediaOfNode($draggedId);
-		if ($media === NULL) {
+		$libraryPage = (int) http::dataset('node_parent_node_id');
+		// An alias carries the original's reference for insertion in the
+		// editor. Sorting it must never relocate that original.
+		if ($media === NULL || ($sourceTileId > 0 && $sourceTileId !== $draggedId)
+			|| ($libraryPage > 0 && $media->node?->relationId('parentNode') !== $libraryPage)) {
 			break;
 		}
 		$targetNode = (int) http::dataset('node_id');
@@ -50,14 +55,21 @@ switch ($this->action) {
 			break;
 		}
 		$target = $this->action === 'updateMediaGroup' ? NULL : $pages->mediaOfNode($targetNode);
+		$targetTileId = (int) http::dataset('mml_node_id');
+		if ($this->action !== 'updateMediaGroup' && ($target === NULL || ($targetTileId > 0 && $targetTileId !== $targetNode))) {
+			break;
+		}
 		// parent and group of the drop: the target medium's, else the dataset's, else the page on screen
 		$parentId = (int) ($target?->node?->relationId('parentNode') ?? http::dataset('node_parent_node_id') ?: ($pages->state->id ?? 0));
 		$group = (string) ($target?->group ?? http::dataset('media_group') ?: 'main');
-		if ($parentId <= 0 || PageAccess::refuses($media->node, $pages->nodeFor($parentId))) {
+		if ($parentId <= 0 || ($libraryPage > 0 && $parentId !== $libraryPage) || PageAccess::refuses($media->node, $pages->nodeFor($parentId))) {
 			$pages->updateView('mml');
 			break;
 		}
-		if ($error = GroupPolicy::error($pages->mediaGroups, $group, (string) $media->filename)) {
+		$sameGroup = $target !== NULL
+			&& (int) $media->node?->relationId('parentNode') === $parentId
+			&& (string) $media->group === $group;
+		if (!$sameGroup && ($error = GroupPolicy::error($pages->mediaGroups, $group, (string) $media->filename))) {
 			message::error($error);
 			$pages->updateView('mml');
 			break;

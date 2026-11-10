@@ -28,7 +28,7 @@ $manage = [
 			<button type="button" class="tabScroll next" data-tab-scroll="1" title="Forward" hidden><i class="cmsIcon cmsIcon-chevron-right"></i></button>
 			<ul>
 				<?php foreach ($this->groups as $groupName => $group) { ?>
-					<li><a role="tab" aria-selected="<?= $groupName === $activeGroup ? 'true' : 'false' ?>" class="put ajax<?= $groupName === $activeGroup ? ' selected' : '' ?>" href="sidebar/showGroup" data-group="<?= htmlspecialchars((string) $groupName, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) $group->label, ENT_QUOTES, 'UTF-8') ?></a></li>
+					<li><a role="tab" aria-selected="<?= $groupName === $activeGroup ? 'true' : 'false' ?>" class="put ajax<?= $groupName === $activeGroup ? ' selected' : '' ?>" href="sidebar/showGroup" data-focus-id="pages-properties-tab-<?= htmlspecialchars((string) $groupName, ENT_QUOTES, 'UTF-8') ?>" data-group="<?= htmlspecialchars((string) $groupName, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars((string) $group->label, ENT_QUOTES, 'UTF-8') ?></a></li>
 				<?php } ?>
 			</ul>
 		</nav>
@@ -53,7 +53,7 @@ $manage = [
 									<?php } elseif ($templateName === 'relations') { ?>
                                         <a class="ajax button transparent icononly small sidebarInfo" data-history="false" href="<?= htmlspecialchars($this->parent->href . 'sidebar/relationsHelp/', ENT_QUOTES) ?>" title="About Aliases &amp; Redirects" aria-label="About Aliases &amp; Redirects"><i class="cmsIcon cmsIcon-circle-info"></i></a>
                                     <?php } elseif (isset($manage[$templateName])) { ?>
-										<a class="ajax button transparent icononly small sidebarInfo" href="<?= http::$root . $manage[$templateName][0] ?>" title="<?= $manage[$templateName][1] ?>" aria-label="<?= $manage[$templateName][1] ?>"><i class="cmsIcon cmsIcon-pen"></i></a>
+										<a class="ajax button transparent icononly small sidebarInfo" data-cms-open-sheet href="<?= http::$root . $manage[$templateName][0] ?>" title="<?= $manage[$templateName][1] ?>" aria-label="<?= $manage[$templateName][1] ?>"><i class="cmsIcon cmsIcon-pen"></i></a>
 									<?php } ?>
 									<i class="cmsIcon cmsIcon-chevron-down sidebarFold" aria-hidden="true"></i>
 								</span>

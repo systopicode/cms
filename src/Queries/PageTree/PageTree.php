@@ -389,7 +389,7 @@ final class PageTree implements Stringable
             . ($into
                 ? "<div class='sort v insertInto nosort' data-drop_accept='media' data-on_drop='mml/moveMediaToPage'></div>"
                 . "<div class='sort v insertInto nosort' data-drop_accept='mediaAlias' data-on_drop='mml/moveMediaAliasToPage'></div>"
-                . "<div class='sort v insertInto' data-drop_accept='page' data-on_drop='insertAsFirstChild' data-on_drop_alt='insertAliasAsFirstChild'></div>"
+                . "<div class='sort v insertInto' data-drop_accept='page' data-on_drop='insertAsFirstChild'></div>"
                 : '');
     }
 

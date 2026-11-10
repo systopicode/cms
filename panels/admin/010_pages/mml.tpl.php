@@ -43,7 +43,7 @@ $siteRoot = (string) http::$siteRoot;
 				?>
 				<?php $faceForClass = $entry['alias'] ? ['mark' => false] : $this->tileFace($entry['media']); ?>
 				<li class="<?= !empty($faceForClass['mark']) ? 'is-mark' : '' ?>" <?= html::arrayToDataAttr([
-					'drag_type' => 'media', 'node_id' => $id,
+					'drag_type' => 'media', 'node_id' => $id, 'mml_node_id' => (int) $node->id,
 					// without a medium these stay off, as in the legacy markup
 					'media-extension' => GroupPolicy::extension($filename),
 					'media-share-image' => GroupPolicy::shareImageAllowed($filename, $mime) ? '1' : '0',
@@ -87,3 +87,4 @@ $siteRoot = (string) http::$siteRoot;
 	</li>
 <?php } ?>
 </ul>
+<p class="sharePickerEmpty">No suitable images in this page’s Media Library.</p>

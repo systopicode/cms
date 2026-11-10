@@ -353,37 +353,10 @@ switch ($this->action) {
         $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
         break;
 
-    case 'insertAliasAsFirstChild':
-        $drag = $this->tree->getNode((int) http::dragdata('node_id'));
-        $drop = $this->tree->getNode((int) http::dataset('node_id'));
-        if ($drag === null || $drop === null) {
-            message::error('Node not in tree - cancel Action!');
-            break;
-        }
-        if ($drag->isSite) {
-            message::error('A site cannot be aliased.');
-            break;
-        }
-        if (PageAccess::refuses($drop->node)) {
-            $this->updateView('tree');
-            break;
-        }
-        try {
-            \Systopic\Cms\Pages\RelationRules::placement($drag->contentId, $drop->id, $this->relationNode(...));
-            $this->scope->save(...NodeOperator::aliased($this->scope, $drag->node, $drop->node, 0));
-        } catch (\DomainException $error) { message::error($error->getMessage()); }
-
-        $this->updateView('controls');
-        $this->child('sidebar')?->updateView('main');
-        $this->updateView('tree');   // the commit dropped the old tree; this draws a fresh one
-        break;
-
     case 'createAlias':
-        // From the context menu: an alias of node_original_node_id, right after
-        // node_id — or as first child when node_id is the parent itself.
+        // Place the alias beside the page whose context menu was opened.
         $original = (int) http::request('node_original_node_id');
         $after = (int) http::request('node_id');
-        $parentId = (int) http::request('node_parent_node_id');
         if ($original < 2) {
             message::error('createAlias: no original');
             break;
@@ -393,14 +366,20 @@ switch ($this->action) {
             message::error("createAlias: no page at node $original");
             break;
         }
-        if (PageAccess::refuses($parentId > 1 ? $this->pageFor($parentId)?->node : null)) {
+        $target = $this->tree->getNode($after);
+        if ($target === null || $target->isTrashed) {
+            message::error('Choose a page beside which to create the alias.');
+            break;
+        }
+        $parent = $target->node->parentNode;
+        $parentId = (int) ($parent?->id ?? 0);
+        if (PageAccess::refuses($parent)) {
             break;
         }
         try {
             \Systopic\Cms\Pages\RelationRules::placement($source->contentNodeId, $parentId, $this->relationNode(...));
         } catch (\DomainException $error) { message::error($error->getMessage()); break; }
-        $parent = $parentId > 1 ? Node::withId($parentId) : null;
-        $index = $after !== $parentId ? NodeOperator::indexAfter($this->scope, $parent, $after, 'page') : 0;
+        $index = NodeOperator::indexAfter($this->scope, $parent, $after, 'page');
         $this->scope->save(...NodeOperator::aliased($this->scope, $source->node, $parent, $index));
         $this->updateView('controls');
         $this->child('sidebar')?->updateView('main');

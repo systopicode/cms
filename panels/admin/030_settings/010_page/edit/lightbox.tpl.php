@@ -40,21 +40,19 @@ $isValue = $d && ($d->type === 'input' || !$d->type);
                     <?php if ($option) { ?>
                         <label class="field"><span>Key</span><input name="name" required pattern="[A-Za-z_][A-Za-z0-9_]*" title="Use letters, digits and underscores. Start with a letter or underscore." value="<?= $e($d->name) ?>"></label>
                     <?php } else { ?>
+                    <label class="field"><span>Key</span><input name="name" value="<?= $e($d->name) ?>" readonly><small>The key your templates use. It stays the same if you change the label.</small></label>
                     <label class="field"><span>Description <small>(optional)</small></span><input type="text" name="description" value="<?= $e(preg_replace('/\R/u', ' ', $d->setting->description ?? '')) ?>"><small>Describe what this setting controls.</small></label>
                     <?php if ($isValue && !$parent) { ?><label class="field"><span>Default value</span><input name="default" <?= $d->datatype !== 'varchar' ? 'type="number" step="' . ($d->datatype === 'int' ? '1' : 'any') . '"' : '' ?> value="<?= $e($d->default ?? '') ?>"><small>Used when a page has no value of its own.</small></label><?php } ?>
-                    <input type="hidden" name="name" value="<?= $e($d->name) ?>">
                     <?php } ?>
                 <?php } else { ?><p class="tagsHint">After adding the setting you can configure its options and where it appears.</p><?php } ?>
             </div>
         <?php if ($d) { ?></main></section><?php } ?>
                     <?php if ($d && !$parent) { $templates = (array) \template::getAll(); $picked = array_filter(explode(';', (string) $d->setting->showInTemplates)); $allTemplates = !$picked; ?>
                         <section class="widget is-list"><header><h2>Template visibility</h2></header><main><div class="settingTemplates">
-                            <label class="field"><span>Visible in</span>
-                                <select name="visibility" data-feedback="none">
-                                    <option value="all" <?= $allTemplates ? 'selected' : '' ?>>All templates</option>
-                                    <option value="selected" <?= !$allTemplates ? 'selected' : '' ?>>Selected templates only</option>
-                                </select>
-                            </label>
+                            <div class="choiceCards" role="group" aria-label="Visible in" data-feedback="none">
+                                <label><input type="radio" name="visibility" value="all" <?= $allTemplates ? 'checked' : '' ?>><span><b>All templates</b><small>Show this setting in every template.</small></span></label>
+                                <label><input type="radio" name="visibility" value="selected" <?= !$allTemplates ? 'checked' : '' ?>><span><b>Selected templates</b><small>Choose the templates below.</small></span></label>
+                            </div>
                             <div class="templatePick">
                             <?php foreach ($templates as $name => $template) { $choiceId="setting-template-" . substr(sha1((string)$name),0,12); ?><div class="settingChoice"><input class="custom" id="<?= $choiceId ?>" type="checkbox" name="templates[]" data-feedback="none" value="<?= $e($name) ?>" <?= in_array((string) $name, $picked, true) ? 'checked' : '' ?>><label for="<?= $choiceId ?>" aria-hidden="true"></label><label for="<?= $choiceId ?>"><?= $e(trim(str_replace(['_', '-'], ' ', (string) ($template->name ?? $name)))) ?></label></div><?php } ?>
                             </div>
@@ -65,13 +63,13 @@ $isValue = $d && ($d->type === 'input' || !$d->type);
                 <header><h2><?= $d->type === 'select' ? 'Options' : 'Fields in this group' ?></h2><a class="ajax button" data-focus-id="setting-child-add" href="<?= $e($this->href . '?parent_id=' . $d->nodeId) ?>"><i class="cmsIcon cmsIcon-plus"></i><span><?= $d->type === 'select' ? 'Add option' : 'Add field' ?></span></a></header>
                 <?php if (!$d->options) { ?><main><p><?= $d->type === 'select' ? 'Add the options people can choose from.' : 'Add the fields that belong together.' ?></p></main><?php } else { ?>
                 <div class="tableScroll"><table><thead><tr><th></th><th>Label</th><th><?= $d->type === 'select' ? 'Template value' : 'Field type' ?></th><th></th></tr></thead><tbody>
-                <?php foreach ($d->options as $child) { ?><tr><td class="pageSettingDrag"><i class="cmsIcon cmsIcon-grip-dots-vertical" aria-label="Drag to reorder" data-drag_type="setting" data-id="<?= $child->nodeId ?>"></i><div class="sort v insertBefore" data-drop_accept="setting" data-on_drop="<?= $e($this->href . 'reorderChild?id=' . $d->nodeId) ?>" data-position="before" data-id="<?= $child->nodeId ?>"></div><div class="sort v insertAfter" data-drop_accept="setting" data-on_drop="<?= $e($this->href . 'reorderChild?id=' . $d->nodeId) ?>" data-position="after" data-id="<?= $child->nodeId ?>"></div></td><td><?= $e($child->label) ?></td><td><?= $e($d->type === 'select' ? $child->name : TemplateEditor::KINDS[TemplateEditor::kind($child)][0]) ?></td><td class="icons"><ul><li><a class="ajax button icononly" aria-label="Edit <?= $e($child->label) ?>" href="<?= $e($this->href . '?id=' . $child->nodeId) ?>"><i class="cmsIcon cmsIcon-pen"></i></a></li><li><button type="button" class="button icononly" aria-label="Delete <?= $e($child->label) ?>" data-on_click="userConfirm" data-action="removeChild?id=<?= $d->nodeId ?>" data-child_id="<?= $child->nodeId ?>" data-confirm="Delete this field and its saved page values?"><i class="cmsIcon cmsIcon-trash"></i></button></li></ul></td></tr><?php } ?>
+                <?php foreach ($d->options as $child) { ?><tr><td class="pageSettingDrag"><i class="cmsIcon cmsIcon-grip-dots-vertical" aria-label="Drag to reorder" data-drag_type="setting" data-id="<?= $child->nodeId ?>"></i><div class="sort v insertBefore" data-drop_accept="setting" data-on_drop="<?= $e($this->href . 'reorderChild?id=' . $d->nodeId) ?>" data-position="before" data-id="<?= $child->nodeId ?>"></div><div class="sort v insertAfter" data-drop_accept="setting" data-on_drop="<?= $e($this->href . 'reorderChild?id=' . $d->nodeId) ?>" data-position="after" data-id="<?= $child->nodeId ?>"></div></td><td><?= $e($child->label) ?></td><td><?= $e($d->type === 'select' ? $child->name : TemplateEditor::KINDS[TemplateEditor::kind($child)][0]) ?></td><td class="icons"><ul><li><a class="ajax button icononly" aria-label="Edit <?= $e($child->label) ?>" data-focus-id="setting-child-edit-<?= $child->nodeId ?>" href="<?= $e($this->href . '?id=' . $child->nodeId) ?>"><i class="cmsIcon cmsIcon-pen"></i></a></li><li><button type="button" class="button icononly" aria-label="Delete <?= $e($child->label) ?>" data-on_click="userConfirm" data-action="removeChild?id=<?= $d->nodeId ?>" data-child_id="<?= $child->nodeId ?>" data-confirm="Delete this field and its saved page values?"><i class="cmsIcon cmsIcon-trash"></i></button></li></ul></td></tr><?php } ?>
                 </tbody></table></div><?php } ?>
             </section>
         <?php } ?>
 </form>
         <?php if ($d && !$parent) { ?>
-            <aside class="widget is-list settingPreview" data-feedback="none" aria-label="Preview in Pages"><header><h2><i class="cmsIcon cmsIcon-eye" aria-hidden="true"></i>Preview in Pages</h2></header><main><p class="tagsHint">Preview only — try how this field will work in Pages. Changes here are not saved.</p><div class="settingPreviewControl">
+            <aside class="widget is-list settingPreview" data-feedback="none" aria-label="Preview in Pages"><header><h2>Preview in Pages</h2></header><main><p class="tagsHint">Preview only — try how this field will work in Pages. Changes here are not saved.</p><div class="settingPreviewControl">
                 <?php
                 $preview = static function($field) use (&$preview, $e): void {
                     if ($field->type === 'group') {

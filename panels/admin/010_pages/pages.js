@@ -217,6 +217,24 @@ function pageEditConflict(node, lang, field, version, metadata = {}) {
     try { sessionStorage.setItem('cmsEditorPresenceClient', client); } catch {}
     const revisions = new Map();
     let pending = false, pendingAt = 0, last = 0, lastKey = '', active = null, generation = 0, closing = null;
+    const noticeMotion = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function showNotice(notice, label, animate) {
+        const opening = notice.hidden;
+        if (!opening && notice.querySelector('span')?.textContent === label) return;
+        const icon = document.createElement('i');
+        icon.className = 'cmsIcon cmsIcon-circle-info';
+        const text = document.createElement('span');
+        text.textContent = label;
+        notice.replaceChildren(icon, text);
+        notice.hidden = false;
+        if (opening && animate && noticeMotion()) {
+            const {paddingTop, paddingBottom} = getComputedStyle(notice);
+            notice.animate([
+                {height: '0px', opacity: 0, paddingTop: 0, paddingBottom: 0},
+                {height: notice.getBoundingClientRect().height + 'px', opacity: 1, paddingTop, paddingBottom}
+            ], {duration: 240, easing: 'ease-in-out'});
+        }
+    }
     function check() {
         const notice = document.querySelector('[data-editor-presence]');
         if (!window.sys?.core?.server?.call || !window.sys?.http?.parseURL) return;
@@ -254,31 +272,23 @@ function pageEditConflict(node, lang, field, version, metadata = {}) {
             if (data.others > 0 || updated) {
                 closing?.cancel(); closing = null;
                 const label = updated ? 'This page was updated. Reload to review the latest version; unsaved changes are protected.' : (data.names?.length ? 'Also open: ' + data.names.join(', ') + '. Your changes are checked when saving.' : 'Also open in another session. Your changes are checked when saving.');
-                if (!notice.hidden && notice.querySelector('span')?.textContent === label) return;
-                notice.replaceChildren();
-                const icon = document.createElement('i'); icon.className='cmsIcon cmsIcon-circle-info';
-                const text = document.createElement('span');
-                text.textContent = label;
-                notice.append(icon,text);
-                notice.hidden=false;
+                showNotice(notice, label, true);
                 state.label=label;
             } else if (!notice.hidden) {
+                const hide = () => {notice.hidden = true; notice.replaceChildren(); delete state.label;};
+                if (!noticeMotion()) { hide(); return; }
                 const height=notice.getBoundingClientRect().height;
                 closing?.cancel();
                 closing = notice.animate([{height:height+'px',opacity:1,paddingTop:'.45rem',paddingBottom:'.45rem'},{height:'0px',opacity:0,paddingTop:0,paddingBottom:0}],{duration:240,easing:'ease-in-out'});
                 const animation = closing;
-                animation.finished.then(()=>{if(closing !== animation) return; notice.hidden=true;notice.replaceChildren();delete state.label;closing=null;}).catch(()=>{});
+                animation.finished.then(()=>{if(closing !== animation) return; hide(); closing=null;}).catch(()=>{});
             }
         }).fail(() => { if (request === generation) pending=false; });
     }
     document.addEventListener('cms:rendered', () => {
         const notice=document.querySelector('[data-editor-presence]');
         const label=notice && revisions.get(notice.dataset.node+':'+notice.dataset.lang)?.label;
-        if(label && notice.hidden){
-            const icon=document.createElement('i');icon.className='cmsIcon cmsIcon-circle-info';
-            const text=document.createElement('span');text.textContent=label;
-            notice.replaceChildren(icon,text);notice.hidden=false;
-        }
+        if(label && notice.hidden) showNotice(notice, label, false);
         last=0;check();
     });
     // Closing/reloading the document must not leave a 45-second ghost heartbeat.

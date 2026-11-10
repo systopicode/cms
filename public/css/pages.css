@@ -266,6 +266,23 @@ article.cmsContent::-webkit-scrollbar{
     height: 0;
 }
 
+/* Keep the notice above the preview's scroll area, below the sheet header. */
+body.cmsMobile.pages > main > .content > .flexRow:has(.cmsPreview) {
+    display: flex;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.cmsMobile.pages .flexColumn:has(> .cmsPreview) {
+    box-sizing: border-box;
+}
+
+body.cmsMobile.pages .cmsPreview > article.cmsContent {
+    flex: 1 1 0;
+    min-height: 0;
+    height: auto;
+}
+
 /* Preview width: .cmsPreview is the container the page's @media rules read
    (x_responsive.php turns them into @container cms-preview). It is at least as
    wide as the chosen device - wider than the column it scrolls sideways, so

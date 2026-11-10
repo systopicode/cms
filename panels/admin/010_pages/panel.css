@@ -434,6 +434,15 @@ aside.cms .pageRelations .relationLink small { word-break: break-all; overflow-w
 .cmsPreview > .pageEditorNotice:not([hidden]) { background:color-mix(in srgb,var(--cmsInteractive) 24%,var(--cmsCanvas)); border-block:1px solid var(--cmsInteractive); }
 .cmsPreview > .pageEditorNotice > i { color:var(--cmsInteractive); }
 
+body.cms.cmsMobile.pages > main > .content[data-cms-sheet="1"]:has(.pageEditorNotice:not([hidden])) > header.cmsMobileEditHeader {
+    border-bottom-color:var(--cmsInteractive);
+}
+body.cms.cmsMobile.pages .cmsPreview > .pageEditorNotice:not([hidden]) { border-block-start:0; }
+
+body.cmsMobile.pages:has(.pageTitle[contenteditable="plaintext-only"], .treeLabelEdit > .label:focus) > .cmsSaveState.is-mobile {
+    visibility: hidden;
+}
+
 .cmsPreview > .pageEditorNotice { order: -1; }
 
 /* Publishing status shares the public renderer's window rules. */
@@ -513,10 +522,12 @@ header.cms .pageTitleLock{
 	color: var(--cmsMuted);
 }
 
-body.cms.cmsMobile [data-page-media-picker],
 body.cms.cmsMobile[data-page-media-copied="image"] [data-page-media-paste] {
 	display: inline-flex;
-	margin-block-end: 0.4rem;
+	position: absolute;
+	inset: auto .5rem .5rem auto;
+	z-index: 3;
+	margin: 0;
 }
 
 .pageMediaStatus {
@@ -538,6 +549,14 @@ body[data-page-share-picker] .mmlContent > div > ul > li > ul > li:not([data-med
 body[data-page-share-picker] .mmlContent .thumbActions,
 body[data-page-share-picker] .mmlContent .mediaGroupInfo {
 	display: none;
+}
+.sharePickerEmpty { display: none; }
+body.cmsMobile:has(> .pageToolBox[data-page-tool="media"]:not([hidden])) > :is(.cmsSaveState.is-mobile, .draghelper) {
+	z-index: 21000;
+}
+body[data-page-share-picker] .mmlContent:not(:has([data-media-share-image="1"])) .sharePickerEmpty {
+	display: block;
+	padding-inline: var(--cmsInsetLeft) var(--cmsInsetRight);
 }
 
 .pageToolBox > section > main > aside.cms {
@@ -586,6 +605,87 @@ body.cms .cmslightbox.pageToolBox[data-page-tool="media"] > section[style*="--cm
 .pageToolBox.cms div.mmlContent > div > ul {
     height: auto;
     overflow: visible;
+}
+
+@media (max-width:1024px), (orientation:portrait) and (max-width:1400px) {
+	/* Keep the same resting height as User Edit; the shared grip can still expand it. */
+	body.cms .cmslightbox.pageToolBox[data-page-tool="properties"] > section:not(.is-expanded) {
+		height: min(80lvh, calc(100lvh - max(6px, env(safe-area-inset-top)) - var(--cmsKeyboard, 0px)));
+	}
+	body.cms .cmslightbox.pageToolBox[data-page-tool="properties"] > section > main {
+		flex: 1 1 auto;
+		min-height: 0;
+		margin-top: 0;
+		padding: 0;
+	}
+	body.cms .cmslightbox.pageToolBox[data-page-tool="properties"] > section.cmsHeaderScrolled:has(.sidebarTabs) > header {
+		box-shadow: none;
+	}
+	body.cms .cmslightbox.pageToolBox[data-page-tool="properties"] > section.cmsHeaderScrolled:has(.sidebarTabs)::after {
+		border-bottom: 0;
+	}
+	.pageToolBox[data-page-tool="properties"] aside.cms > nav.sidebarTabs {
+		position: sticky;
+		top: 0;
+		padding: 0;
+		border-bottom: 1px solid var(--cmsLineStrong);
+		background: var(--cmsBgColor);
+	}
+	.pageToolBox[data-page-tool="properties"] .sidebarTabs > ul {
+		column-gap: 1.25rem;
+		padding-inline: calc(var(--cmsInsetLeft) - .4rem) var(--cmsInsetRight);
+	}
+	.pageToolBox[data-page-tool="properties"] .sidebarTabs > ul a {
+		height: auto;
+		padding: .55rem .4rem;
+		font-size: .875rem;
+	}
+	.pageToolBox[data-page-tool="properties"] aside.cms details.sidebarSection > summary {
+		/* The sheet surface is darker than the desktop sidebar canvas. */
+		--cmsPanelAlt: var(--cmsButtonBg);
+		min-block-size: 48px;
+		padding-block: 2px;
+		padding-inline-start: var(--cmsInsetLeft);
+		padding-inline-end: var(--cmsInsetRight);
+	}
+	body.cmsMobile .pageToolBox aside.cms :is(.sidebarTools .sidebarInfo, .sidebarTools .sidebarFold, ul.rewrite button.icononly) {
+		min-inline-size: 44px;
+		min-block-size: 44px;
+		font-size: 1rem;
+	}
+	body.cmsMobile .pageToolBox aside.cms :is(.sidebarInfo, ul.rewrite button.icononly) > .cmsIcon {
+		font-size: 1rem;
+	}
+	.pageToolBox[data-page-tool="properties"] aside.cms .templateSettingSection > summary {
+		min-block-size: 44px;
+	}
+	.pageToolBox[data-page-tool="properties"] aside.cms .sidebarItem :is(select, textarea, input:not([type="radio"], [type="checkbox"], [type="hidden"], [type="file"])) {
+		font-size: max(16px, 1rem);
+	}
+	.pageToolBox[data-page-tool="properties"] aside.cms ul.rewrite > li.seperator {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-block-start: 0;
+		padding-block: 0;
+	}
+	.pageToolBox[data-page-tool="properties"] aside.cms ul.rewrite > li.seperator > .button.icononly {
+		position: static;
+		flex: 0 0 auto;
+	}
+	.pageToolBox[data-page-tool="properties"] aside.cms ul.rewrite div[data-rewritepath_id] > div:first-child {
+		flex: 0 0 44px;
+		display: grid;
+		place-items: center;
+	}
+	.pageToolBox[data-page-tool="properties"] aside.cms ul.rewrite input[type="radio"] + label::before {
+		content: "";
+		position: absolute;
+		inset: 50% auto auto 50%;
+		inline-size: 44px;
+		block-size: 44px;
+		transform: translate(-50%, -50%);
+	}
 }
 
 aside.cms .templateSettingField {

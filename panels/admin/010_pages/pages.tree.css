@@ -143,6 +143,9 @@ body.cmsMobile.pages .pylon ul.tree .treeLabelEdit > .label[contenteditable="pla
     body.pages > main > .content > .flexRow > aside.cms {
         border-bottom-right-radius:inherit;
     }
+    body.cms.pages > main > .content > .flexRow:has(> aside.cms.collapsed) {
+        border-top-right-radius:0;
+    }
     body.pages > main > .content > .flexRow:has(> aside.cms:not(.collapsed)) > .flexColumn {
         border-bottom-right-radius:0;
     }

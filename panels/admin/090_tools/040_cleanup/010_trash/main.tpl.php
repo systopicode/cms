@@ -14,6 +14,7 @@ uasort($entries, function (array $a, array $b): int {
 ?>
 <h1>Trash</h1>
 <?= \message::flush() ?>
+<p><a class="button ajax" data-cms-branch href="<?= $e(\http::$root . 'admin/pages/?branch=1') ?>"><i class="cmsIcon cmsIcon-arrow-left" aria-hidden="true"></i>Back to Pages</a></p>
 <section class="widget is-list">
 	<header>
 		<h2>Pages</h2>

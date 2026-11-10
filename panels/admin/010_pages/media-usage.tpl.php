@@ -5,7 +5,7 @@
                         <p class="tagsHint">Used in page content, libraries or share images.</p>
                         <ul class="relationIncoming">
                         <?php foreach ($uses as $use): ?>
-                        <li><a class="sideAction relationLink" href="<?= $e($usageHref . '?id=' . $use['node'] . '&lang=' . rawurlencode($use['lang'])) ?>"><i class="cmsIcon cmsIcon-file"></i><span><?= $e($use['label'] ?: 'Untitled') ?><small><?= $e(implode(' · ', $use['reasons']) . ($use['lang'] ? ' · ' . $use['lang'] : '')) ?></small></span></a></li>
+                        <li><a class="sideAction relationLink" data-cms-media-usage-link href="<?= $e($usageHref . '?id=' . $use['node'] . '&lang=' . rawurlencode($use['lang'])) ?>"><i class="cmsIcon cmsIcon-file"></i><span><?= $e($use['label'] ?: 'Untitled') ?><small><?= $e(implode(' · ', $use['reasons']) . ($use['lang'] ? ' · ' . $use['lang'] : '')) ?></small></span></a></li>
                         <?php endforeach; ?>
                         </ul>
                         <?php if (!$uses): ?><p class="tagsHint">No page references were found by this check. Project templates or external links may still use this file.</p><?php endif; ?>

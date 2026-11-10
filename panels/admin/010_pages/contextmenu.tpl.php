@@ -30,10 +30,9 @@ use Systopic\Cms\Pages\PageAccess;
 $may = PageAccess::mayWrite($node->node);
 $mayBeside = PageAccess::mayWrite($node->node->parentNode);
 $mayActive = $active !== null && PageAccess::mayWrite($active->node);
-$canAliasAfter = $canAliasChild = false;
+$canCreateAlias = false;
 if ($active !== null) {
-    try { \Systopic\Cms\Pages\RelationRules::placement($active->contentId, (int) ($node->parent?->id ?? 0), $this->relationNode(...)); $canAliasAfter = true; } catch (\DomainException) {}
-    try { \Systopic\Cms\Pages\RelationRules::placement($active->contentId, $node->id, $this->relationNode(...)); $canAliasChild = true; } catch (\DomainException) {}
+    try { \Systopic\Cms\Pages\RelationRules::placement($active->contentId, (int) ($node->parent?->id ?? 0), $this->relationNode(...)); $canCreateAlias = true; } catch (\DomainException) {}
 }
 ?>
 <ul class="contextmenu" data-id="<?= $node->id ?>">
@@ -150,20 +149,12 @@ if ($active !== null) {
 					</button>
 				</li>
 			<?php } ?>
-            <?php if ($mayBeside && $canAliasAfter) { ?>
+            <?php if ($mayBeside && $canCreateAlias) { ?>
 			<li>
 				<button type="button" data-cms-action class=" alias"
-				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_parent_node_id=<?= $node->parent?->id ?>&node_original_node_id=<?= $active->contentId ?>">
+				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_original_node_id=<?= $active->contentId ?>">
 					<i class="cmsIcon cmsIcon-file-import"></i>
-					<span>Alias of "<?= $active->label ?>" after this</span>
-				</button>
-			</li>
-            <?php } if ($may && $canAliasChild) { ?>
-			<li>
-				<button type="button" data-cms-action class=" alias"
-				   data-on_click="createAlias?node_id=<?= $node->id ?>&node_parent_node_id=<?= $node->id ?>&node_original_node_id=<?= $active->contentId ?>">
-					<i class="cmsIcon cmsIcon-file-import"></i>
-					<span>Alias as child</span>
+					<span>Create alias of "<?= htmlspecialchars($active->label, ENT_QUOTES, 'UTF-8') ?>"</span>
 				</button>
 			</li>
             <?php } ?>

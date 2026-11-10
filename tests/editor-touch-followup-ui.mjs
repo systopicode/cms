@@ -10,20 +10,27 @@ try {
  await page.evaluate(()=>{window.settings={siteRoot:'/'};window.changed=0;window.wysiwyg={changed(){changed++}};window.sys={lib:{applyParentConstructor(){},add(setup,ctor){window.upload={};ctor.call(upload)}}};});
  await page.addScriptTag({path:'panels/admin/010_pages/upload/panel.js'});
  await page.evaluate(()=>{const media=document.querySelector('#move');const r=media.getBoundingClientRect();window.editorBeginMediaMove(media,{clientX:r.x+10,clientY:r.y+10,pointerType:'touch'});});
- assert.equal(await page.locator('.editorMediaHold').count(),1,'shared insertItemInEditor supports media movement');
- await page.mouse.move(60,45);await page.mouse.up();
+ assert.equal(await page.locator('.editor #move').count(),1,'grip press keeps the original in the field');
+ assert.equal(await page.locator('body.editorMediaDrop').count(),0,'drag does not start on press');
+ await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,clientX:60,clientY:45,pointerType:'touch'})));
+ assert.equal(await page.evaluate(()=>changed),0,'releasing without movement does not save');
+ assert.equal(await page.locator('.editorMediaLine').count(),0,'the marker is removed after release');
+ await page.evaluate(()=>{const media=document.querySelector('#move'),r=media.getBoundingClientRect();editorBeginMediaMove(media,{clientX:r.x+10,clientY:r.y+10,pointerType:'touch'});});
+ await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,clientX:60,clientY:45,pointerType:'touch'})));
+ await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,clientX:60,clientY:45,pointerType:'touch'})));
  await page.waitForFunction(()=>!document.body.classList.contains('editorMediaDrop'));
  assert.equal(await page.locator('.editor img#move').count(),1,'media remains in its editor after drop');
- assert.equal(await page.locator('.editorMediaHold').count(),0,'placeholder removed');
+ assert.equal(await page.evaluate(()=>changed),1,'a same-field move saves once');
+ assert.equal(await page.locator('.editorMediaLine').count(),0,'marker removed after drop');
  assert.equal(await page.locator('.editor').getAttribute('inputmode'),'none','touch move keeps keyboard suppressed');
  assert.equal(await page.locator('.editor').getAttribute('data-typing'),null);
- // Cancelled and rejected drops must restore the exact source DOM, including a visible ghost while held.
+ // Cancelled and rejected drops leave the source in place.
  for(const ending of ['pointercancel','pointerup']){
   await page.evaluate(()=>{const media=document.querySelector('#move'),r=media.getBoundingClientRect();editorBeginMediaMove(media,{clientX:r.x+10,clientY:r.y+10,pointerType:'touch'});});
-  assert.equal(await page.locator('.editorMediaHold img').count(),1,'source ghost contains the media');
+  assert.equal(await page.locator('.editor img').count(),1,'held media stays in the source with no clone');
   await page.evaluate(type=>document.dispatchEvent(new PointerEvent(type,{bubbles:true,clientX:1100,clientY:790,pointerType:'touch'})),ending);
   assert.equal(await page.locator('.editor #move').count(),1,'invalid/cancelled drop restores source '+ending);
-  assert.equal(await page.locator('.editorMediaHold').count(),0);
+  assert.equal(await page.locator('.editorMediaLine').count(),0);
  }
  for(const tag of ['img','video','audio','object','a']){
   await page.evaluate(tag=>{document.querySelector('.editor').innerHTML='<p>Before</p><'+tag+' id="move" style="display:block;width:80px;height:80px">File</'+tag+'><p>After</p>';if(!document.querySelector('.plaintext'))document.body.insertAdjacentHTML('beforeend','<div class="editor plaintext" style="position:fixed;left:700px;top:30px;width:250px;height:200px">Text only</div>');const m=document.querySelector('#move'),r=m.getBoundingClientRect();editorBeginMediaMove(m,{clientX:r.x+10,clientY:r.y+10,pointerType:'touch'});document.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,clientX:750,clientY:80,pointerType:'touch'}));},tag);
@@ -39,7 +46,7 @@ try {
  await page.addStyleTag({content:':root{--cmsHighlightColor:#ffb600}'});
  await page.locator('#move').evaluate(img=>img.src='data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="320"><rect width="80" height="320" fill="teal"/></svg>'));
  await page.evaluate(()=>{window.commits=[];window.wysiwyg.changed=(editor,commit)=>commits.push([editor.id,commit]);const media=document.querySelector('#move');editorBeginMediaMove(media,{clientX:30,clientY:30,pointerType:'touch'});});
- assert.equal(Math.round((await page.locator('.editorMediaHold').boundingBox()).height),320,'touch source ghost keeps full media height');
+ assert.equal(Math.round((await page.locator('#source #move').boundingBox()).height),320,'media keeps its exact size and position until drop');
  await page.evaluate(()=>document.dispatchEvent(new PointerEvent('pointermove',{bubbles:true,clientX:450,clientY:20,pointerType:'touch'})));
  await page.waitForTimeout(280);
  assert.equal(await page.locator('.editorMediaLine').isVisible(),true,'insertion caret visible over destination text');

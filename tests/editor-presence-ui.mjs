@@ -6,6 +6,12 @@ try {
  const page=await browser.newPage(); const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.setContent('<div data-editor-presence data-node="9" data-lang="en" data-endpoint="/presence" hidden></div>');
  await page.evaluate(()=>{
+  window.noticeFrames=[];
+  const animate=Element.prototype.animate;
+  Element.prototype.animate=function(frames,options){
+   if(this.matches('[data-editor-presence]')) noticeFrames.push(frames);
+   return animate.call(this,frames,options);
+  };
   window.reply={available:true,others:1,names:['Another editor'],revision:'first'};
   window.calls=[];window.leaveRequests=[];window.fetch=(url,options)=>{leaveRequests.push({url,...options});return Promise.resolve({});};
   window.sys={http:{parseURL(){}},core:{server:{}}};
@@ -15,6 +21,7 @@ try {
  const source=await readFile('panels/admin/010_pages/pages.js','utf8');
  await page.addScriptTag({content:source.slice(source.indexOf('// Advisory only:'))});
  assert.match(await page.locator('[data-editor-presence]').innerText(),/[Aa]lso open: Another editor/);
+ assert.equal(await page.evaluate(()=>noticeFrames[0]?.[0]?.height),'0px','opening animates from zero height');
  assert.equal(await page.locator('#pageEditConflict').count(),0);
  await page.evaluate(()=>window.dispatchEvent(new PageTransitionEvent('pagehide')));
  assert.equal(await page.evaluate(()=>JSON.parse(leaveRequests[0].body).leave),1,'closing document sends a departure');
