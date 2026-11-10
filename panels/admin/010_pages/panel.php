@@ -480,11 +480,14 @@ class Panel extends CmsPanel {
 	}
 
 	function checkIfPageChanged() {
+		$lang = Languages::resolve(\http::get('lang', $this->state->lang));
+		$langChanged = $lang !== $this->state->lang;
+		$this->state->lang = $lang;
 		// ?site=default (globe in the tree navi) or ?site=new (add menu): main
 		// shows the site editor instead of a page; no page is active meanwhile.
 		$siteParam = \http::get('site', NULL);
 		if ($siteParam === 'default' || $siteParam === 'new') {
-			if (($this->state->editSite ?? NULL) !== $siteParam || $this->state->id !== NULL) {
+			if (($this->state->editSite ?? NULL) !== $siteParam || $this->state->id !== NULL || $langChanged) {
 				$this->state->editSite = $siteParam;
 				$this->state->id = NULL;
 				$this->pageChanged();
@@ -492,13 +495,11 @@ class Panel extends CmsPanel {
 			return;
 		}
 		$idChanged = \http::get('id', $this->state->id) !== $this->state->id;
-		$langChanged = \http::get('lang', $this->state->lang) !== $this->state->lang;
 		if ($idChanged || $langChanged) { // standard click
 			$this->state->id = (int) \http::get('id', $this->state->id);
 			if ($this->state->id < 2) {
 				$this->state->id = NULL; // don't load default page
 			}
-			$this->state->lang = \http::get('lang', $this->state->lang);
 			$this->state->editSite = NULL;
 			$this->pageChanged();
 		}

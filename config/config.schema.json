@@ -130,7 +130,8 @@
 						"properties": {
 							"label": {
 								"title": "Name",
-								"type": "string"
+								"type": "string",
+								"x-entry-name": true
 							},
 							"code": {
 								"title": "Code",

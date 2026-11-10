@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Systopic\Cms\Tables\Pages;
 
 /**
- * The languages an installation offers — out of `LANGUAGES` in its index.php.
+ * The languages an installation offers, from the project configuration.
  *
  * Not a table, but the axis every page row sits on, so it lives with them.
  * `page::getLanguages()` / `page::getDefaultLanguage()` in the legacy code,
@@ -18,10 +18,12 @@ final class Languages
      */
     public static function all(): array
     {
-        if (defined('LANGUAGES')) {
+        if (defined('LANGUAGES') && LANGUAGES !== []) {
             return (array) LANGUAGES;
         }
-        return ['en' => ['label' => 'English', 'code' => 'en', 'activated' => true]];
+        $code = self::configuredDefault();
+        $label = class_exists(\Locale::class) ? \Locale::getDisplayLanguage($code, 'en') : null;
+        return [$code => ['label' => $label ?: strtoupper($code), 'code' => $code, 'activated' => true]];
     }
 
     /** @return array<string, array{label: string, code: string, activated: bool}> */
@@ -33,10 +35,22 @@ final class Languages
     /** `DEFAULT_LANG` from the settings while it is activated, else the first activated language. */
     public static function default(): string
     {
-        if (defined('DEFAULT_LANG') && isset(self::activated()[DEFAULT_LANG])) {
-            return (string) DEFAULT_LANG;
+        $configured = self::configuredDefault();
+        $active = self::activated();
+        if (isset($active[$configured])) {
+            return $configured;
         }
-        $first = array_key_first(self::activated()) ?? array_key_first(self::all());
-        return (string) ($first ?? 'en');
+        return (string) (array_key_first($active) ?? $configured);
+    }
+
+    /** Old saved editor state and old links may refer to a removed language. */
+    public static function resolve(mixed $code): string
+    {
+        return is_string($code) && isset(self::activated()[$code]) ? $code : self::default();
+    }
+
+    private static function configuredDefault(): string
+    {
+        return defined('DEFAULT_LANG') && DEFAULT_LANG !== '' ? (string) DEFAULT_LANG : 'de';
     }
 }
