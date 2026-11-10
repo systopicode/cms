@@ -2,14 +2,37 @@
 
 /** @var \Systopic\Cms\Panels\Root\Admin\Settings\Page\Panel $this */
 
-use Systopic\Cms\Queries\SettingTree\Definition;
 use Systopic\Cms\Queries\SettingTree\SettingTree;
 use Systopic\Cms\Tables\Settings\Operator as SettingOperator;
-use Systopic\System\Tables\Nodes\Operator as NodeOperator;
 
 $definition = $this->definition;
 
 switch ($this->action) {
+    case 'toggleGroup':
+        $id = (int) \http::dataset('id');
+        $open = array_map('intval', (array) $this->state->openFolds);
+        $this->state->openFolds = in_array($id, $open, true) ? array_values(array_diff($open, [$id])) : [...$open, $id];
+        $this->updateView('main');
+        break;
+
+    case 'placeSetting':
+        $item = SettingTree::byNodeId($this->scope, (int) \http::dragdata('id'));
+        $target = SettingTree::byNodeId($this->scope, (int) \http::dataset('id'));
+        $position = (string) \http::dataset('position');
+        if (!in_array($position, ['root','inside','before','after'], true) || !$item || ($position !== 'root' && !$target) || $item->nodeId === $target?->nodeId) break;
+        try {
+            $parent = $position === 'inside' ? $target : ($position === 'root' ? null : $target->parent);
+            $before = $position === 'before' ? $target : null;
+            if ($position === 'after') {
+                $siblings = array_values(array_filter($parent?->options ?? SettingTree::load($this->scope), static fn($d) => $d->nodeId !== $item->nodeId));
+                foreach ($siblings as $index => $sibling) if ($sibling->nodeId === $target->nodeId) $before = $siblings[$index+1] ?? null;
+            }
+            \Systopic\Cms\Settings\TemplateEditor::place($this->scope, $item, $parent, $before);
+            if ($parent) $this->state->openFolds = array_values(array_unique([...$this->state->openFolds, $parent->nodeId]));
+            $this->updateView('main');
+        } catch (\InvalidArgumentException $error) { \message::error($error->getMessage()); }
+        break;
+
 	case 'add':
 		// data-id 1 (the root) adds to the topmost level.
 		$this->scope->save(SettingOperator::create($definition, $definition?->options ?? SettingTree::load($this->scope)));
@@ -54,30 +77,5 @@ switch ($this->action) {
 		$this->child('delete')?->removeDefinition($definition);
 		\message::confirm('Setting removed.');
 		$this->updateView('main');
-		break;
-
-	case 'insertBefore':
-	case 'insertAfter':
-		$drag = SettingTree::byNodeId($this->scope, (int) \http::dragdata('id'));
-		$drop = SettingTree::byNodeId($this->scope, (int) \http::dataset('id'));
-		if ($drag === null || $drop === null || $drag->nodeId === $drop->nodeId) {
-			break;
-		}
-		if (($drag->parent?->nodeId ?? 0) !== ($drop->parent?->nodeId ?? 0)) {
-			break;
-		}
-		$siblings = $drag->parent === null
-			? SettingTree::load($this->scope)
-			: $drag->parent->options;
-		$nodes = array_map(static fn(Definition $row) => $row->node, $siblings);
-		$others = array_values(array_filter($nodes, static fn($node) => $node !== $drag->node));
-		$at = count($others);
-		foreach ($others as $index => $node) {
-			if ($node === $drop->node) {
-				$at = $index + ($this->action === 'insertAfter' ? 1 : 0);
-				break;
-			}
-		}
-		$this->scope->save(...NodeOperator::place($nodes, $drag->node, $at));
 		break;
 }

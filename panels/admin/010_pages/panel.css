@@ -587,3 +587,47 @@ body.cms .cmslightbox.pageToolBox[data-page-tool="media"] > section[style*="--cm
     height: auto;
     overflow: visible;
 }
+
+aside.cms .templateSettingField {
+    margin-block: 1.25rem;
+}
+aside.cms .templateSettingField h4 {
+    margin-block-start: 0;
+}
+aside.cms :is(.templateSettingDescription, .templateSettingEmpty) {
+    display: block;
+    margin-block-start: .4rem;
+    color: var(--cmsSubText);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+aside.cms .templateSettingSection > summary {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    list-style: none;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+    border-block-end: 1px solid var(--cmsLineStrong);
+}
+aside.cms .templateSettingSection > summary > h6.taggroup {
+    width: auto;
+    margin: 0;
+    padding: .55rem 0;
+    border: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-width: 0;
+}
+aside.cms .templateSettingSection > summary::-webkit-details-marker {
+    display: none;
+}
+aside.cms .templateSettingSection > summary > .cmsIcon {
+    flex-shrink: 0;
+    font-size: .7rem;
+}
+aside.cms .templateSettingSection[open] > summary > .cmsIcon {
+    transform: rotate(180deg);
+}

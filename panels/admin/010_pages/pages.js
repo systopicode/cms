@@ -2,6 +2,38 @@ sys.onDocumentReady(function () {
     scrollTree('smooth');
     if (new URLSearchParams(location.search).get('relations') === 'aliases') focusPageRelations('aliases');
 });
+
+// Restore settings groups when navigating to another page replaces the sidebar.
+(function () {
+    const storageKey = 'cms:settings-groups:' + location.pathname;
+    const initialized = new WeakSet();
+    const selector = 'details[data-setting-section]';
+    let states = {};
+    try {
+        states = JSON.parse(sessionStorage.getItem(storageKey)) || {};
+    } catch {}
+
+    function restore() {
+        document.querySelectorAll(selector).forEach(section => {
+            if (initialized.has(section)) return;
+            const saved = states[section.dataset.settingSection];
+            if (typeof saved === 'boolean') section.open = saved;
+            initialized.add(section);
+        });
+    }
+
+    document.addEventListener('toggle', event => {
+        const section = event.target;
+        if (!section.isConnected || !initialized.has(section)) return;
+        states[section.dataset.settingSection] = section.open;
+        try {
+            sessionStorage.setItem(storageKey, JSON.stringify(states));
+        } catch {}
+    }, true);
+    document.addEventListener('cms:rendered', restore);
+    sys.onDocumentReady(restore);
+    restore();
+})();
 // While the field has a word, its hits stand in for the tree.
 document.addEventListener('input', function (event) {
 	var field = event.target;

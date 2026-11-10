@@ -58,10 +58,21 @@ final class SettingTree
     /** A root setting by the name a template uses. */
     public static function byName(Scope $scope, string $name): ?Definition
     {
-        foreach (self::load($scope) as $definition) {
-            if ($definition->name === $name) {
-                return $definition;
-            }
+        $parts = explode('.', $name);
+        $rows = self::load($scope);
+        $found = null;
+        foreach ($parts as $part) {
+            $found = null;
+            foreach ($rows as $definition) if ($definition->name === $part) { $found = $definition; break; }
+            if (!$found) break;
+            $rows = $found->options;
+        }
+        if ($found) return $found;
+        // A unique existing field key still resolves after it is visually grouped.
+        // Explicit group.field paths disambiguate repeated names.
+        if (count($parts) === 1) {
+            $matches = array_filter(self::all($scope), static fn($d) => $d->name === $name && (!$d->parent || $d->parent->type === 'group'));
+            if (count($matches) === 1) return reset($matches);
         }
         return null;
     }

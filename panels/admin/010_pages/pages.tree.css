@@ -133,6 +133,9 @@ body.cmsMobile.pages .pylon ul.tree .treeLabelEdit > .label[contenteditable="pla
 
 /* The media pane and editor paint over the shared desktop window corners. */
 @media (min-width:1025px) and (orientation:landscape), (min-width:1401px) {
+    body.cms.pages > main > .pylon > nav:has(+ footer) {
+        border-bottom-left-radius: 0;
+    }
     body.pages > main > .pylon > footer > .mml,
     body.pages > main > .pylon > footer > .mml > .mmlContent {
         border-bottom-left-radius:inherit;

@@ -131,16 +131,83 @@ body.settingDragging .pageSettings div.sort{
 .cms .pageSettings td.pageSettingDrag > i { display: inline-flex; justify-content: center; align-items: center; width: 1.5rem; height: 2rem; margin: 0; }
 
 /* Definition editor uses the standard fields, widgets, footer and dialog shell. */
-.pageSettingDialog .settingKinds,
-.pageSettingDialog .settingTemplates { border: 0; padding: 0; margin: 0; min-width: 0; }
+.pageSettingDialog .settingKinds { border: 0; padding: 0; margin: 0; min-width: 0; }
 .pageSettingDialog legend { font-weight: 600; margin-bottom: .75rem; }
-.pageSettingDialog .settingKinds { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
-.pageSettingDialog .settingKinds > label { display: flex; align-items: flex-start; gap: .65rem; border: 1px solid var(--cmsLine); border-radius: var(--cmsRadius, .5rem); padding: .75rem; cursor: pointer; margin: 0; }
-.pageSettingDialog .settingKinds > label:has(:checked) { border-color: var(--cmsHighlightColor); background: var(--cmsSelectedBg, var(--cmsHover)); }
-.pageSettingDialog .settingKinds small { display: block; margin-top: .25rem; color: var(--cmsSubText); }
-.pageSettingDialog .settingTemplates > label { display: flex; gap: .5rem; align-items: center; margin-bottom: .5rem; }
-.pageSettingDialog .templatePick { margin-top: .75rem; }
+.pageSettingDialog .templatePick { margin-top: 1.25rem; }
 .pageSettingDialog .settingChildren,
 .pageSettingDialog .settingPreview { margin-top: var(--cmsCardPadding); }
 .pageSettingDialog details > .fieldGrid { margin-top: .75rem; }
-@media (max-width: 600px) { .pageSettingDialog .settingKinds { grid-template-columns: 1fr; } }
+
+.pageSettings > header.settingCreateActions { justify-content:flex-end; }
+.pageSettings .settingType { width:2rem; color:var(--cmsMuted); }
+.pageSettings .settingRowLabel { display:inline-block; margin-inline-start:calc(var(--setting-depth,0) * 1.5rem); }
+/* Share one surface from the expanded header down around its inset table. */
+.pageSettings { --settingGroupSurface:color-mix(in srgb,var(--cmsPanelAlt) 45%,var(--cmsCanvas)); }
+.cms .pageSettings tr.settingGroup > td { background:var(--cmsCanvas); }
+.cms .pageSettings tr.settingGroup .settingRowLabel { font-weight:600; }
+.cms .pageSettings tr.settingGroup.is-expanded,
+.cms .pageSettings tr.settingGroup.is-expanded > td { background:var(--settingGroupSurface); border-bottom-color:transparent; }
+@media (hover: hover) {
+    body:not(.dragging) .cms .pageSettings tr.settingGroup:hover,
+    body:not(.dragging) .cms .pageSettings tr.settingGroup:hover > td {
+        background:color-mix(in srgb,var(--cmsHighlightColor) 24%,var(--cmsCanvas));
+    }
+}
+.cms .pageSettings tr.settingChildrenRow > td { padding:0 1rem 1rem 2rem; background:var(--settingGroupSurface); }
+.cms .pageSettings .settingChildrenTable { border:1px solid var(--cmsLine); border-radius:var(--cmsRadius); overflow:hidden; background:var(--cmsPanelAlt); }
+.cms .pageSettings .settingChildrenTable > table,
+.cms .pageSettings .settingChildrenTable > table > tbody > tr,
+.cms .pageSettings .settingChildrenTable > table > tbody > tr > td { background:var(--cmsPanelAlt); }
+.cms .pageSettings .settingChildrenTable > table > thead { display:none; }
+.cms .pageSettings .settingChildrenTable > .tagsHint { padding:1rem; margin:0; }
+.pageSettings .settingFoldSpace { width:var(--cmsControl); flex:0 0 var(--cmsControl); }
+body.dragging .pageSettings tr:has(.insertInto.dropTarget) > td { background:color-mix(in srgb,var(--cmsHighlightColor) 16%,var(--cmsCanvas)); }
+body.dragging .pageSettings tr:has(.insertInto.dropTarget) { outline:2px solid var(--cmsHighlightColor); outline-offset:-2px; }
+body.dragging:has(.pageSettings .insertInto.dropTarget) .draghelper { visibility:hidden; }
+/* Sort hit areas follow the row, as in the page tree, not just the grip cell. */
+.cms .pageSettings td.pageSettingDrag:has(> div.sort) { position:static; }
+@media (max-width:767px) {
+    .cms .pageSettings .tableScroll.stacked > table > tbody > tr > td.settingType { display:none; }
+    .cms .pageSettings .settingFoldSpace { display:none; }
+}
+
+@media (max-width:767px) {
+ .cms .pageSettings .tableScroll.stacked > table > tbody > tr.settingChildrenRow { display:block; padding:0; }
+ .cms .pageSettings .tableScroll.stacked > table > tbody > tr.settingChildrenRow > td { display:block; padding:0 .75rem .75rem 1.5rem; width:100%; }
+}
+body.dragging .pageSettings tr.dropRejected { outline:2px solid var(--cmsError); outline-offset:-2px; cursor:not-allowed; }
+body.dragging .pageSettings tr.dropRejected > td { background:color-mix(in srgb,var(--cmsError) 14%,var(--cmsCanvas)); }
+/* Outer table's last-row and hover selectors must not leak into the inset table. */
+.cms .pageSettings .settingChildrenTable > table > tbody > tr:not(:last-child) > td { border-bottom:1px solid color-mix(in srgb,var(--cmsTextColor) 10%,var(--cmsPanelAlt)); }
+.cms .pageSettings .tableScroll > table > tbody > tr.settingChildrenRow:hover > td:first-child { background:var(--settingGroupSurface); box-shadow:none; }
+body:not(.settingDragging) .cms .pageSettings .settingChildrenTable > table > tbody > tr:hover > td { background:color-mix(in srgb,var(--cmsHighlightColor) 24%,var(--cmsCanvas)); }
+.cms .pageSettings .tableScroll.stacked > table > tbody > tr.settingChildrenRow:hover { background:var(--settingGroupSurface); box-shadow:none; }
+.cms .pageSettings .settingChildrenTable.stacked > table > tbody > tr > td { border-bottom:0; }
+
+.pageSettingDialog .settingChoice { position:relative; display:flex; align-items:center; gap:.65rem; min-width:0; margin-bottom:.5rem; }
+.pageSettingDialog .settingChoice > label { margin:0; cursor:pointer; }
+.pageSettingDialog .settingChoice > label:last-child { flex:1; min-width:0; }
+.pageSettingDialog .settingPreview > main { background:var(--cmsPanelAlt); }
+.pageSettingDialog .settingPreviewControl { border:1px dashed var(--cmsLineStrong); border-radius:var(--cmsRadius); padding:var(--cmsCardPadding); background:var(--cmsCanvas); }
+
+.settingTemplates:has(option[value="all"]:checked) .templatePick { display:none; }
+
+/* Keep the normal surfaces visible beneath the insertion line. */
+body.settingDragging .cms .pageSettings .settingChildrenTable > table > tbody > tr:hover > td {
+    background:var(--cmsPanelAlt);
+    box-shadow:none;
+}
+body.settingDragging .cms .pageSettings tr.settingGroup.is-expanded:hover:not(.dropRejected, :has(.insertInto.dropTarget)) > td {
+    background:var(--settingGroupSurface);
+    box-shadow:none;
+}
+.pageSettingDialog > section > main { overflow-anchor:none; }
+
+/* Keep the edge hit areas inside the scroller when dragging starts. */
+.pageSettingDialog .settingChildren tr:first-child .insertBefore { top:0; }
+.pageSettingDialog .settingChildren tr:last-child .insertAfter { bottom:0; }
+
+/* Keep the detail row at its original height while its grip is held. */
+.cms.pageSettingDialog .settingChildren .tableScroll.stacked.is-foldable > table > tbody > tr.is-open > td[data-label]:not(:empty) {
+    display:block;
+}

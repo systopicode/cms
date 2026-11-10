@@ -23,6 +23,11 @@ class Panel extends PanelNode {
         }
     }
 
+    public function backHref(?Definition $parent): string
+    {
+        return $this->parent->href . ($parent && \http::get('from') !== 'list' ? 'edit/?id=' . $parent->nodeId : '');
+    }
+
 	public Scope $scope {
 		get => Scope::default();
 	}

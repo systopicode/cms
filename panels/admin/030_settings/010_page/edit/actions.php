@@ -5,6 +5,7 @@
 use Systopic\Cms\Tables\Settings\Operator as SettingOperator;
 use Systopic\Cms\Queries\SettingTree\SettingTree;
 use Systopic\Cms\Settings\TemplateEditor;
+use Systopic\System\Tables\Nodes\Operator as NodeOperator;
 
 $definition = $this->definition;
 
@@ -17,7 +18,7 @@ switch ($this->action) {
             break;
         }
         try {
-            $created = TemplateEditor::create($this->scope, $parent, (string) ($values['kind'] ?? 'text'), (string) ($values['label'] ?? ''));
+            $created = TemplateEditor::create($this->scope, $parent, (string) ($values['kind'] ?? 'text'), (string) ($values['label'] ?? ''), (string) ($values['description'] ?? ''));
             \http::redirect($this->href . '?id=' . $created->nodeId);
         } catch (\InvalidArgumentException $error) {
             \message::error($error->getMessage());
@@ -44,7 +45,10 @@ switch ($this->action) {
             \message::error('Enter a valid default number.'); break;
         }
         $this->scope->connection->transactional(function () use ($definition, $values, $label, $name, $default) {
-            $assigned = ['label' => $label, 'name' => $name, 'description' => (string) ($values['description'] ?? '')];
+            $assigned = ['label' => $label, 'name' => $name];
+            if (array_key_exists('description', $values)) {
+                $assigned['description'] = (string) $values['description'];
+            }
             if (!$definition->parent) {
                 $known = array_keys((array) \template::getAll());
                 $picked = array_values(array_intersect($known, (array) ($values['templates'] ?? [])));
@@ -58,6 +62,23 @@ switch ($this->action) {
         \message::confirm('Setting saved.');
         $this->updateView('lightbox');
         $this->parent->updateView('main');
+        break;
+
+    case 'reorderChild':
+        if (!$definition || !in_array($definition->type, ['select', 'group'], true)) break;
+        $position = \http::dataset('position');
+        if (!in_array($position, ['before', 'after'], true)) break;
+        $nodes = [];
+        foreach ($definition->options as $child) $nodes[$child->nodeId] = $child->node;
+        $dragId = (int) \http::dragdata('id');
+        $dropId = (int) \http::dataset('id');
+        if ($dragId === $dropId || !isset($nodes[$dragId], $nodes[$dropId])) break;
+        $orderedIds = array_values(array_diff(array_keys($nodes), [$dragId]));
+        $at = array_search($dropId, $orderedIds, true) + ($position === 'after' ? 1 : 0);
+        // The drag handler already moves the row. Keep this form and its scroll
+        // position in place, including any edits that have not been saved yet.
+        $this->scope->save(...NodeOperator::place(array_values($nodes), $nodes[$dragId], $at));
+        if ($definition->type === 'group') $this->parent->updateView('main');
         break;
 
     case 'removeChild':
@@ -75,7 +96,7 @@ switch ($this->action) {
             \message::error('This setting no longer exists.');
             break;
         }
-        $back = $this->parent->href . ($definition->parent ? 'edit/?id=' . (int) $definition->parent->nodeId : '');
+        $back = $this->backHref($definition->parent);
         $this->scope->connection->transactional(function () use ($definition) {
             $remove = function ($item) use (&$remove): void {
                 foreach ($item->options as $child) $remove($child);

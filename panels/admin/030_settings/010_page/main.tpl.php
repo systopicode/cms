@@ -1,147 +1,32 @@
 <?php
-
-/**
- * One level of page settings: the path above the title, the list as one card.
- *
- * @var \Systopic\Cms\Panels\Root\Admin\Settings\Page\Panel $this
- */
-
+/** @var \Systopic\Cms\Panels\Root\Admin\Settings\Page\Panel $this */
 use Systopic\Cms\Queries\SettingTree\Definition;
-
+use Systopic\Cms\Queries\SettingTree\SettingTree;
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
+$base = $this->href;
+$open = array_map('intval', (array) ($this->state->openFolds ?? []));
+$render = function(array $rows, int $depth = 0) use (&$render, $e, $base, $open): void {
+ foreach ($rows as $row) {
+  $id = $row->nodeId; $group = $row->type === 'group'; $expanded = in_array($id,$open,true);
+  $icon = $group ? 'folder' : 'sliders';
+ ?>
+ <tr data-setting-row="<?= $id ?>" data-setting-parent="<?= $row->parent?->nodeId ?? 0 ?>" data-setting-kind="<?= $group ? 'group' : 'field' ?>" class="<?= $depth ? 'settingChild' : '' ?> <?= $group ? ('settingGroup' . ($expanded ? ' is-expanded' : '')) : '' ?>" style="--setting-depth:<?= $depth ?>">
+  <td class="pageSettingDrag"><i class="cmsIcon cmsIcon-grip-dots-vertical" aria-label="Drag to reorder" data-drag_type="setting" data-id="<?= $id ?>"></i><div class="sort v insertBefore" data-drop_accept="setting" data-on_drop="placeSetting" data-position="before" data-id="<?= $id ?>"></div><div class="sort v insertAfter" data-drop_accept="setting" data-on_drop="placeSetting" data-position="after" data-id="<?= $id ?>"></div><?php if ($group) { ?><div class="sort v insertInto" data-drop_accept="setting" data-on_drop="placeSetting" data-position="inside" data-id="<?= $id ?>"></div><?php } ?></td>
+  <td class="settingType" data-table-inline><i class="cmsIcon cmsIcon-<?= $icon ?>" role="img" aria-label="<?= $group ? 'Group' : 'Setting' ?>"></i></td>
+  <td class="settingName" data-table-subject><span class="settingRowLabel"><?= $e($row->label) ?></span></td>
+  <td><?= $e($row->setting->description ?? '') ?></td>
+  <td class="icons"><ul><li><a class="ajax button icononly" aria-label="Edit <?= $e($row->label) ?>" data-focus-id="setting-edit-<?= $id ?>" href="<?= $e($base) ?>edit/?id=<?= $id ?><?= $row->parent ? '&amp;from=list' : '' ?>"><i class="cmsIcon cmsIcon-pen"></i></a></li><?php if ($group) { ?><li><button type="button" class="button icononly" data-focus-id="setting-fold-<?= $id ?>" data-on_click="toggleGroup" data-id="<?= $id ?>" aria-expanded="<?= $expanded ? 'true' : 'false' ?>" aria-label="<?= $expanded ? 'Collapse' : 'Expand' ?> <?= $e($row->label) ?>"><i class="cmsIcon cmsIcon-chevron-<?= $expanded ? 'up' : 'down' ?>"></i></button></li><?php } else { ?><li class="settingFoldSpace" aria-hidden="true"></li><?php } ?></ul></td>
+ </tr>
+ <?php if ($group && $expanded) { ?>
+ <tr class="settingChildrenRow"><td colspan="5"><div class="tableScroll settingChildrenTable"><table><thead><tr><th></th><th aria-label="Type"></th><th>Label</th><th>Description</th><th></th></tr></thead><tbody><?php $render($row->options,0); ?></tbody></table><?php if (!$row->options) { ?><p class="tagsHint">This group is empty. Drop a setting here or <a class="ajax" href="<?= $e($base) ?>edit/?parent_id=<?= $id ?>">add a setting</a>.</p><?php } ?></div></td></tr>
+ <?php } }
 
-$selected = $this->selected;
-$parentType = (string) ($selected->type ?? '');
-
-$card = match ($parentType) {
-	'select' => 'Choices',
-	'group' => 'Fields',
-	'checkbox' => 'Value',
-	default => 'Page settings',
-};
-$note = match ($parentType) {
-	'select' => 'Choices available in this field, in their display order.',
-	'group' => 'Fields available inside this block, in their display order.',
-	'checkbox' => 'Defines the value controlled by this switch. Enabled and disabled states are stored as 1 and 0.',
-	default => 'Build the fields people can fill in under Settings in the page editor. Your templates decide how those values affect the website.',
-};
-$columns = match ($parentType) {
-	'select' => ['label', 'value'],
-	'group', 'checkbox' => ['label', 'name', 'type'],
-	default => ['label', 'about'],
-};
-$heads = [
-	'label' => 'Label',
-	'value' => 'Value',
-	'name' => 'Name',
-	'type' => 'Type',
-	'about' => 'In the sidebar',
-];
-$chain = [];
-for ($walker = $selected; $walker instanceof Definition; $walker = $walker->parent) {
-	array_unshift($chain, $walker);
-}
-$ancestors = array_slice($chain, 0, -1);
-$heading = $selected !== null
-	? ($selected->label !== '' ? $selected->label : 'Untitled')
-	: 'Template Settings';
-$addId = $selected ? (int) $selected->nodeId : 1;
-$addLabel = match ($parentType) {
-	'select' => 'Add option',
-	'group' => 'Add field',
-	'checkbox' => 'Add value',
-	default => 'Add setting',
 };
 ?>
-<?php if ($selected !== null) { ?>
-	<p class="settingBack"><a class="ajax button" href="?id=<?= $selected->parent ? (int) $selected->parent->nodeId : 1 ?>"><i class="cmsIcon cmsIcon-arrow-left"></i><span><?= $e($selected->parent?->label ?: 'Template Settings') ?></span></a></p>
-<?php } ?>
-<h1><?= $e($heading) ?></h1>
-<p class="tagsHint"><?= $e($note) ?></p>
+<h1>Template Settings</h1>
+<p class="tagsHint">Create fields for the Settings area in Pages. Groups keep related fields together. Your templates decide how these values affect the website.</p>
 <section class="widget pageSettings">
-	<header>
-		<h2><?= $e($card) ?></h2>
-		<a class="ajax button submit" data-focus-id="template-setting-add" href="<?= htmlspecialchars($this->href, ENT_QUOTES) ?>edit/?parent_id=<?= $selected ? (int) $selected->nodeId : 0 ?>">
-			<i class="cmsIcon cmsIcon-plus"></i><span><?= $e($addLabel) ?></span>
-		</a>
-	</header>
-	<?php if ($this->rows === []) { ?>
-		<main><p>Nothing here yet.</p></main>
-	<?php } else { ?>
-		<div class="tableScroll">
-			<table>
-				<thead>
-					<tr>
-						<th></th>
-						<?php foreach ($columns as $column) { ?>
-							<th><?= $e($heads[$column]) ?></th>
-						<?php } ?>
-						<th></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ($this->rows as $row) {
-						/** @var Definition $row */
-						$id = (int) $row->nodeId;
-						$kind = (string) $row->type;
-						if ($parentType === 'select') {
-							$kind = 'option';
-						} elseif ($parentType === 'group' || $parentType === 'checkbox') {
-							$kind = 'input';
-						}
-						$label = $row->label !== '' ? $row->label : 'Untitled';
-						$name = (string) $row->name;
-						$typeLabel = match ($row->datatype) {
-							'int' => 'Number',
-							'decimal' => 'Decimal',
-							default => 'Text',
-						};
-						$about = match ($kind) {
-							'group' => 'A block of fields',
-							'select' => 'One choice',
-							'checkbox' => 'On or off',
-							default => match ($row->datatype) {
-								'int' => 'A number',
-								'decimal' => 'A decimal',
-								default => 'A text',
-							},
-						};
-						?>
-						<tr>
-							<td class="pageSettingDrag">
-								<i class="cmsIcon cmsIcon-grip-dots-vertical" aria-label="Drag to reorder"
-									data-drag_type="setting" data-id="<?= $id ?>"></i>
-								<div class="sort v insertBefore" data-drop_accept="setting" data-on_drop="insertBefore" data-id="<?= $id ?>"></div>
-								<div class="sort v insertAfter" data-drop_accept="setting" data-on_drop="insertAfter" data-id="<?= $id ?>"></div>
-							</td>
-							<?php foreach ($columns as $column) { ?>
-								<td><?php
-									if ($column === 'label') {
-										echo '<span class="settingLabel">';
-										echo '<a class="ajax" data-focus-id="setting-label-' . $id . '" href="' . $e($this->href) . 'edit/?id=' . $id . '">' . $e($label) . '</a>';
-										echo '</span>';
-									} elseif ($column === 'value' || $column === 'name') {
-										echo $e($name);
-									} elseif ($column === 'type') {
-										echo $e($typeLabel);
-									} else {
-										echo '<span class="settingAbout">' . $e($about) . '</span>';
-									}
-								?></td>
-							<?php } ?>
-							<td class="icons">
-								<ul>
+ <header class="settingCreateActions"><a class="ajax button" href="<?= $e($base) ?>edit/?kind=group" data-focus-id="template-group-add"><i class="cmsIcon cmsIcon-folder"></i><span>Add group</span></a><a class="ajax button submit" href="<?= $e($base) ?>edit/?parent_id=0" data-focus-id="template-setting-add"><i class="cmsIcon cmsIcon-plus"></i><span>Add setting</span></a></header>
+ <div class="tableScroll"><table><thead><tr><th></th><th aria-label="Type"></th><th>Label</th><th>Description</th><th></th></tr></thead><tbody><?php $render(SettingTree::load($this->scope)); ?></tbody></table></div>
 
-									<li><a class="ajax button icononly" data-focus-id="setting-edit-<?= $id ?>" title="Edit" href="<?= $e($this->href) ?>edit/?id=<?= $id ?>"><i class="cmsIcon cmsIcon-pen"></i></a></li>
-									<?php if (!is_array($row->options) || $row->options === []) { ?>
-										<li><button type="button" class="button transparent icononly" title="Delete" data-on_click="userConfirm" data-action="delete" data-id="<?= $id ?>" data-confirm="Delete this setting?"><i class="cmsIcon cmsIcon-trash"></i></button></li>
-									<?php } ?>
-								</ul>
-							</td>
-						</tr>
-					<?php } ?>
-				</tbody>
-			</table>
-		</div>
-	<?php } ?>
 </section>

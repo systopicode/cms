@@ -7,6 +7,7 @@ use Systopic\Db\Scope;
 use Systopic\Cms\Settings\TemplateEditor;
 use Systopic\Cms\Queries\SettingTree\SettingTree;
 use Systopic\Cms\Tables\Settings\Operator;
+use Systopic\Cms\Queries\SettingValues\SettingValues;
 $config = getenv('FLUXO_TEMPLATE_TEST_CONFIG');
 if (!$config || !str_starts_with(basename($config), 'DEV.')) throw new RuntimeException('Supply a DEV config through FLUXO_TEMPLATE_TEST_CONFIG.');
 $settings = json_decode(file_get_contents($config), true, flags: JSON_THROW_ON_ERROR);
@@ -26,11 +27,23 @@ try {
             check($kind . ' creates its hidden value automatically', count($d->options) === 1 && $d->options[0]->datatype === $d->datatype);
         }
     }
+    foreach (['text' => 'Caption', 'number' => 0, 'decimal' => '1.25'] as $kind => $default) {
+        $d = $definitions[$kind];
+        $scope->save(Operator::assignDefault($d, [$d->datatype => $default]));
+        $freshScope = new Scope($connection);
+        $reopened = SettingTree::byNodeId($freshScope, $d->nodeId);
+        check($kind . ' default survives reopening', (string) $reopened->default === (string) $default);
+        check($kind . ' default is readable by page templates', (string) SettingValues::of($freshScope, 1)->value($d->name) === (string) $default);
+    }
     $choice = $definitions['choice'];
     $first = TemplateEditor::create($scope, $choice, 'text', 'Left');
     $choice = SettingTree::byNodeId($scope, $choice->nodeId);
     $second = TemplateEditor::create($scope, $choice, 'text', 'Left');
     check('choice options have stable distinct values', $first->type === 'option' && $first->name === 'left' && $second->name === 'left_2');
+    $second = SettingTree::byNodeId($scope, $second->nodeId);
+    $scope->save(...SettingTree::move($scope, $second, -1));
+    $reordered = SettingTree::byNodeId(new Scope($connection), $choice->nodeId);
+    check('choice option order survives reopening', array_map(fn($o) => $o->name, $reordered->options) === ['left_2', 'left']);
     $field = TemplateEditor::create($scope, $definitions['group'], 'decimal', 'Width');
     check('group child stores its own number type', $field->type === 'input' && $field->datatype === 'decimal');
     $switch = $definitions['switch']; $key = $switch->name;
@@ -38,7 +51,31 @@ try {
     check('renaming keeps the template connection', SettingTree::byNodeId($scope, $switch->nodeId)->name === $key);
     rejects('blank names never create partial definitions', fn() => TemplateEditor::create($scope, null, 'switch', ' '));
     rejects('switch cannot acquire extra values', fn() => TemplateEditor::create($scope, $switch, 'text', 'Extra'));
-    rejects('group rejects unsupported nested controls', fn() => TemplateEditor::create($scope, $definitions['group'], 'choice', 'Extra'));
+    $group = SettingTree::byNodeId($scope, $definitions['group']->nodeId);
+    $nestedSwitch = TemplateEditor::create($scope, $group, 'switch', 'Enabled', 'Optional explanation');
+    $group = SettingTree::byNodeId($scope, $group->nodeId);
+    $nestedChoice = TemplateEditor::create($scope, $group, 'choice', 'Alignment');
+    check('groups accept switches and choices', count($nestedSwitch->options) === 1 && $nestedChoice->type === 'select');
+    check('creation stores optional description', (string) $nestedSwitch->setting->description === 'Optional explanation');
+    $text = SettingTree::byNodeId($scope, $definitions['text']->nodeId);
+    $valueId = $text->options[0]->nodeId;
+    $group = SettingTree::byNodeId($scope, $group->nodeId);
+    TemplateEditor::place($scope, $text, $group);
+    $fresh = new Scope($connection);
+    $moved = SettingTree::byNodeId($fresh, $text->nodeId);
+    check('moving into a group preserves storage IDs', $moved->parent->nodeId === $group->nodeId && $moved->options[0]->nodeId === $valueId);
+    check('existing unique template key resolves after grouping', SettingTree::byName($fresh,$text->name)?->nodeId === $text->nodeId);
+    check('group.field paths resolve explicitly', SettingTree::byName($fresh,$group->name . '.' . $text->name)?->nodeId === $text->nodeId);
+    check('saved default survives grouping', SettingValues::of($fresh,1)->value($text->name) === 'Caption');
+    rejects('groups cannot be created in groups', fn() => TemplateEditor::create($scope,$group,'group','Nested'));
+    $otherGroup = TemplateEditor::create($scope,null,'group',$prefix . 'other_group');
+    rejects('groups cannot be dragged into groups', fn() => TemplateEditor::place($scope,$otherGroup,$group));
+    rejects('a group cannot contain itself', fn() => TemplateEditor::place($scope,$group,$group));
+    rejects('fields cannot move into a choice', fn() => TemplateEditor::place($scope,$moved,$nestedChoice));
+    $root = SettingTree::byNodeId($scope,$moved->nodeId);
+    TemplateEditor::place($scope,$root,null);
+    $fresh = new Scope($connection);
+    check('moving back to top level preserves values', SettingTree::byNodeId($fresh,$root->nodeId)->parent === null && SettingValues::of($fresh,1)->value($root->name) === 'Caption');
 } finally {
     if ($pdo->inTransaction()) $pdo->rollBack();
 }

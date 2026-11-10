@@ -128,11 +128,16 @@ final class SettingValues
         if ($definition === null) {
             return null;
         }
-        foreach ($definition->options as $option) {
+        return $this->valueOf($definition);
+    }
+
+    /** Same value semantics for a field displayed inside a group. */
+    public function valueOf(Definition $definition): mixed
+    {
+        $options = $definition->options ?: [$definition];
+        foreach ($options as $option) {
             $junction = $this->bySettingNode[$option->nodeId] ?? null;
-            if ($junction !== null) {
-                return Definition::valueIn($junction, $definition->datatype);
-            }
+            if ($junction !== null) return Definition::valueIn($junction, $definition->datatype);
         }
         return $definition->default;
     }
