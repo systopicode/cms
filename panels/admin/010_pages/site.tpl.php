@@ -34,8 +34,8 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 		$nodeId = $site->relationId('node');
 		// a site that came in with a backup has its row but not its folder
 		$hasFolder = \fs::isDir((string) \fs::$projectRoot . 'sites/' . $site->name);
-		// ... and no rules in the instance files of the other machines
-		$missingRules = SiteRegistry::filesWithoutHostRules($site->name);
+		// ... and no link on this machine: projects/<site> → this project
+		$missingLinks = SiteRegistry::missingLinks($site->name);
 		?>
 		<div data-site_id="<?= (int) $site->id ?>">
 			<h1>
@@ -48,9 +48,17 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 				<?php } ?>
 			</h1>
             <p><?= $this->sitePageCount($site) ?> pages directly below this site.</p>
+			<?php if ($missingLinks) { ?>
+				<div class="cms message is-stay siteLinkMissing"><div class="warning">
+					<p>Site link not created on this machine: <code><?= $e(implode('</code>, <code>', $missingLinks)) ?></code> → this project<?= $hasFolder ? '' : ', and the folder sites/' . $e($site->name) . '/' ?>.</p>
+					<p><button type="button" data-cms-action class="button submit" data-on_click="createSiteLink" data-site_id="<?= (int) $site->id ?>">
+						<i class="cmsIcon cmsIcon-link"></i> <?= $hasFolder ? 'Create site link' : 'Create site link and folder' ?>
+					</button></p>
+				</div></div>
+			<?php } ?>
             <details><summary>Technical details</summary>
                 <p>Folder <code>sites/<?= $e($site->name) ?>/</code>: <?= $hasFolder ? 'present' : '<b>missing</b>' ?>.</p>
-                <p>Stage addresses (RC, DEV) are configured in instance files. Site aliases below redirect to the site's domain.</p>
+                <p>Where a site answers on a stage (DEV, STAGING, RC) follows from its name and the pattern of the installation (Settings, Environment: Site addresses). Site aliases below redirect to the site's domain.</p>
             </details>
 			<label class="_8_8" data-on_change="updateSiteMeta">Site metadata (JSON: title, appName, author, description, keywords, robots, titleSeparator, shareImage)
 				<textarea name="meta" rows="14" spellcheck="false" style="font-family:monospace"><?= $e(json_encode($site->metaData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?></textarea>
@@ -63,18 +71,12 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
                 <button type="button" class="button" data-on_click="reviewSiteRename">Rename site…</button>
                 <p class="hint">Renaming can change the site directory and local links. The review lists the affected locations.</p>
             </div>
-			<?php if (!$hasFolder || $missingRules || $nodeId !== NULL) { ?>
+			<?php if ((!$hasFolder && !$missingLinks) || $nodeId !== NULL) { ?>
 				<p>
-				<?php if (!$hasFolder) { ?>
+				<?php if (!$hasFolder && !$missingLinks) { ?>
 					<button type="button" data-cms-action class="button submit" data-on_click="createSiteFolder" data-site_id="<?= (int) $site->id ?>"
 					   title="sites/<?= $e($site->name) ?>/templates/{document,components,pages,layout}/ create">
 						<i class="cmsIcon cmsIcon-folder-plus"></i> Create site folder
-					</button>
-				<?php } ?>
-				<?php if ($missingRules) { ?>
-					<button type="button" data-cms-action class="button submit" data-on_click="addSiteHostRules" data-site_id="<?= (int) $site->id ?>"
-					   title="No rule for <?= $e($site->name) ?> in <?= $e(implode(', ', $missingRules)) ?> — copy another site’s path rule">
-						<i class="cmsIcon cmsIcon-route"></i> Add host rule
 					</button>
 				<?php } ?>
 				<?php if ($nodeId !== NULL) { ?>

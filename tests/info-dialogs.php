@@ -27,7 +27,7 @@ foreach(['mml/groupInfo','sidebar/relationsHelp','sidebar/defaultMeta'] as $name
  }
  $all.=$html;
 }
-check('global defaults remain real navigation',str_contains($all,'class="ajax cmsTextLink" href="/public/admin/settings/pagesettings/"'));
+check('global defaults remain real navigation',str_contains($all,'class="ajax cmsTextLink" href="/public/admin/settings/config/?package=cms"'));
 check('share image points to Theme',str_contains($all,'href="/public/admin/settings/theme/"'));
 check('default sources are explained',str_contains($all,'built-in fallback'));
 file_put_contents('/private/tmp/fluxo-info-dialogs.html',$all);

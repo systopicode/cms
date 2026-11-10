@@ -3,7 +3,7 @@ namespace Systopic\System\Config {
  class Config {static function current(){return new class {public function site(){return new class {public string $name='example.test';public function meta($key){return ($_GET['case']??'')==='site' ? (['title'=>'Example site','description'=>'Site description','titleSeparator'=>'—'][$key]??null) : null;}};}};}}
 }
 namespace Systopic\System\Settings { class ThemeAssets {static function projectHref($slot){return '/theme-share.jpg';}} }
-namespace Systopic\Cms\Pages\Sites {class SiteRegistry {static function byName(...$args){return new class {public bool $isDefault=true;public function relationId($name){return null;}};}static function filesWithoutHostRules($name){return [];}}}
+namespace Systopic\Cms\Pages\Sites {class SiteRegistry {static function byName(...$args){return new class {public bool $isDefault=true;public function relationId($name){return null;}};}static function missingLinks($name){return [];}}}
 namespace {
 class http {public static $root='/public/';public static $siteUrl='https://example.test/';}
 class fs {public static $projectRoot='/tmp/';static function isDir($p){return true;}}

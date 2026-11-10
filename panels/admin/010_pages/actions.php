@@ -56,7 +56,7 @@ $savePage = function (PageRow $row): void {
 };
 
 // A site is its node; a new one goes onto the topmost level.
-if (in_array($this->action, ['createSite', 'updateSiteMeta', 'updateSiteAliases', 'renameSite', 'createSiteFolder', 'addSiteHostRules', 'removeSite'], true)
+if (in_array($this->action, ['createSite', 'updateSiteMeta', 'updateSiteAliases', 'renameSite', 'createSiteFolder', 'createSiteLink', 'removeSite'], true)
     && PageAccess::refuses($this->action === 'createSite' ? null : $this->actionSite?->node)) {
     $this->updateView('main');
     return;
@@ -192,12 +192,9 @@ switch ($this->action) {
             break;
         }
         try {
-            $site = \Systopic\Cms\Pages\Sites\SiteRegistry::create($this->scope, $name, null, $configLog);
+            $site = \Systopic\Cms\Pages\Sites\SiteRegistry::create($this->scope, $name);
             $nodeId = $site->relationId('node');
             message::confirm("Site $name created; folder sites/$name/ created.");
-            foreach ($configLog ?? [] as $line) {
-                message::confirm("config/$line");
-            }
             // a site with a node is selected like any node; the first site is the default site
             http::redirect($nodeId === null ? './?site=default' : './?id=' . $nodeId);
         } catch (\RuntimeException $e) {
@@ -265,20 +262,21 @@ switch ($this->action) {
         }
         break;
 
-    case 'addSiteHostRules':
-        // the same rules createSite writes - missing on a site from a backup
+    case 'createSiteLink':
+        // a site that came over by sync or a backup: the link of this machine, and its folder when that is missing too
         if ($this->actionSite) {
-            $isDefault = $this->actionSite->isDefault;
-            $nodeId = $this->actionSite->relationId('node');
-            $log = \Systopic\Cms\Pages\Sites\SiteRegistry::addHostRules($this->scope, $this->actionSite->name);
-            foreach ($log as $line) {
-                message::confirm("config/$line");
+            try {
+                $name = $this->actionSite->name;
+                if (\Systopic\Cms\Pages\Sites\SiteRegistry::createFolders($name)) {
+                    message::confirm("Folder sites/$name/ created.");
+                }
+                foreach (\Systopic\Cms\Pages\Sites\SiteRegistry::createLinks($name) as $path => $outcome) {
+                    $outcome === 'created' ? message::confirm("Link $path created.") : message::error($outcome);
+                }
+            } catch (\RuntimeException $e) {
+                message::error($e->getMessage());
             }
-            if ($log === []) {
-                message::info('No instance file changed: the rules already exist, or no matching rules were found.');
-            }
-            // a fresh request: the config of this one does not know the rule yet
-            http::redirect($isDefault ? './?site=default' : './?id=' . $nodeId);
+            $this->updateView('main');
         }
         break;
 
@@ -286,11 +284,8 @@ switch ($this->action) {
         if ($this->actionSite) {
             try {
                 $name = $this->actionSite->name;
-                $configLog = \Systopic\Cms\Pages\Sites\SiteRegistry::remove($this->scope, $this->actionSite);
+                \Systopic\Cms\Pages\Sites\SiteRegistry::remove($this->scope, $this->actionSite);
                 message::confirm("Site $name removed. The sites/$name/ directory has been retained.");
-                foreach ($configLog as $line) {
-                    message::confirm("config/$line");
-                }
                 http::redirect('./?site=default');
             } catch (\RuntimeException $e) {
                 message::error($e->getMessage());

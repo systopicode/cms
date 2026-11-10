@@ -16,11 +16,11 @@ use Systopic\Cms\Queries\SettingTree\SettingTree;
  */
 class Panel extends SettingsPanel {
 
-	public $icon = 'cmsIcon cmsIcon-sliders';
+	public $icon = 'cmsIcon cmsIcon-duotone cmsIcon-files';
 
 	public function __construct($name, $parent = NULL) {
 		parent::__construct($name, $parent);
-		$this->label = 'Template Settings';
+		$this->label = 'Page Settings';
 	}
 
 	/** The declaration on screen — NULL at the root. */

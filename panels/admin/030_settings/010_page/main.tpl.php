@@ -1,6 +1,5 @@
 <?php
 /** @var \Systopic\Cms\Panels\Root\Admin\Settings\Page\Panel $this */
-use Systopic\Cms\Queries\SettingTree\Definition;
 use Systopic\Cms\Queries\SettingTree\SettingTree;
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 $base = $this->href;
@@ -23,7 +22,7 @@ $render = function(array $rows, int $depth = 0) use (&$render, $e, $base, $open)
 
 };
 ?>
-<h1>Template Settings</h1>
+<h1><?= $e($this->label) ?></h1>
 <p class="tagsHint">Create fields for the Settings area in Pages. Groups keep related fields together. Your templates decide how these values affect the website.</p>
 <section class="widget pageSettings">
  <header class="settingCreateActions"><a class="ajax button" href="<?= $e($base) ?>edit/?kind=group" data-focus-id="template-group-add"><i class="cmsIcon cmsIcon-folder"></i><span>Add group</span></a><a class="ajax button submit" href="<?= $e($base) ?>edit/?parent_id=0" data-focus-id="template-setting-add"><i class="cmsIcon cmsIcon-plus"></i><span>Add setting</span></a></header>
