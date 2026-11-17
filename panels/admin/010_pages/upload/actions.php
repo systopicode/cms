@@ -149,6 +149,8 @@ $store = static function (string $tmpFileNative, string $fileName, string $label
         \Systopic\System\Tables\Medias\External::storeUrl($media, (string) http::put('url'));
     }
 	$pages->uow()->persist($media)->commit();
+	// The preview every picture has from the start: the master and its smallest size.
+	\Systopic\System\Media\VariantServer::preview($pages->scope, (int) $media->id);
 	if ($replace < 1) {
 		$raw = http::put('tags', null);
 		if (is_string($raw)) {
