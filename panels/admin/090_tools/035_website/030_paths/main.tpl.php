@@ -68,7 +68,7 @@ usort($entries, static function (array $a, array $b): int {
 								<?php if ($node?->isTrashed) { ?><span class="logPill is-bad">Trash</span><?php } ?>
 							</td>
 							<td class="muted"><?= $e($langName($page?->languageIso)) ?></td>
-							<td>
+							<td data-table-summary>
 								<?= $e($shown) ?>
 								<?php if ($path->isPrimary) { ?><span class="logPill">Primary</span><?php } ?>
 								<?php if ($page !== null && !$page->isPublished) { ?><span class="logPill">Unpublished</span><?php } ?>

@@ -118,6 +118,9 @@
 				},
 				"list": {
 					"title": "Languages",
+                    "x-orderable": true,
+                    "x-display": "table",
+                    "x-flags": true,
 					"type": "object",
 					"x-constant": "LANGUAGES",
 					"propertyNames": {
@@ -139,7 +142,7 @@
 								"x-entry-name": true
 							},
 							"activated": {
-								"title": "On",
+								"title": "Active",
 								"type": "boolean",
 								"default": true
 							}

@@ -50,13 +50,13 @@ $items = static fn(string $key): array => match ($key) {
 			<li class="is-<?= $level ?>">
 				<?php if (in_array($key, ['trashed', 'deadlinks', 'unusedmedia', 'misses'], true)) {
 					$tool = match ($key) {
-						'trashed' => 'trash/',
-						'unusedmedia' => 'unused/',
-						'misses' => 'misses/',
-						default => 'links/',
+						'trashed' => 'cleanup/trash/',
+						'unusedmedia' => 'cleanup/unused/',
+						'misses' => 'website/misses/',
+						default => 'website/links/',
 					};
 					?>
-					<a class="ajax" href="<?= $e(\http::$root . 'admin/tools/maintenance/' . $tool) ?>"><?= $count ?><span class="button transparent icononly summaryToggle dashForward" aria-hidden="true"><i class="cmsIcon cmsIcon-chevron-right"></i></span></a>
+					<a class="ajax" href="<?= $e(\http::$root . 'admin/tools/' . $tool) ?>"><?= $count ?><span class="button transparent icononly summaryToggle dashForward" aria-hidden="true"><i class="cmsIcon cmsIcon-chevron-right"></i></span></a>
 				<?php } else { ?>
 					<details>
 						<summary><?= $count ?></summary>

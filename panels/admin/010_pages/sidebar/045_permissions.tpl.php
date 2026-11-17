@@ -68,7 +68,7 @@ $writable = Session::current()->writeGroupIds;
 	echo ' Visitors of the site see a page through a group the role Everyone may read.';
 ?></p>
 <?php if (!defined('PAGE_ACL') || !PAGE_ACL) { ?>
-	<p class="hint">Not switched on for this project yet (PAGE_ACL in the global settings): the groups are kept, but every page shows to everyone.</p>
+	<p class="hint">Not switched on for this project yet (CMS Config → Access → Page permissions): the groups are kept, but every page shows to everyone.</p>
 <?php } ?>
 <?php if ($active !== []) {
 	// who that means: each group of the page, the roles with a right on it,
