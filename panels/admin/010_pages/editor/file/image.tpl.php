@@ -32,6 +32,9 @@
 		?>
 	</select>
 <button type="button" class="button submit" data-edit-image<?= $selectedFormat === 'original' ? ' disabled' : '' ?> aria-label="Edit image"><i class="cmsIcon cmsIcon-pen"></i>Edit</button>
+<?php // The editor of master and aspect ratios (sys.cropEditor) is what opens. This toolbar and the frame below are the
+      // editor of the named formats - reached from there by "Old editor", until it goes. ?>
+<button type="button" class="button" data-crop-editor aria-label="Back to master and crops"><i class="cmsIcon cmsIcon-crop-simple"></i>Master &amp; crops</button>
 </div>
 <div class="fileFrame imageCropAlignContainer">
 	<div class="frameView" hidden>
@@ -71,6 +74,13 @@
    formats:[...formats.options].filter(o=>o.value!=='original').map(o=>({key:o.value,label:o.textContent}))});
  }
  stage.querySelector('[data-edit-image]').addEventListener('click',edit);
+ const openCropEditor=()=>{
+  if(stage.querySelector('.cropEditor') || !window.sys || !sys.cropEditor)return;
+  // Coming back from it, the old view measures itself again: it was hidden while the image loaded.
+  sys.cropEditor.open({stage:stage,nodeId:<?= (int) $this->targetId ?>,old:<?= \Systopic\System\Media\Variants::live() ? 'false' : 'true' ?>,url:<?= json_encode(rtrim((string) http::$root, '/') . '/' . ltrim($this->getPath(), '/')) ?>,onClose:()=>reset()});
+ };
+ stage.querySelector('[data-crop-editor]').addEventListener('click',openCropEditor);
+ openCropEditor();
  frame.querySelectorAll('[data-preview-zoom]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.previewZoom==='fit')reset();else{zoom=Math.max(.25,Math.min(8,zoom*(button.dataset.previewZoom==='in'?1.25:.8)));fit();}}));
  frame.addEventListener('wheel',event=>{event.preventDefault();zoom=Math.max(.25,Math.min(8,zoom*Math.exp(-Math.max(-100,Math.min(100,event.deltaY))*.002)));fit();},{passive:false});
  view.addEventListener('pointerdown',event=>{if(event.button!==0 || (view.offsetWidth*zoom<=frame.clientWidth && view.offsetHeight*zoom<=frame.clientHeight))return;event.preventDefault();view.setPointerCapture(event.pointerId);drag={id:event.pointerId,x:event.clientX,y:event.clientY,pan:{...pan}};});
