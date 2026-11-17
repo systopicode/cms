@@ -330,7 +330,7 @@ body[data-cms-device="mobile"] article.cmsContent{
    the tree keeps the width it was pulled to (30_layout.css limits it).
    The phone layout starts below this. */
 @media (max-width: 1180px) and (min-width: 861px){
-    body.pages aside.cms{
+    body.pages > main > .content aside.cms{
         flex: 0 1 16rem !important;
         width: auto !important;
         min-width: 14rem !important;

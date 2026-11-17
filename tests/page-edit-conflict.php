@@ -3,6 +3,8 @@ require dirname(__DIR__, 2) . '/system/tests/bootstrap.php';
 class http { public static string $version=''; static function post($key,$fallback=''){return $fallback;} static function dataset($key,$fallback=''){return $key==='field_version'?self::$version:$fallback;} }
 class client { static array $calls=[];static function callFunction($name,$args){self::$calls[]=[$name,$args];} }
 class message { static function error($text){} }
+// Access is exercised separately; this fixture tests field version conflicts.
+class PageAccess { static function refusesEdit($page){return false;} }
 class TestOperator {
  static int $touches=0;
  static function propertyOf($field){return $field==='text01'?'text01':null;}

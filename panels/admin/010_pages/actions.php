@@ -462,6 +462,10 @@ switch ($this->action) {
     case 'updatePageParam':  // contenteditable fields: text as html, html fields
     case 'updateTextfield':  // plain inputs and textareas
     case 'updateHTML':       // the HTML lightbox
+        // Inline values already live in the editor. Rendering their save response
+        // replaces the preview after blur and loses Safari's keyboard scroll.
+        // Keep commands (field version / conflicts), without rebuilding the view.
+        if ($this->action !== 'updateHTML') $renderStyle = 'none';
         if ($this->action === 'updateHTML') {
             $nodeId = (int) http::post('node_id');
             $field = (string) http::post('field');
