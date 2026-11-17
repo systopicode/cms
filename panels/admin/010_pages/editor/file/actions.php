@@ -193,46 +193,11 @@ switch ($this->action) {
 	case 'saveRatioCrop':
 	case 'resetCrop':
 	case 'savePois':
-		// The image editor of master and ratios (Media\CropEdits). Every one of
-		// them answers with the medium as it is afterwards - the editor redraws
-		// from that, so what it shows is what was stored.
-		//
-		//   cropState                                        nothing changes
-		//   saveMasterCrop  ratio cx cy scale | auto=1       + brightness contrast saturation angle flip
-		//   saveRatioCrop   ratio cx cy scale
-		//   resetCrop       format=<ratio>|original          back to automatic
-		//   savePois        pois=<json> [drop_crops=1]
-		$set = $row === NULL || $row->id === null ? NULL : \Systopic\System\Queries\MediaCrops\MediaCrops::one($pages->scope, (int) $row->id);
-		if ($set === NULL) { http_response_code(404); break; }
-		$edit = ['save' => [], 'remove' => [], 'clipped' => []];
-		$box = \Systopic\System\Media\CropEdits::boxFrom(http::get('ratio'), http::get('cx'), http::get('cy'), http::get('scale'));
-		try {
-			if ($this->action === 'saveMasterCrop') {
-				$auto = (int) http::get('auto', 0) === 1;
-				if (!$auto && $box === NULL) { http_response_code(422); break; }
-				$edit = \Systopic\System\Media\CropEdits::master($set, $auto ? NULL : $box, [
-					'b' => http::get('brightness', 100), 'c' => http::get('contrast', 100), 's' => http::get('saturation', 100),
-					'r' => http::get('angle', 0), 'f' => (int) http::get('flip', 0) === 1 ? 1 : 0,
-				]);
-			} elseif ($this->action === 'saveRatioCrop') {
-				$edit = $box === NULL ? NULL : \Systopic\System\Media\CropEdits::crop($set, $box);
-				if ($edit === NULL) { http_response_code(422); break; }
-			} elseif ($this->action === 'resetCrop') {
-				$edit = \Systopic\System\Media\CropEdits::reset($set, (string) http::get('format', ''));
-			} elseif ($this->action === 'savePois') {
-				$pois = json_decode((string) http::get('pois', '[]'), true);
-				if (!is_array($pois)) { http_response_code(422); break; }
-				$edit = \Systopic\System\Media\CropEdits::pois($set, $pois, (int) http::get('drop_crops', 0) === 1);
-			}
-		} catch (\InvalidArgumentException $e) {
-			http_response_code(422);
-			break;
-		}
-		$set = \Systopic\System\Media\CropEdits::apply($pages->scope, $set, $edit);
-		p()->erase();
-		header('Content-Type: application/json; charset=utf-8');
-		echo json_encode(\Systopic\System\Media\CropEdits::state($set) + ['clipped' => $edit['clipped']]);
-		exit;
+		// The image editor of master and ratios: answered by system (Media\CropEditorEndpoint),
+		// the rights were checked above (PageAccess).
+		\Systopic\System\Media\CropEditorEndpoint::send(\Systopic\System\Media\CropEditorEndpoint::answer(
+			$this->action, $pages->scope, $row === NULL ? 0 : (int) $row->id, static fn(string $name, mixed $default = NULL): mixed => http::get($name, $default)
+		));
 
 	case 'adjustImage':
 		if ($row === NULL || $row->id === null) {
