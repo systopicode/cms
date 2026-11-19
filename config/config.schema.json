@@ -93,6 +93,31 @@
 				}
 			}
 		},
+		"media": {
+			"title": "Media",
+			"description": "Where the files of a page go and what they may be.",
+			"type": "object",
+			"x-project": true,
+			"properties": {
+				"groups": {
+					"title": "Media groups",
+					"description": "The places for files on a page (main, gallery …). File types: separated by commas, jpg, png, webp, svg, pdf, mp4, mp3 … Empty: every supported type. Templates: the templates that offer the group, separated by semicolons. Empty: every template. Existing files stay; the types count for uploads, replacements and moves from now on.",
+					"type": "object",
+					"x-display": "table",
+					"x-orderable": true,
+					"propertyNames": { "description": "The name of the group, as the templates use it: main, gallery …", "pattern": "^[a-z][a-zA-Z0-9]*$" },
+					"additionalProperties": {
+						"title": "Media group",
+						"type": "object",
+						"properties": {
+							"label": { "title": "Label", "type": "string", "x-entry-name": true },
+							"file_extension": { "title": "File types", "type": "string" },
+							"templates": { "title": "Templates", "type": "string" }
+						}
+					}
+				}
+			}
+		},
 		"languages": {
 			"title": "Languages",
 			"description": "The languages of the website. A new one is added on every installation; where the database has no content in it yet, its pages are empty.",

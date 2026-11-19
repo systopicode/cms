@@ -1,7 +1,11 @@
 <?php
 /**
- * The file editor — label, file name, svg source, video poster, the image
- * format on screen.
+ * The file editor — label, file name, svg source, video poster, and the
+ * requests of the image editor (Media\CropEditorEndpoint).
+ *
+ * Dropped with the old editor of the named formats (2026-11-19):
+ * `saveImageEdit`, `adjustImage`, `restoreOriginal`, `changeImageFormat`,
+ * `startCroping` - the names are aliases of a ratio and a size now.
  *
  * Dropped with the ORM round: `changeFileParam` (no caller; it wrote a column
  * named by the request) and `updateJunction` (its form in settings.php was
@@ -31,8 +35,8 @@ if (in_array($this->action, ['addTag', 'addTagTo_page', 'removeTagFrom_page'], t
 	return;
 }
 
-// Everything below but the format on screen changes the medium.
-if (!in_array($this->action, ['changeImageFormat', 'startCroping'], true) && $row !== NULL && PageAccess::refuses($row->node)) {
+// Everything below changes the medium.
+if ($row !== NULL && PageAccess::refuses($row->node)) {
 	return;
 }
 
@@ -40,29 +44,6 @@ if (!in_array($this->action, ['changeImageFormat', 'startCroping'], true) && $ro
 $save = static function () use ($pages, $row): void {
 	MediaOperator::touch($row, $pages->userId());
 	$pages->uow()->persist($row)->commit();
-};
-
-$formatsOf = function (bool $all): array {
-	$current = (string) http::get('format', (string) ($this->state->format ?? ''));
-	if ($current === '' || $current === 'original') {
-		foreach (mediaFormats::get() as $name => $config) {
-			if (($config['cms_display'] ?? '') !== 'none' && $name !== 'original') {
-				$current = (string) $name;
-				break;
-			}
-		}
-	}
-	if (!$all) {
-		return $current !== '' && $current !== 'original' ? [$current] : [];
-	}
-	$names = [];
-	foreach (mediaFormats::get() as $name => $config) {
-		if (($config['cms_display'] ?? '') === 'none' || $name === 'original') {
-			continue;
-		}
-		$names[] = (string) $name;
-	}
-	return $names;
 };
 
 switch ($this->action) {
@@ -158,36 +139,6 @@ switch ($this->action) {
 		}
 		break;
 
-	case 'saveImageEdit':
-        if ($row === NULL || $row->id === null) { http_response_code(404); break; }
-        $currentFormats = $formatsOf(false);
-        $names = $formatsOf((int) http::get('apply_all', 0) === 1);
-        $geometry = [];
-        foreach (['left','top','width','height'] as $key) {
-            $value = filter_var(http::get($key), FILTER_VALIDATE_FLOAT);
-            if ($value === false || !is_finite($value) || abs($value) > 100 || (in_array($key, ['width','height'], true) && $value <= 0)) {
-                http_response_code(422); break 2;
-            }
-            $geometry[$key] = $value;
-        }
-        $tune = ['b'=>max(0,min(200,(int) http::get('brightness',100))),
-            'c'=>max(0,min(200,(int) http::get('contrast',100))),
-            's'=>max(0,min(200,(int) http::get('saturation',100))),
-            'r'=>((int) http::get('rotate',0)%360+360)%360,'f'=>(int) ((int) http::get('flip',0) === 1)];
-        if (!in_array($tune['r'], [0,90,180,270], true) || $names === []) { http_response_code(422); break; }
-        foreach ($names as $name) {
-            // Crop belongs to its format. Only image adjustments may propagate.
-            if (in_array($name, $currentFormats, true)) {
-                [$editMedia,$editCrop] = \Systopic\System\Queries\MediaCrop\MediaCrop::of($pages->scope,(int) $row->id,$name);
-                $pages->scope->save(\Systopic\System\Tables\MediaCrops\Operator::cropped(
-                    $editCrop,$editMedia,$name,$geometry['left'],$geometry['top'],$geometry['width'],$geometry['height']));
-            }
-            MediaFiles::saveTune((int) $row->id,(string) $row->filename,$name,$tune);
-            MediaFiles::dropFormatFile((int) $row->id,$name,(string) $row->filename);
-        }
-        header('X-Image-Edit: saved');
-        break;
-
 	case 'cropState':
 	case 'saveMasterCrop':
 	case 'saveRatioCrop':
@@ -199,70 +150,5 @@ switch ($this->action) {
 		\Systopic\System\Media\CropEditorEndpoint::send(\Systopic\System\Media\CropEditorEndpoint::answer(
 			$this->action, $pages->scope, $row === NULL ? 0 : (int) $row->id, static fn(string $name, mixed $default = NULL): mixed => http::get($name, $default)
 		));
-
-	case 'adjustImage':
-		if ($row === NULL || $row->id === null) {
-			break;
-		}
-		$brightness = max(0, min(200, (int) http::get('brightness', 100)));
-		$contrast = max(0, min(200, (int) http::get('contrast', 100)));
-		$saturation = max(0, min(200, (int) http::get('saturation', 100)));
-		$rotate = ((int) http::get('rotate', 0) % 360 + 360) % 360;
-		$flip = (int) http::get('flip', 0) === 1;
-		if ($brightness === 100 && $contrast === 100 && $saturation === 100 && $rotate === 0 && !$flip) {
-			break;
-		}
-		$tune = ['b' => $brightness, 'c' => $contrast, 's' => $saturation, 'r' => $rotate, 'f' => $flip ? 1 : 0];
-		$currentFormats = $formatsOf(false);
-        $names = $formatsOf((int) http::get('apply_all', 0) === 1);
-		if ($names === []) {
-			header('X-Adjust: empty');
-			http_response_code(422);
-			break;
-		}
-		$existingTunes = MediaFiles::tunes((int) $row->id, (string) $row->filename);
-		foreach ($names as $name) {
-			$combined = MediaFiles::composeTune($existingTunes[$name] ?? [], $tune);
-			MediaFiles::saveTune((int) $row->id, (string) $row->filename, $name, $combined);
-			MediaFiles::dropFormatFile((int) $row->id, $name, (string) $row->filename);
-		}
-		header('X-Adjust: saved');
-		break;
-
-	case 'restoreOriginal':
-		if ($row === NULL || $row->id === null) {
-			break;
-		}
-		// A backup from before the original was written over. The original is no longer edited.
-		$path = MediaFiles::originalPath($row);
-		$master = $path . '.master';
-		if (is_file($master)) {
-			copy($master, $path);
-			MediaFiles::describe($row);
-			MediaFiles::saveTune((int) $row->id, (string) $row->filename, null, null);
-			MediaFiles::removeFormats($row);
-			$save();
-		} else {
-			foreach ($formatsOf((int) http::get('apply_all', 0) === 1) as $name) {
-				MediaFiles::saveTune((int) $row->id, (string) $row->filename, $name, null);
-				MediaFiles::dropFormatFile((int) $row->id, $name, (string) $row->filename);
-			}
-		}
-		$pages->updateView('mml');
-		break;
-
-	case 'changeImageFormat':
-		// The select sends the format NAME - the src it maps to is built here,
-		// and the choice is remembered, so a re-render of the lightbox marks
-		// the entry the image is actually showing (see image.tpl.php).
-		$format = (string) http::values('imageEditorFormat');
-		$this->state->format = $format;
-		if ($this->media !== NULL) {
-			client::callFunction('changeSrc', [$this->media->setFormat($format)->src]);
-		}
-		break;
-
-	case 'startCroping':
-		client::callFunction('startCroping');
 		break;
 }

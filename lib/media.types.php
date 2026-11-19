@@ -6,14 +6,12 @@ if (function_exists('mediaTypeFieldsHtml')) {
 /**
  * media_type ist unabhängig vom Datei-Mimetype.
  * Erlaubte Uploads: mediaInfo::$mimetypes.
- * Externe Anbieter: EXTERNAL_MEDIAS in settings.php (YouTube, Vimeo, …).
+ * Externe Anbieter: EXTERNAL_MEDIAS, packages.system.media.external in config.json (YouTube, Vimeo, …).
  */
 
 function mediaExternalTypes(): array {
-	$raw = defined('EXTERNAL_MEDIAS') ? EXTERNAL_MEDIAS : [];
-	if (!is_array($raw)) {
-		return [];
-	}
+	// packages.system.media.external in config.json; one name typed alone is a string
+	$raw = defined('EXTERNAL_MEDIAS') ? (array) EXTERNAL_MEDIAS : [];
 	$out = [];
 	foreach ($raw as $label) {
 		$label = trim((string) $label);

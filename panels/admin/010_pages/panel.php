@@ -118,14 +118,19 @@ class Panel extends CmsPanel {
 	}
 
 	/**
-	 * The media groups of the project — `$media_groups` in settings.php
-	 * (label, public, file_extension). Not loaded into the panel scope, so
-	 * read from the global, else from settings.media_groups.php.
+	 * The media groups of the project (label, file_extension, templates):
+	 * `packages.cms.media.groups` in config.json. A project not moved yet
+	 * still has `$media_groups` in settings.php - not loaded into the panel
+	 * scope, so read from the global, else from settings.media_groups.php.
 	 *
 	 * @return array<string, array<string, mixed>>
 	 */
 	public array $mediaGroups {
 		get {
+			$configured = \Systopic\System\Config\Config::current()?->package('cms')['media']['groups'] ?? NULL;
+			if (is_array($configured) && $configured !== []) {
+				return $configured;
+			}
 			global $media_groups;
 			if (!is_array($media_groups ?? NULL) || $media_groups === []) {
 				$file = (\fs::$siteRoot !== NULL && \fs::$siteRoot->exists) ? (string) \fs::$siteRoot . 'settings.media_groups.php' : '';
