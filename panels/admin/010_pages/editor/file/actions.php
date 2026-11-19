@@ -191,6 +191,7 @@ switch ($this->action) {
 	case 'cropState':
 	case 'saveMasterCrop':
 	case 'saveRatioCrop':
+	case 'saveRatioCrops':
 	case 'resetCrop':
 	case 'savePois':
 		// The image editor of master and ratios: answered by system (Media\CropEditorEndpoint),
