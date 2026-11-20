@@ -44,7 +44,7 @@ $badge = static function (object $media): string {
 				? $file->poster
 				: $file->setFormat((string) $media->mimetype === 'image/svg+xml' ? 'original' : 'mmlThumb')->src);
 			?>
-			<a class="ajax<?= $face['mark'] ? ' is-mark' : '' ?>" href="<?= $e(rtrim((string) $this->href, '/') . '/editor/file/?target_id=' . (int) $node) ?>" title="<?= $e(trim((string) $media->label) ?: (string) $media->filename) ?>">
+			<a class="ajax<?= $face['mark'] ? ' is-mark' : '' ?>" href="<?= $e(rtrim((string) $this->href, '/') . '/' . \Systopic\System\Media\Presentation::editorPath((int) $node, (string) $media->mimetype, (string) $media->filename, (string) $media->type)) ?>" title="<?= $e(trim((string) $media->label) ?: (string) $media->filename) ?>">
 				<?php if (!$face['mark']) { ?>
 				<img src="<?= $e($src) ?>" alt="" loading="lazy" data-broken="<?= $e($this->brokenIcon($media)) ?>">
 				<?php } ?>

@@ -1,7 +1,9 @@
 <?php
 /**
- * The file editor — label, file name, svg source, video poster, and the
- * requests of the image editor (Media\CropEditorEndpoint).
+ * The file editor — label, file name, type, tags, delete: what every kind
+ * of medium has. The kinds answer their own requests first and then hand
+ * on to this file (image/, video/, svg/ actions.php); so do the tabs of the
+ * image editor, whose address the sidebar's requests go to while one is open.
  *
  * Dropped with the old editor of the named formats (2026-11-19):
  * `saveImageEdit`, `adjustImage`, `restoreOriginal`, `changeImageFormat`,
@@ -110,45 +112,4 @@ switch ($this->action) {
 		}
 		break;
 
-	case 'updateSVG':
-		if ($row !== NULL) {
-			MediaFiles::writeOriginal($row, (string) http::values('svgContent'));
-			$save();
-			client::replace('img#svgPreviewImage', "<img id='svgPreviewImage' src='{$this->media->setFormat('original')->url}?v=" . time() . "' />");
-		}
-		break;
-
-	case 'createPoster':
-		if ($row !== NULL) {
-			$data = (string) http::post('value');
-			$binary = (string) base64_decode(substr($data, strpos($data, ',') + 1));
-			$format = (string) http::get('format', 'original');
-			$parts = function_exists('videoFormatMediaParts') ? videoFormatMediaParts($this->media) : null;
-			if ($format !== '' && $format !== 'original' && $parts && function_exists('videoFormatRel')) {
-				$rel = preg_replace('/\.mp4$/', '.webp', videoFormatRel($format, $parts['folders'], $parts['filename']));
-				$path = \fs::toNative((string) \fs::$siteRoot . $rel);
-				$dir = dirname($path);
-				if (!is_dir($dir)) {
-					@mkdir($dir, 0775, true);
-				}
-				file_put_contents($path, $binary);
-			} else {
-				MediaFiles::writePoster($row, $binary);
-			}
-			$save();
-		}
-		break;
-
-	case 'cropState':
-	case 'saveMasterCrop':
-	case 'saveRatioCrop':
-	case 'saveRatioCrops':
-	case 'resetCrop':
-	case 'savePois':
-		// The image editor of master and ratios: answered by system (Media\CropEditorEndpoint),
-		// the rights were checked above (PageAccess).
-		\Systopic\System\Media\CropEditorEndpoint::send(\Systopic\System\Media\CropEditorEndpoint::answer(
-			$this->action, $pages->scope, $row === NULL ? 0 : (int) $row->id, static fn(string $name, mixed $default = NULL): mixed => http::get($name, $default)
-		));
-		break;
 }

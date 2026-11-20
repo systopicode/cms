@@ -5,11 +5,15 @@
  *
  * @var \Systopic\Cms\Panels\Root\Admin\Pages\Editor\File\Image\Panel $this
  */
+if ($this->tab === 'files') {
+	include __DIR__ . '/files.tpl.php';
+	return;
+}
 $options = [
 	'nodeId' => $this->targetId,
 	'url' => $this->image()->href,
 	'mode' => $this->tab,
-	'ratio' => $this->ratioAsked,
+	'ratio' => $this->shownFirst,
 ];
 ?>
 <div class="fileFrame" data-crop-stage="<?= (int) $this->targetId ?>"></div>

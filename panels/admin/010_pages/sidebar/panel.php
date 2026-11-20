@@ -126,7 +126,7 @@ class Panel extends CmsPanel {
 		}
 		$src = htmlspecialchars((string) $media->setFormat('shareImage')->src, ENT_QUOTES);
 		return $picker . "<img src='$src' alt=''><div class='dropActions'>"
-			. "<a class='ajax' href='editor/file/?target_id=$id&format=shareImage' title='Crop and adjust'><i class='cmsIcon cmsIcon-pen'></i></a>"
+			. "<a class='ajax' href='" . htmlspecialchars(\Systopic\System\Media\Presentation::editorPath((int) $id, (string) $media->mimetype, (string) $media->filename, (string) $media->type, 'shareImage'), ENT_QUOTES) . "' title='Crop and adjust'><i class='cmsIcon cmsIcon-pen'></i></a>"
 			. "<button type='button' data-on_click='sidebar/resetShareImage' title='Use the site image' aria-label='Use the site image' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-arrow-rotate-left'></i></button>"
 			. "</div>";
 	}

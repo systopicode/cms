@@ -34,7 +34,7 @@ $tasks = array_filter([
 ], static fn(string $key): bool => $figures[$key] > 0, ARRAY_FILTER_USE_KEY);
 // the first ones concerned, each [href, text, small]: media open by themselves, the rest on their page
 $items = static fn(string $key): array => match ($key) {
-	'noalt' => array_map(static fn(array $media): array => [\http::$root . 'admin/pages/editor/file/?target_id=' . $media['node'], $media['filename'], $media['type']], Dashboard::unlabelled($scope)),
+	'noalt' => array_map(static fn(array $media): array => [\http::$root . 'admin/pages/' . \Systopic\System\Media\Presentation::editorPath((int) $media['node'], null, $media['filename'], $media['type']), $media['filename'], $media['type']], Dashboard::unlabelled($scope)),
 	'brokenlinks' => array_map(static fn(array $page): array => [$href . $page['id'], $page['label'], isset($page['target']) && str_starts_with($page['target'], \http::$root) ? substr($page['target'], strlen(\http::$root)) : ($page['target'] ?? null)], array_slice($broken, 0, 5)),
 	default => array_map(static fn(array $page): array => [$href . $page['id'] . '&lang=' . rawurlencode($page['language']), $page['label'], $page['language']], Dashboard::pages($scope, $key, 5)),
 };

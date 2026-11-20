@@ -13,7 +13,7 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
     <li class="iconsonly">
 	<ul>
 	    <li title="Edit" class="iconOnly">
-		<a class="ajax" href="editor/file/?target_id=<?= $nodeId ?>">
+		<a class="ajax" href="<?= $e(\Systopic\System\Media\Presentation::editorPath((int) $nodeId, (string) $media->mimetype, (string) $media->filename, (string) $media->type)) ?>">
 		    <i class="cmsIcon cmsIcon-crop-simple"></i>
 		</a>
 	    </li>

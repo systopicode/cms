@@ -71,7 +71,7 @@ $siteRoot = (string) http::$siteRoot;
 						<div class='thumbActions'>
 							<span class='thumbGrip' title='Drag'><span></span><span></span><span></span><span></span><span></span><span></span></span>
 							<div class='thumbButtons'>
-								<a class='ajax' href='editor/file/?target_id=<?= $id ?>' title='Edit: <?= $e($mediaLabel) ?>' aria-label='Edit: <?= $e($mediaLabel) ?>' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-pen'></i></a>
+								<a class='ajax' href='<?= $e(\Systopic\System\Media\Presentation::editorPath((int) $id, (string) ($media?->mimetype ?? ''), (string) ($media?->filename ?? ''), (string) ($media?->type ?? ''))) ?>' title='Edit: <?= $e($mediaLabel) ?>' aria-label='Edit: <?= $e($mediaLabel) ?>' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-pen'></i></a>
 								<label title='Replace' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'>
 									<i class='cmsIcon cmsIcon-arrows-rotate'></i>
 									<input type=file title="Replace file: <?= $e($mediaLabel) ?>" aria-label="Replace file: <?= $e($mediaLabel) ?>" accept="<?= $e(GroupPolicy::accept($groupInfo, $groupName)) ?>" data-on_change='upload/open'>
