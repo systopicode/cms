@@ -63,10 +63,7 @@ class appSite {
 		$robots = $this->robots;
 		$url = $this->url;
 		$site = $this->siteName !== '' ? $this->siteName : $title;
-		$image = $this->shareImage;
-		if ($image !== '' && !preg_match('~^https?://~i', $image)) {
-			$image = rtrim((string) \http::$siteUrl, '/') . '/' . ltrim($image, '/');
-		}
+		$image = $this->absoluteUrl($this->shareImage);
 		$tags = [];
 		if ($title !== '') {
 			$tags[] = '<title data-crawler="1">' . $e($title) . '</title>';
@@ -284,6 +281,11 @@ class appSite {
 		}
 		if (preg_match('~^https?://~i', $path)) {
 			return $path;
+		}
+		// An address from the root (`/projects/x/public/var/…` - Media::$src): the site's url already ends in it.
+		$root = (string) http::$root;
+		if ($root !== '/' && $root !== '' && str_starts_with($path, $root)) {
+			$path = substr($path, strlen($root));
 		}
 		return rtrim((string) http::$siteUrl, '/') . '/' . ltrim($path, '/');
 	}
