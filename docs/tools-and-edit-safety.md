@@ -37,9 +37,9 @@ the unsaved-changes navigation guard.
 
 ### Advisory editor presence
 
-Opening the same content in another tab/device shows an inline advisory, not a lock or an approval dialog. A lightweight request runs every five seconds while a Pages view is open, independent of Centrifugo. It detects page revision changes and advises reloading; retained edits still use the existing field-version conflict check. Aliases share the underlying page presence key.
+Opening the same content in another tab/device shows an inline advisory, not a lock or an approval dialog. There is no timer, no extra request and no relay: every request of a Pages view carries its tab and page (headers `X-Editor-Client`, `X-Editor-Page`, set in `pages.js`), and the Pages panel answers with `cmsPresence` — who else has the page open and its revision (`Panel::editorPresence`). Others learn of a change with their own next request. A revision changed by someone else advises reloading; retained edits still use the existing field-version conflict check. Aliases share the underlying page presence key. Closing a document sends one departure (`pagehide`, `X-Editor-Leave`); leaving the Pages module ends the presence with that request.
 
-The project-local `var/tmp/page-editors.json` contains only page/language keys, hashed session/tab identifiers and timestamps. Entries expire after 45 seconds and are pruned on the next check. The optional advisory fails quietly when temporary storage is unavailable; transactional conflict protection remains active. There is no permanent user setting and no additional external service.
+The project-local `var/tmp/page-editors.json` contains only page/language keys, hashed session/tab identifiers and timestamps. Without a heartbeat an entry lives 30 minutes (`EditorPresence::TTL`) and only clears a departure that never arrived. The optional advisory fails quietly when temporary storage is unavailable; transactional conflict protection remains active. There is no permanent user setting and no additional external service.
 
 Media editor and replacement use the same usage list template and sidebar fold markup. Website checks use only the existing Tools navigation, without another tab row.
 

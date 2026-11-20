@@ -16,7 +16,7 @@ try {
     check('old page has only remaining editor', EditorPresence::touch($path,'9:en','a',104) === 0);
     check('leaving removes this tab immediately', EditorPresence::touch($path,'','a',105) === 0);
     check('other client sees an empty page after leaving', EditorPresence::touch($path,'9:en','d',106) === 0);
-    check('stale editors expire', EditorPresence::touch($path,'10:en','c',150) === 0);
+    check('stale editors expire', EditorPresence::touch($path,'10:en','c',103 + EditorPresence::TTL + 1) === 0);
     $users=[];
     EditorPresence::touch($path,'20:en','person-a',200,3,$users);
     EditorPresence::touch($path,'20:en','person-b',201,4,$users);

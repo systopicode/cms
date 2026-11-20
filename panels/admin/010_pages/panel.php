@@ -5,7 +5,9 @@ namespace Systopic\Cms\Panels\Root\Admin\Pages;
 
 use Systopic\System\Tables\Nodes\Model as Node;
 
+use Systopic\Cms\Pages\EditorPresence;
 use Systopic\Cms\Pages\PageAccess;
+use Systopic\System\Auth\DeviceName;
 use Systopic\Cms\Pages\Sites\SiteRegistry;
 use Systopic\Cms\Tables\Sites\Model as SiteRow;
 use Systopic\Db\Scope;
@@ -438,6 +440,7 @@ class Panel extends CmsPanel {
 
 	function onLoadThisClass() {
 		if (!$this->inPath()) {
+			$this->editorPresence(NULL);
             if (!empty($this->state->pagesUiActive)) {
                 $this->state->pagesUiActive = false;
                 $this->child('sidebar')?->updateView('main');
@@ -446,8 +449,8 @@ class Panel extends CmsPanel {
 			return;
 		}
         $this->state->pagesUiActive = true;
-        if ($this->action === 'cmsPageSearch') return;
-		if (\http::method() !== 'GET') {
+		if ($this->action === 'cmsPageSearch' || \http::method() !== 'GET') {
+			$this->editorPresence($this->presencePageHeader());
 			return;
 		}
 		// A page address closes the search. The hit may be the page already
@@ -455,6 +458,12 @@ class Panel extends CmsPanel {
 		$hadSearch = trim((string) ($this->state->cmsPageSearchstring ?? '')) !== '';
 		$idBefore = $this->state->id;
 		$this->checkIfPageChanged();
+		// A page address names the page this answer shows; without one the
+		// tab still shows the page it had (the state is shared by all tabs).
+		$addressed = \http::get('id') !== NULL || \http::get('lang') !== NULL || \http::get('site') !== NULL;
+		$this->editorPresence($addressed
+			? ($this->state->id ? [(int) $this->state->id, (string) $this->state->lang] : NULL)
+			: $this->presencePageHeader());
         if (\http::get('relations') === 'aliases') {
             $sidebar = $this->child('sidebar');
             if ($sidebar !== null) {
@@ -482,6 +491,66 @@ class Panel extends CmsPanel {
 			$this->state->refreshPreview = false;
 			$this->updateView('main');
 		}
+	}
+
+	/** The page a Pages view names in its request (pages.js): [node, language], else NULL. */
+	function presencePageHeader(): ?array {
+		return preg_match('/^(\d+):([A-Za-z0-9_-]{0,16})$/D', (string) ($_SERVER['HTTP_X_EDITOR_PAGE'] ?? ''), $match)
+			? [(int) $match[1], $match[2]]
+			: NULL;
+	}
+
+	/**
+	 * Advisory editor presence — no timer, no relay. Every request of a
+	 * Pages view names its tab and its page (headers set by pages.js); the
+	 * answer tells that tab who else has the page open and its revision.
+	 * The others learn of it with their own next request.
+	 *
+	 * @param array{0: int, 1: string}|null $page what this tab shows now; NULL: no page, it left
+	 */
+	function editorPresence(?array $page): void {
+		$token = (string) ($_SERVER['HTTP_X_EDITOR_CLIENT'] ?? '');
+		$valid = static fn(string $token): bool => preg_match('/^[a-zA-Z0-9-]{16,80}$/D', $token) === 1;
+		if (!$valid($token)) {
+			return;
+		}
+		$file = \fs::toNative(\fs::$projectRoot . 'var/tmp/page-editors.json');
+		$tab = static fn(string $token): string => hash('sha256', session_id() . ':' . $token);
+		// A reloaded document retires the one it replaced.
+		$previous = (string) ($_SERVER['HTTP_X_EDITOR_PREVIOUS'] ?? '');
+		if ($previous !== $token && $valid($previous)) {
+			EditorPresence::touch($file, '', $tab($previous), time());
+		}
+		$row = $page !== NULL && empty($_SERVER['HTTP_X_EDITOR_LEAVE']) ? $this->pageIn($page[0], $page[1])?->row : NULL;
+		$peerUsers = []; $peerSessions = [];
+		$peers = EditorPresence::touch(
+			$file, $row === NULL ? '' : $row->id . ':' . $page[1], $tab($token), time(), (int) $this->userId(),
+			$peerUsers, DeviceName::from(DeviceName::requestAgent()), $peerSessions
+		);
+		if ($row === NULL) {
+			return;
+		}
+		$names = [];
+		$peerIds = array_values(array_unique(array_column($peerSessions, 'user')));
+		if ($peerIds) {
+			$namesById = [];
+			$rows = $this->scope->connection->all('SELECT user_id, user_name, user_fullname FROM usm_users WHERE user_id IN (' . implode(',', array_fill(0, count($peerIds), '?')) . ')', $peerIds);
+			foreach ($rows as $peer) $namesById[(int) $peer['user_id']] = trim((string) ($peer['user_fullname'] ?: $peer['user_name']));
+			foreach ($peerSessions as $peer) {
+				$name = (int) $peer['user'] === $this->userId() ? 'Another session' : ($namesById[$peer['user']] ?? 'Another session');
+				$names[] = $name . ($peer['device'] !== '' ? ' · ' . $peer['device'] : '');
+			}
+			$names = array_values(array_unique($names));
+		}
+		$connection = $this->scope->connection;
+		$revision = hash('sha256', json_encode([
+			$connection->all('SELECT * FROM cms_pages WHERE page_id = ?', [$row->id]),
+			$connection->all('SELECT junction_setting_node_id, junction_varchar, junction_int, junction_decimal FROM cms_junctions WHERE junction_node_id = ? ORDER BY junction_setting_node_id', [$page[0]]),
+		], JSON_THROW_ON_ERROR));
+		\client::callFunction('cmsPresence', [[
+			'node' => (string) $page[0], 'lang' => $page[1],
+			'available' => $peers !== NULL, 'others' => $peers ?? 0, 'names' => $names, 'revision' => $revision,
+		]]);
 	}
 
 	/** The media editor is the open panel — the preview stays as it is until it closes. */

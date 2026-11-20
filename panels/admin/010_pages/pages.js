@@ -204,19 +204,23 @@ function pageEditConflict(node, lang, field, version, metadata = {}) {
 }
 
 
-// Advisory only: works across devices without a hub and never locks a viewer out.
+// Advisory only: never locks a viewer out. No timer and no relay: every
+// request of a Pages view names this tab and its page (headers below), the
+// answer says who else has the page open and its revision (cmsPresence,
+// Panel::editorPresence). The others learn of it with their next request.
 (function () {
-    if (window.cmsEditorPresence) return;
-    window.cmsEditorPresence = true;
+    if (window.cmsPresence) return;
     // Retire the previous document on reload; a new tab keeps its own identity.
-    let previousClient;
+    let previousClient = '';
     try {
-        if (performance.getEntriesByType('navigation')[0]?.type === 'reload') previousClient = sessionStorage.getItem('cmsEditorPresenceClient');
+        if (performance.getEntriesByType('navigation')[0]?.type === 'reload') previousClient = sessionStorage.getItem('cmsEditorPresenceClient') || '';
     } catch {}
     const client = crypto.randomUUID?.() || Array.from(crypto.getRandomValues(new Uint8Array(16)), n=>n.toString(16).padStart(2,'0')).join('');
     try { sessionStorage.setItem('cmsEditorPresenceClient', client); } catch {}
     const revisions = new Map();
-    let pending = false, pendingAt = 0, last = 0, lastKey = '', active = null, generation = 0, closing = null;
+    let latest = null, closing = null;
+    const marker = () => document.querySelector('[data-editor-presence]');
+    const keyOf = notice => notice ? notice.dataset.node + ':' + notice.dataset.lang : '';
     const noticeMotion = () => !matchMedia('(prefers-reduced-motion: reduce)').matches;
     function showNotice(notice, label, animate) {
         const opening = notice.hidden;
@@ -235,82 +239,69 @@ function pageEditConflict(node, lang, field, version, metadata = {}) {
             ], {duration: 240, easing: 'ease-in-out'});
         }
     }
-    function check() {
-        const notice = document.querySelector('[data-editor-presence]');
-        if (!window.sys?.core?.server?.call || !window.sys?.http?.parseURL) return;
-        if (!notice) {
-            if (active) {
-                const old=active;active=null;lastKey='';
-                const leave=new sys.core.server.call({method:'put',id:old.node,lang:old.lang,client,leave:1});
-                leave.background=true;leave.send(old.endpoint);
-            }
-            return;
+    /** Paints the latest answer into the notice of its page; another page's answer waits. */
+    function paint(animate) {
+        const notice = marker();
+        if (!notice || !latest || latest.key !== keyOf(notice)) return;
+        const state = revisions.get(latest.key) || {};
+        if (latest.others > 0 || latest.updated) {
+            closing?.cancel(); closing = null;
+            const label = latest.updated ? 'This page was updated. Reload to review the latest version; unsaved changes are protected.' : (latest.names?.length ? 'Also open: ' + latest.names.join(', ') + '. Your changes are checked when saving.' : 'Also open in another session. Your changes are checked when saving.');
+            showNotice(notice, label, animate);
+            state.label = label;
+        } else if (!notice.hidden) {
+            const hide = () => {notice.hidden = true; notice.replaceChildren(); delete state.label;};
+            if (!animate || !noticeMotion()) { hide(); return; }
+            const height = notice.getBoundingClientRect().height;
+            closing?.cancel();
+            closing = notice.animate([{height:height+'px',opacity:1,paddingTop:'.45rem',paddingBottom:'.45rem'},{height:'0px',opacity:0,paddingTop:0,paddingBottom:0}],{duration:240,easing:'ease-in-out'});
+            const animation = closing;
+            animation.finished.then(()=>{if(closing !== animation) return; hide(); closing=null;}).catch(()=>{});
         }
-        if (pending && Date.now() - pendingAt < 10000) return;
-        active={node:notice.dataset.node,lang:notice.dataset.lang,endpoint:notice.dataset.endpoint};
-        const key = notice.dataset.node + ':' + notice.dataset.lang;
-        if (key === lastKey && Date.now() - last < 1000) return;
-        const request = ++generation;
-        last = Date.now(); lastKey = key; pending = true; pendingAt = Date.now();
-        const call = new sys.core.server.call({method:'put', id:notice.dataset.node, lang:notice.dataset.lang, client, previousClient});
-        call.background = true;
-        call.send(notice.dataset.endpoint).done(data => {
-            if (request !== generation) return;
-            pending = false;
-            const current = document.querySelector('[data-editor-presence]');
-            if (!notice.isConnected || current !== notice || key !== current.dataset.node + ':' + current.dataset.lang) { last = 0; queueMicrotask(check); return; }
-            if (!data?.available) return;
-            const state = revisions.get(key) || {};
-            const changed = state.revision && state.revision !== data.revision;
-            state.revision = data.revision;
-            revisions.set(key,state);
-            // A live render already refreshed untouched fields. Retained edits still
-            // use their original field version and will conflict when necessary.
-            const own = changed && window.cmsOwnPageSaves?.delete(key);
-            if (changed && !own) state.updatedAt = Date.now();
-            const updated = Date.now() - (state.updatedAt || 0) < 8000;
-            if (data.others > 0 || updated) {
-                closing?.cancel(); closing = null;
-                const label = updated ? 'This page was updated. Reload to review the latest version; unsaved changes are protected.' : (data.names?.length ? 'Also open: ' + data.names.join(', ') + '. Your changes are checked when saving.' : 'Also open in another session. Your changes are checked when saving.');
-                showNotice(notice, label, true);
-                state.label=label;
-            } else if (!notice.hidden) {
-                const hide = () => {notice.hidden = true; notice.replaceChildren(); delete state.label;};
-                if (!noticeMotion()) { hide(); return; }
-                const height=notice.getBoundingClientRect().height;
-                closing?.cancel();
-                closing = notice.animate([{height:height+'px',opacity:1,paddingTop:'.45rem',paddingBottom:'.45rem'},{height:'0px',opacity:0,paddingTop:0,paddingBottom:0}],{duration:240,easing:'ease-in-out'});
-                const animation = closing;
-                animation.finished.then(()=>{if(closing !== animation) return; hide(); closing=null;}).catch(()=>{});
-            }
-        }).fail(() => { if (request === generation) pending=false; });
     }
+    /** The answer the server attaches to a request of this tab. */
+    window.cmsPresence = data => {
+        if (!data?.available) return;
+        const key = data.node + ':' + data.lang;
+        const state = revisions.get(key) || {};
+        const changed = !!state.revision && state.revision !== data.revision;
+        state.revision = data.revision;
+        revisions.set(key, state);
+        // A save of this tab changes the revision too; that is no news to it.
+        // Retained edits keep their field version and conflict when necessary.
+        const own = changed && window.cmsOwnPageSaves?.delete(key);
+        latest = {key, others: data.others, names: data.names, updated: changed && !own};
+        paint(true);
+    };
+    function headers() {
+        const notice = marker();
+        const sent = {'X-Editor-Client': client};
+        if (notice) sent['X-Editor-Page'] = keyOf(notice);
+        if (previousClient) { sent['X-Editor-Previous'] = previousClient; previousClient = ''; }
+        return sent;
+    }
+    // A rendered view may replace the notice; the known advisory comes back
+    // before repaint, without asking the server.
     document.addEventListener('cms:rendered', () => {
-        const notice=document.querySelector('[data-editor-presence]');
-        const label=notice && revisions.get(notice.dataset.node+':'+notice.dataset.lang)?.label;
-        if(label && notice.hidden) showNotice(notice, label, false);
-        last=0;check();
+        const notice = marker();
+        const label = notice && revisions.get(keyOf(notice))?.label;
+        if (label && notice.hidden) showNotice(notice, label, false);
+        paint(false);
     });
-    // Closing/reloading the document must not leave a 45-second ghost heartbeat.
+    // Closing/reloading the document must not leave a ghost behind.
     window.addEventListener('pagehide', () => {
-        if (!active) return;
-        fetch(active.endpoint, {method:'PUT',credentials:'same-origin',keepalive:true,
-            headers:{...sys.core.server.headersFor?.('put'),'X-Requested-With':'XMLHttpRequest','Content-Type':'application/json'},
-            body:JSON.stringify({method:'put',id:active.node,lang:active.lang,client,leave:1})
+        const notice = marker();
+        if (!notice || !window.sys?.core?.server?.headersFor) return;
+        fetch(notice.dataset.endpoint, {method:'PUT',credentials:'same-origin',keepalive:true,
+            headers:{...sys.core.server.headersFor('put'),'X-Editor-Leave':'1','X-Requested-With':'XMLHttpRequest','Content-Type':'application/json'},
+            body:JSON.stringify({method:'put'})
         }).catch(()=>{});
     });
-    function startPresence() {
-    new MutationObserver(() => {
-        const marker=document.querySelector('[data-editor-presence]');
-        const key=marker?marker.dataset.node+':'+marker.dataset.lang:'';
-        if (key!==lastKey) requestAnimationFrame(check);
-    }).observe(document.body,{childList:true,subtree:true});
-    document.addEventListener('visibilitychange',check);
-    setInterval(check,2000);
-    check();
+    function register() {
+        if (window.sys?.core?.server?.addHeaders) sys.core.server.addHeaders(headers);
     }
-    if (document.body) startPresence();
-    else document.addEventListener('DOMContentLoaded',startPresence,{once:true});
+    if (window.sys?.core?.server?.addHeaders) register();
+    else document.addEventListener('DOMContentLoaded', register, {once:true});
 })();
 
 // A remembered selection has no ?id= on entry. Reveal it once after the AJAX
