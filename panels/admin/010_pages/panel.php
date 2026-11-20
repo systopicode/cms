@@ -39,6 +39,15 @@ class Panel extends CmsPanel {
 	public $icon = 'cmsIcon cmsIcon-duotone cmsIcon-files';
 
 	/**
+	 * While admin/pages is open, its parts — editor, sidebar, upload — are on
+	 * screen with it: their onLoad runs and their panel.js comes along
+	 * (upload: the drop zone, the media types). Not on the other admin pages.
+	 */
+	public bool $loadChildPanels {
+		get => $this->inPath();
+	}
+
+	/**
 	 * The request's scope: connection, identity map, result cache. Everything
 	 * this panel reads and writes goes through it, so the tree, the page and
 	 * every action see one object per row — and a commit throws away the
