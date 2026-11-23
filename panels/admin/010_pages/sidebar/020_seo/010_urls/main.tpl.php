@@ -11,7 +11,7 @@
 use Systopic\Cms\Tables\Rewritepaths\Model as Rewritepath;
 use Systopic\Cms\Queries\RewritepathLookup\RewritepathLookup;
 
-$page = $this->parent->page;
+$page = $this->pages()->page;
 $paths = $page->rewritepaths;
 
 // The site a path answers for — copied from the tree, NULL = default site.
@@ -76,7 +76,7 @@ $form = static function (Rewritepath $path) use ($siteOf): string {
 		if (empty($rewritePath->barrierId)) {
 			$barrierLink = ' · full path';
 		} else {
-			$owner = RewritepathLookup::pageOf($this->parent->scope, (int) $rewritePath->barrierId);
+			$owner = RewritepathLookup::pageOf($this->scope, (int) $rewritePath->barrierId);
 			$barrierLink = $owner === null
 				? ' · blocked by a removed page'
 				: " · blocked by <a class='ajax' href='./?id=" . (int) $owner->relationId('node') . '&lang=' . $owner->languageIso . "'>"

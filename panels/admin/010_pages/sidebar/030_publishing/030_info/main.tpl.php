@@ -4,7 +4,7 @@
  *
  * @var \Systopic\Cms\Panels\Root\Admin\Pages\Sidebar\Panel $this
  */
-$page = $this->parent->page;
+$page = $this->pages()->page;
 $row = $page->row;
 $e = static fn($v): string => htmlspecialchars((string) ($v instanceof \Systopic\Db\Type\Text ? $v->value : $v), ENT_QUOTES);
 $stamp = static fn(?DateTimeImmutable $d): string => \Systopic\System\Sys\LocalTime::format($d, \Systopic\System\Sys\LocalTime::DATETIME_SECONDS);

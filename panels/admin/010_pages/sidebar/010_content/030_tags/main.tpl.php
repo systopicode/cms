@@ -9,8 +9,8 @@ use Systopic\System\Queries\TagGroups\TagGroups;
 use Systopic\System\Queries\TagGroups\TagGroupsPanel;
 use Systopic\System\Queries\TagLinks\TagLinks;
 
-$page = $this->parent->page;
-$scope = $this->parent->scope;
+$page = $this->pages()->page;
+$scope = $this->scope;
 ?>
 <h3>Tags</h3>
 <?php

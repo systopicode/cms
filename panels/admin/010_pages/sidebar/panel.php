@@ -5,33 +5,69 @@ namespace Systopic\Cms\Panels\Root\Admin\Pages\Sidebar;
 
 use Systopic\System\Panels\Root\Admin\Panel as CmsPanel;
 
+/**
+ * admin/pages/sidebar — the properties of the page open in the editor.
+ *
+ * Its groups (the tabs) and their sections (the folds) are panels below it,
+ * sharing this class (`bequests`) - but no address: they are opened by name
+ * (main.tpl.php, two loops), not by the URL. What is open is state:
+ *
+ *   sidebar/                      state: sidebarGroup (the tab), width, collapsed
+ *     content/  seo/  publishing/ a group: the tab, its label
+ *       templates/ settings/ …    a section: its main.tpl.php, state->open (the fold)
+ *
+ * The requests stay the sidebar's (`sidebar/<action>`, actions.php).
+ */
 class Panel extends CmsPanel {
 
-	public $templates = [];
+	/** Groups and sections share this class. */
+	public bool $bequests = true;
 
-	public array $groups = [
-		'content' => ['label' => 'Content', 'templates' => ['templates', 'settings', 'tags', 'permissions']],
-		'seo' => ['label' => 'SEO & AI', 'templates' => ['urls', 'meta', 'search']],
-		'publishing' => ['label' => 'Publishing', 'templates' => ['publishing', 'relations', 'info']],
-	];
+	/** The tabs: group => label. Their sections are the folders below each. */
+	public const GROUPS = ['content' => 'Content', 'seo' => 'SEO & AI', 'publishing' => 'Publishing'];
 
-	public array $templateLabels = [
-		'urls' => 'URLs',
-		'templates' => 'Templates',
-		'settings' => 'Settings',
-		'tags' => 'Tags',
-		'permissions' => 'Permissions',
-		'publishing' => 'Release',
-        'relations' => 'Aliases & Redirects',
-		'info' => 'Info',
-		'meta' => 'Meta',
-		'search' => 'Search and AI',
-	];
+	/** Section labels that are not just the name. */
+	public const LABELS = ['urls' => 'URLs', 'publishing' => 'Release', 'relations' => 'Aliases & Redirects', 'search' => 'Search and AI'];
+
+	/** The sidebar itself - from a group or a section, too. */
+	public function sidebar(): self {
+		$panel = $this;
+		while ($panel->parent instanceof self) {
+			$panel = $panel->parent;
+		}
+		return $panel;
+	}
+
+	/** The pages panel: the page in the editor is its `page`. */
+	public function pages(): \Systopic\System\Panels\PanelNode {
+		return $this->sidebar()->parent;
+	}
+
+	/** A tab, below the sidebar. */
+	public bool $isGroup {
+		get => $this->parent instanceof self && !($this->parent->parent instanceof self);
+	}
+
+	/** A fold, below a tab. */
+	public bool $isSection {
+		get => $this->parent instanceof self && $this->parent->parent instanceof self;
+	}
+
+	public function onBuild() {
+		parent::onBuild();
+		if ($this->isGroup) {
+			$this->label = self::GROUPS[$this->name] ?? $this->label;
+			// the builder passes a class on one level only: a tab hands it on to its folds
+			$this->bequests = isset(self::GROUPS[$this->name]);
+		} elseif ($this->isSection) {
+			$this->label = self::LABELS[$this->name] ?? $this->label;
+		}
+	}
 
 	/** The site of the page in main (its name is its folder under sites/) — null without config/. */
 	public ?\Systopic\System\Config\Site $pageSite {
 		get {
-			$id = $this->parent->page?->id;
+			$id = $this->pages()->page?->id;
 			return $id ? \Systopic\Cms\Pages\Sites\NodeSite::siteOf($id) : null;
 		}
 	}
@@ -41,42 +77,47 @@ class Panel extends CmsPanel {
 		get => \template::forSite($this->pageSite?->name);
 	}
 
-	function __construct($name, $parent) {
-		parent::__construct($name, $parent);
-		foreach (\fs::glob('0*.tpl.php') as $filename) {
-			preg_match('~(^\d\d\d_(.*?))\.tpl.php$~', $filename, $match);
-			$name = $match[2];
-			$this->templates[$name] = (object) [
-					'label' => $this->templateLabels[$name] ?? ucfirst($name),
-					'view' => $match[1],
-					'filename' => $filename
-			];
-		}
-		$grouped = [];
-		foreach ($this->groups as $groupName => $group) {
-			$this->groups[$groupName] = (object) [
-				'label' => $group['label'],
-				'templates' => array_values(array_intersect($group['templates'], array_keys($this->templates))),
-			];
-			$grouped = array_merge($grouped, $this->groups[$groupName]->templates);
-		}
-		$ungrouped = array_values(array_diff(array_keys($this->templates), $grouped));
-		if ($ungrouped) {
-			$this->groups['more'] = (object) ['label' => 'More', 'templates' => $ungrouped];
-		}
-		$this->groups = array_filter($this->groups, fn($group) => count($group->templates) > 0);
-	}
-
     public function incomingRelations(): array {
-        $id = $this->parent->page?->id;
+        $id = $this->pages()->page?->id;
         if (!$id) return [];
-        return $this->parent->scope->connection->all('SELECT node_id, node_original_node_id, node_redirect_node_id FROM cms_nodes WHERE node_type = :type AND !node_is_trashed AND (node_original_node_id = :original OR node_redirect_node_id = :redirect) ORDER BY node_id', [':type' => 'page', ':original' => $id, ':redirect' => $id]);
+        return $this->scope->connection->all('SELECT node_id, node_original_node_id, node_redirect_node_id FROM cms_nodes WHERE node_type = :type AND !node_is_trashed AND (node_original_node_id = :original OR node_redirect_node_id = :redirect) ORDER BY node_id', [':type' => 'page', ':original' => $id, ':redirect' => $id]);
     }
 
+	/**
+	 * The tabs there are: name => the group panel.
+	 *
+	 * @return array<string, self>
+	 */
+	public function groups(): array {
+		$sidebar = $this->sidebar();
+		$groups = [];
+		foreach (self::GROUPS as $name => $label) {
+			$group = $sidebar->child($name);
+			if ($group !== null && $group->sections() !== []) {
+				$groups[$name] = $group;
+			}
+		}
+		return $groups;
+	}
 
+	/**
+	 * The folds of a group, in folder order.
+	 *
+	 * @return list<self>
+	 */
+	public function sections(): array {
+		$sections = [];
+		for ($child = $this->firstChild; $child !== null; $child = $child->next) {
+			$sections[] = $child;
+		}
+		return $sections;
+	}
+
+	/** The tab on screen: the one chosen last (state), else the first. */
 	function activeGroup(): string {
-		$name = (string) ($this->state->sidebarGroup ?? '');
-		return isset($this->groups[$name]) ? (string) $name : (string) array_key_first($this->groups);
+		$groups = $this->groups();
+		$name = (string) ($this->sidebar()->state->sidebarGroup ?? '');
+		return isset($groups[$name]) ? $name : (string) array_key_first($groups);
 	}
 
 	/**
@@ -84,7 +125,7 @@ class Panel extends CmsPanel {
 	 * page, sitemap.xml and llms.txt use, read now, not from a saved file.
 	 */
 	public function seoPreview(): string {
-		$page = $this->parent->page ?? null;
+		$page = $this->pages()->page ?? null;
 		if ($page === null || $page->row === null) {
 			return '';
 		}
@@ -119,7 +160,7 @@ class Panel extends CmsPanel {
 	public function shareImage(): string {
 		$picker = '<button type="button" class="cmsMobileOnly shareImagePicker" data-page-media-picker="share" aria-label="Select share image from Media Library"><i class="cmsIcon cmsIcon-image" aria-hidden="true"></i></button>'
 			. '<button type="button" class="button cmsMobileOnly" data-page-media-paste="share"><i class="cmsIcon cmsIcon-copy" aria-hidden="true"></i> Paste image</button>';
-		$id = $this->parent->page?->meta->shareImageId;
+		$id = $this->pages()->page?->meta->shareImageId;
 		$media = $id ? \Systopic\System\Tables\Medias\Media::byNodeId(\Systopic\Db\Scope::default(), $id) : null;
 		if ($media === null) {
 			return $picker;
@@ -136,6 +177,12 @@ class Panel extends CmsPanel {
 	}
 
 	function getDefaultState() {
+		if ($this->isSection) {
+			return (object) ['open' => false];   // the fold, closed until opened
+		}
+		if ($this->isGroup) {
+			return (object) [];
+		}
 		return (object) [
 				'activeSidebarTemplates' => [],
 				'sidebarGroup' => null,

@@ -19,9 +19,9 @@ use Systopic\System\Auth\Session;
 use Systopic\System\Queries\UserAdmin\UserAdmin;
 use Systopic\System\Tables\Acls\Operator as AclOperator;
 
-$node = $this->parent->page->node;
+$node = $this->pages()->page->node;
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
-$groups = UserAdmin::of($this->parent->scope)->groups;
+$groups = UserAdmin::of($this->scope)->groups;
 $active = AclOperator::groupIds($node->acl);
 $inherit = $node->aclInherit;
 $isRoot = (int) $node->relationId('parentNode') === 0;
@@ -73,7 +73,7 @@ $writable = Session::current()->writeGroupIds;
 <?php if ($active !== []) {
 	// who that means: each group of the page, the roles with a right on it,
 	// and below what each role may do on the page all in all
-	$admin = UserAdmin::of($this->parent->scope);
+	$admin = UserAdmin::of($this->scope);
 	$sum = [];
 	?>
 	<table class="aclResolution">

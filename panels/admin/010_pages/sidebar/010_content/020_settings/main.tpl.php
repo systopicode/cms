@@ -6,10 +6,10 @@ use Systopic\Cms\Queries\SettingTree\Definition;
 use Systopic\Cms\Queries\SettingTree\SettingTree;
 use Systopic\Cms\Queries\SettingValues\SettingValues;
 
-$page = $this->parent->page;
+$page = $this->pages()->page;
 $pageNodeId = (int) $page->id;
 $pageTemplate = (string) $page->templateName;
-$scope = $this->parent->scope;
+$scope = $this->scope;
 $values = SettingValues::of($scope, $pageNodeId);
 $escape = static fn($value): string => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 

@@ -4,7 +4,7 @@
  *
  * @var \Systopic\Cms\Panels\Root\Admin\Pages\Sidebar\Panel $this
  */
-$page = $this->parent->page;
+$page = $this->pages()->page;
 $row = $page->row;
 $e = static fn($v): string => htmlspecialchars((string) ($v instanceof \Systopic\Db\Type\Text ? $v->value : $v), ENT_QUOTES);
 $datetime = static fn(?DateTimeImmutable $d): string => $d?->format('Y-m-d\TH:i:s') ?? '';
@@ -38,8 +38,8 @@ $publishing = \Systopic\Cms\Pages\PublishingState::of($row !== null, (bool) $pag
 			</div>
 		</label>
 		<div class="sideActions">
-			<button type="button" class="sideAction" data-cms-action data-on_click="userConfirm" data-action="<?= $e($this->parent->href . 'publishAll') ?>" data-node_id="<?= (int) $page->id ?>" data-confirm="<?= $e($this->parent->branchConfirmation((int) $page->id, 'publishAll')) ?>"><span class="layerEyeIcon" aria-hidden="true"><i class="cmsIcon cmsIcon-layer-group"></i><i class="cmsIcon cmsIcon-eye"></i></span>Publish with children</button>
-			<button type="button" class="sideAction" data-cms-action data-on_click="userConfirm" data-action="<?= $e($this->parent->href . 'unPublishAll') ?>" data-node_id="<?= (int) $page->id ?>" data-confirm="<?= $e($this->parent->branchConfirmation((int) $page->id, 'unPublishAll')) ?>"><span class="layerEyeIcon" aria-hidden="true"><i class="cmsIcon cmsIcon-layer-group"></i><i class="cmsIcon cmsIcon-eye-slash"></i></span>Unpublish with children</button>
+			<button type="button" class="sideAction" data-cms-action data-on_click="userConfirm" data-action="<?= $e($this->pages()->href . 'publishAll') ?>" data-node_id="<?= (int) $page->id ?>" data-confirm="<?= $e($this->pages()->branchConfirmation((int) $page->id, 'publishAll')) ?>"><span class="layerEyeIcon" aria-hidden="true"><i class="cmsIcon cmsIcon-layer-group"></i><i class="cmsIcon cmsIcon-eye"></i></span>Publish with children</button>
+			<button type="button" class="sideAction" data-cms-action data-on_click="userConfirm" data-action="<?= $e($this->pages()->href . 'unPublishAll') ?>" data-node_id="<?= (int) $page->id ?>" data-confirm="<?= $e($this->pages()->branchConfirmation((int) $page->id, 'unPublishAll')) ?>"><span class="layerEyeIcon" aria-hidden="true"><i class="cmsIcon cmsIcon-layer-group"></i><i class="cmsIcon cmsIcon-eye-slash"></i></span>Unpublish with children</button>
 		</div>
 	</li>
 	<li>
@@ -63,10 +63,10 @@ $publishing = \Systopic\Cms\Pages\PublishingState::of($row !== null, (bool) $pag
 	</li>
 	<?php if (!$page->isAlias && !$page->node->isTrashed) { ?>
 		<li title="Delete Page" >
-			<button type="button" data-cms-action data-confirm="<?= $e($this->parent->branchConfirmation((int) $page->id, 'deletePage')) ?>"
+			<button type="button" data-cms-action data-confirm="<?= $e($this->pages()->branchConfirmation((int) $page->id, 'deletePage')) ?>"
 			   class="sideAction quietAction"
 			   data-on_click="userConfirm"
-			   data-action="<?= $e($this->parent->href . 'deletePage') ?>"
+			   data-action="<?= $e($this->pages()->href . 'deletePage') ?>"
 			   data-node_id="<?= $page->id ?>">
 				<i class="cmsIcon cmsIcon-trash"></i>
 				Remove page

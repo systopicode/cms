@@ -4,7 +4,7 @@
  *
  * @var \Systopic\Cms\Panels\Root\Admin\Pages\Sidebar\Panel $this
  */
-$page = $this->parent->page;
+$page = $this->pages()->page;
 $row = $page->row;
 $e = static fn($v): string => htmlspecialchars((string) ($v instanceof \Systopic\Db\Type\Text ? $v->value : $v), ENT_QUOTES);
 $robots = [

@@ -1,6 +1,6 @@
 <?php
 /** @var \Systopic\Cms\Panels\Root\Admin\Pages\Sidebar\Panel $this */
-$pages = $this->parent;
+$pages = $this->pages();
 $page = $pages->page;
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 $link = static function (int $id, string $kind) use ($pages, $e): string {

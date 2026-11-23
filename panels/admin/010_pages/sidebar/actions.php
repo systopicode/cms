@@ -55,6 +55,17 @@ switch ($this->action) {
 		$this->updateView('main');
 		break;
 
+	case 'toggleSection':
+		// A fold opened or closed (the browser did it): only its state, nothing drawn.
+		$group = $this->child((string) http::posted('group', ''));
+		$section = $group?->child((string) http::posted('section', ''));
+		if ($section !== null && $section->isSection) {
+			$section->state->open = (string) http::posted('open', '') === '1';
+		}
+		\Systopic\System\Auth\Session::storeState();   // a quiet answer stores nothing by itself
+		$renderStyle = 'none';
+		break;
+
 	case 'toggleSidebar':
 		$this->state->sidebarCollapsed = empty($this->state->sidebarCollapsed);
 		$this->updateView('main');

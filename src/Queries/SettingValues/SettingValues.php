@@ -118,7 +118,7 @@ final class SettingValues
      *
      * Nothing was broken by that, because nothing used it: the sidebar reads
      * `$setting->junction_int` straight off the record instead
-     * (`030_settings.tpl.php`). Which is the actual finding — the value the
+     * (`sidebar/content/settings/main.tpl.php`). Which is the actual finding — the value the
      * model computes and the value the panel renders were two different
      * things, and only one of them was right.
      */
@@ -145,7 +145,7 @@ final class SettingValues
     /**
      * What this node carries itself — no fallback to the default.
      *
-     * The question the sidebar actually asks. `030_settings.tpl.php` renders
+     * The question the sidebar actually asks. `sidebar/content/settings/main.tpl.php` renders
      * the checkbox from `$setting->junction_int`, which is the LEFT JOIN on
      * `:page_node_id` and nothing else: no row means unchecked, whatever the
      * setting declares as its default.

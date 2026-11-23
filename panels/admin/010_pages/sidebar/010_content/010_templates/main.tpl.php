@@ -6,7 +6,7 @@
  *
  * @var \Systopic\Cms\Panels\Root\Admin\Pages\Sidebar\Panel $this
  */
-$current = (string) ($this->parent->page->row->templateName ?? '');
+$current = (string) ($this->pages()->page->row->templateName ?? '');
 $templates_array = (array) $this->pageTemplates;
 ?>
 <h3>Templates</h3>
