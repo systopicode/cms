@@ -295,9 +295,9 @@ document.addEventListener('pointerdown', function (event) {
 	});
 })();
 
-// Touch: the first tap on a thumb opens its overlay, a tap elsewhere closes it.
+// Touch and the compact library: the first tap/click opens the actions.
 document.addEventListener('click', function (event) {
-	if (document.documentElement.dataset.pointer !== 'touch') {
+	if (document.documentElement.dataset.pointer !== 'touch' && !document.body.classList.contains('cmsMobile')) {
 		return;
 	}
 	var thumb = event.target.closest && event.target.closest('div.mmlContent ul ul > li[data-drag_type]:not(.upload)');
@@ -403,3 +403,35 @@ document.addEventListener('focusin', event => {
     const pending = sys.pagesTreeUi?.foldFocus;
     if (pending && event.target !== pending.element && event.target.dataset?.focusId !== pending.id) delete sys.pagesTreeUi.foldFocus;
 });
+/** Read the anonymous first response, not the editor session or a JS-rendered copy. */
+async function cmsCheckPageOutput(button) {
+    const result = button.closest('.cmsOutputCheck').querySelector('.cmsOutputCheckResult');
+    button.disabled = true;
+    button.classList.add('loading');
+    result.textContent = 'Checking…';
+    try {
+        const response = await fetch(button.dataset.outputUrl, {credentials: 'omit', cache: 'no-store', redirect: 'error'});
+        const html = await response.text(), doc = new DOMParser().parseFromString(html, 'text/html');
+        const rows = [];
+        const add = (ok, text) => rows.push((ok ? '✓ ' : '✕ ') + text);
+        add(response.status === 200, 'HTTP ' + response.status);
+        add(doc.querySelectorAll('title').length === 1 && !!doc.title.trim(), 'One page title');
+        add(doc.querySelectorAll('link[rel=canonical]').length === 1, 'One canonical address');
+        add(!!doc.querySelector('meta[name=description]')?.content, 'Description');
+        const blocks = [...doc.querySelectorAll('script[type="application/ld+json"]')];
+        let graph = [];
+        try { graph = blocks.flatMap(el => {const value = JSON.parse(el.textContent); return value['@graph'] || [value];}); }
+        catch (_) { graph = []; }
+        const canonical = doc.querySelector('link[rel=canonical]')?.getAttribute('href');
+        add(graph.some(node => node['@type'] === 'WebPage' && node.url === canonical), 'Structured data for this page');
+        doc.querySelectorAll('script,style,template,noscript').forEach(node => node.remove());
+        add(!!doc.body.textContent.trim() || !!doc.body.querySelector('img,video,audio'), 'Content is in the first HTML');
+        const robots = response.headers.get('X-Robots-Tag') || doc.querySelector('meta[name=robots]')?.content || 'Not specified';
+        rows.push('Robots: ' + robots);
+        const list = document.createElement('ul');
+        rows.forEach(text => { const item = document.createElement('li'); item.textContent = text; list.append(item); });
+        result.replaceChildren(list);
+    } catch (_) {
+        result.textContent = 'The public output could not be read anonymously. Check that the website is reachable and allows this request.';
+    } finally { button.disabled = false; button.classList.remove('loading'); }
+}

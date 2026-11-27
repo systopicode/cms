@@ -82,8 +82,15 @@ switch ($this->action) {
             break;
         }
         $file = new \Systopic\System\Tables\Medias\Media($media);
+        $imageViews = str_starts_with((string) $media->mimetype, 'image/') && \Systopic\Cms\Refs\MediaRefs::hasImageViews($ref)
+            ? \Systopic\Cms\Refs\MediaRefs::imageViews($file, $ref) : null;
+        $imageDevice = (string) http::put('device');
         client::done([
-            'url' => (string) $file->setFormat($ref->param('format', 'original'))->src,
+            'url' => isset($imageViews['views'][$imageDevice]) ? $imageViews['views'][$imageDevice]['src'] : (str_starts_with((string) $media->mimetype, 'image/')
+                ? \Systopic\Cms\Refs\MediaRefs::imageSource($file, $ref->param('format', 'master'))
+                : (string) $file->setFormat($ref->param('format', 'original'))->src),
+            'imageViews' => $imageViews,
+            'editorUrl' => http::$root . 'admin/pages/' . \Systopic\System\Media\Presentation::editorPath($ref->id, (string) $media->mimetype, (string) $media->filename, (string) $media->type, $imageViews['views'][$imageDevice]['format'] ?? $ref->param('format', 'original')),
             'filename' => (string) $media->filename,
             'inline' => \Systopic\System\Media\Presentation::opensInline((string) $media->mimetype),
         ]);

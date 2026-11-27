@@ -87,6 +87,8 @@ final class EmbedConsent
         }
         $provider = $info['provider'];
         $copy = self::provider($provider);
+        if ($media instanceof \Systopic\System\Tables\Medias\Media && !$media->readable) return '';
+        if ($media instanceof \Systopic\System\Tables\Medias\Model && !\Systopic\System\Auth\ContentAccess::mayRead($media->node)) return '';
         $perView = ($opts['scope'] ?? '') === 'view';
         if ($perView) {
             $name = External::label($provider);

@@ -108,6 +108,11 @@ final class Meta
                 return ['No page record'];
             }
             $reasons = [];
+            if ($page->templateName === '') $reasons[] = 'No page template';
+            if (\Systopic\Cms\Search\PublicPages::canonical($page)->id !== $page->id) $reasons[] = 'Same content as its public original';
+            if ($this->page->node->isTrashed) $reasons[] = 'Page is in the trash';
+            if (!(bool) $this->scope->value($row, 'isPublished')) $reasons[] = 'Publishing is turned off';
+            if (!\Systopic\Cms\Search\PublicPages::siteIsPublic()) $reasons[] = 'Website requires sign-in';
             $now = new DateTimeImmutable();
             $from = $this->scope->value($row, 'startPublishing');
             $to = $this->scope->value($row, 'endPublishing');
@@ -120,7 +125,7 @@ final class Meta
             if (!$this->isNaviElement) {
                 $reasons[] = 'Navi element is off';
             }
-            $robots = trim((string) $this->robots);
+            $robots = strtolower(trim((string) $this->robots));
             if (str_contains($robots, 'noindex')) {
                 $reasons[] = 'Robots: ' . $robots;
             }

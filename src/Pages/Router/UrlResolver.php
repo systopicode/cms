@@ -181,7 +181,8 @@ final class UrlResolver
             // 2a. duplicate URL — send the client to the canonical one
             $canonical = Page::byId($scope, Route::paramsFor($lang), $nodeId);
             if ($canonical !== null) {
-                \http::redirect($canonical->link);
+                if (\http::ajax()) \http::redirect($canonical->link);
+                else { header('Location: ' . $canonical->link, true, 301); exit; }
                 return true;
             }
         }

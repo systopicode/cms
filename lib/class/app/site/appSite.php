@@ -50,48 +50,56 @@ class appSite {
 		get => self::siteMeta('title', 'PUBLIC_PAGE_NAME', '');
 	}
 
-	/**
-	 * Title, description, canonical and the sharing tags, for the first HTML.
-	 *
-	 * The same strings the head template prints after JavaScript. Marked so
-	 * the page script can drop them once the head layer is in place.
-	 */
-	public function crawlerTags(): string {
-		$e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES);
-		$title = $this->title;
-		$description = $this->description;
-		$robots = $this->robots;
-		$url = $this->url;
-		$site = $this->siteName !== '' ? $this->siteName : $title;
-		$image = $this->absoluteUrl($this->shareImage);
-		$tags = [];
-		if ($title !== '') {
-			$tags[] = '<title data-crawler="1">' . $e($title) . '</title>';
+	/** One escaped metadata block for the first HTML, navigation and the editor's check. */
+	public function headTags(?\Systopic\Cms\Tables\Pages\Page $page = null): string {
+		$page ??= self::selectedPage();
+		if ($page === null) return '';
+		$record = $this->record($page);
+		$e = static fn(string $v): string => htmlspecialchars($v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+		$tags = ['<title data-cms-meta="1">' . $e($this->buildTitle($page)) . '</title>'];
+		$meta = function(string $key, string $value, bool $property = false) use (&$tags, $e): void {
+			if ($value !== '') $tags[] = '<meta data-cms-meta="1" ' . ($property ? 'property' : 'name') . '="' . $e($key) . '" content="' . $e($value) . '">';
+		};
+		$meta('description', $record['description']);
+		$meta('robots', $this->robotsFor($page));
+		$meta('language', $record['language']);
+		if ($record['url'] !== '') $tags[] = '<link data-cms-meta="1" rel="canonical" href="' . $e($record['url']) . '">';
+		foreach ($this->alternates($page) as $language => $url) $tags[] = '<link data-cms-meta="1" rel="alternate" hreflang="' . $e($language) . '" href="' . $e($url) . '">';
+		$meta('og:type', 'website', true);
+		$meta('og:title', $this->buildTitle($page), true);
+		$meta('og:description', $record['description'], true);
+		$meta('og:url', $record['url'], true);
+		$meta('og:site_name', $this->siteName, true);
+		$meta('og:locale', str_replace('-', '_', $record['language']), true);
+		$meta('og:image', $record['image'], true);
+		$meta('twitter:card', 'summary_large_image');
+		$tags[] = $this->buildJsonLd($page);
+		return implode("\n", $tags) . "\n";
+	}
+
+	/** Compatibility for a project that still asks for the old first-response helper. */
+	public function crawlerTags(): string { return $this->headTags(); }
+
+	/** Real public translations, with an additional fallback in the configured default language. */
+	public function alternates(\Systopic\Cms\Tables\Pages\Page $page): array {
+		if (!\Systopic\Cms\Search\PublicPages::siteIsPublic()) return [];
+		$page = \Systopic\Cms\Search\PublicPages::canonical($page);
+		$links = [];
+		foreach (\Systopic\Cms\Tables\Pages\Languages::activated() as $code => $definition) {
+			$translated = \Systopic\Cms\Tables\Pages\Page::byId(\Systopic\Db\Scope::default(), \Systopic\Cms\Search\PublicPages::params($code), $page->id);
+			if ($translated?->row === null || !$translated->meta->published || str_contains(strtolower((string) $translated->meta->robots), 'noindex')) continue;
+			$url = (string) $translated->href;
+			$links[\Systopic\Cms\Tables\Pages\Languages::tag($code)] = $url;
+			if ($code === \Systopic\Cms\Tables\Pages\Languages::default()) $links['x-default'] = $url;
 		}
-		if ($description !== '') {
-			$tags[] = '<meta data-crawler="1" name="description" content="' . $e($description) . '">';
-		}
-		if ($robots !== '') {
-			$tags[] = '<meta data-crawler="1" name="robots" content="' . $e($robots) . '">';
-		}
-		if ($url !== '') {
-			$tags[] = '<link data-crawler="1" rel="canonical" href="' . $e($url) . '">';
-			$tags[] = '<meta data-crawler="1" property="og:url" content="' . $e($url) . '">';
-		}
-		if ($title !== '') {
-			$tags[] = '<meta data-crawler="1" property="og:title" content="' . $e($title) . '">';
-		}
-		$tags[] = '<meta data-crawler="1" property="og:type" content="website">';
-		if ($description !== '') {
-			$tags[] = '<meta data-crawler="1" property="og:description" content="' . $e($description) . '">';
-		}
-		if ($site !== '') {
-			$tags[] = '<meta data-crawler="1" property="og:site_name" content="' . $e($site) . '">';
-		}
-		if ($image !== '') {
-			$tags[] = '<meta data-crawler="1" property="og:image" content="' . $e($image) . '">';
-		}
-		return $tags === [] ? '' : implode("\n", $tags) . "\n";
+		return $links;
+	}
+
+	public function robotsFor(\Systopic\Cms\Tables\Pages\Page $page): string {
+		$robots = trim((string) $page->meta->robots) ?: self::siteMeta('robots', 'META_ROBOTS', 'index, follow');
+		if (\Systopic\Cms\Search\PublicPages::noIndexEnvironment() || !\Systopic\Cms\Search\PublicPages::siteIsPublic()
+			|| !$page->meta->published || $page->templateName === '' || app::request()->preview || app::request()->showeditableareas) return 'noindex, nofollow';
+		return $robots;
 	}
 
 	public string $topic {
@@ -165,7 +173,7 @@ class appSite {
 			'description' => trim(strip_tags($description)),
 			'descriptionFrom' => $descriptionFrom,
 			'language' => $this->languageOf($page),
-			'url' => $this->absoluteUrl((string) $page->href),
+			'url' => $this->absoluteUrl((string) \Systopic\Cms\Search\PublicPages::canonical($page)->href),
 			'image' => $image['url'],
 			'imageFrom' => $image['from'],
 			'crumbs' => $crumbs,
@@ -174,8 +182,8 @@ class appSite {
 		];
 	}
 
-	private function buildJsonLd(): string {
-		$page = self::selectedPage();
+	private function buildJsonLd(?\Systopic\Cms\Tables\Pages\Page $page = null): string {
+		$page ??= self::selectedPage();
 		if ($page === null) {
 			return '';
 		}
@@ -219,12 +227,17 @@ class appSite {
 		if ($crumbs !== null) {
 			$graph[] = $crumbs;
 		}
-		$graph = array_merge($graph, $this->extraJsonLd($page->meta->jsonLd));
+		foreach ($this->extraJsonLd($page->meta->jsonLd) as $extra) {
+			if (($extra['@type'] ?? '') === 'WebPage') {
+				// Preserve additional relations, while the current page owns its identity and facts.
+				$graph[0] = array_replace($extra, $graph[0]);
+			} elseif (($extra['@type'] ?? '') !== 'BreadcrumbList') $graph[] = $extra;
+		}
 		$json = json_encode(
 			['@context' => 'https://schema.org', '@graph' => $graph],
 			JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS
 		);
-		return $json === false ? '' : '<script type="application/ld+json">' . $json . '</script>';
+		return $json === false ? '' : '<script data-cms-meta="1" type="application/ld+json">' . $json . '</script>';
 	}
 
 	/**
@@ -336,9 +349,9 @@ class appSite {
 		return $nodes;
 	}
 
-	private function buildTitle(): string {
+	private function buildTitle(?\Systopic\Cms\Tables\Pages\Page $tempPage = null): string {
 		$sep = self::siteMeta('titleSeparator', 'PAGE_TITLE_SEPERATOR', '|');
-		$tempPage = self::selectedPage();
+		$tempPage ??= self::selectedPage();
 		if (isset($tempPage) && !empty(trim(strip_tags((string) $tempPage->meta->shareTitle)))) {
 			$pageLabel = $tempPage->meta->shareTitle . ' ' . $sep . ' ';
 		} elseif (isset($tempPage) && !empty(trim(strip_tags((string) $tempPage->label->value)))) {
@@ -368,17 +381,8 @@ class appSite {
 
 	/** BCP 47 tag for a page, from its language. */
 	private function languageOf(\Systopic\Cms\Tables\Pages\Page $page): string {
-		if ($page->language !== '' && $page->language !== '*') {
-			$language = $page->language . '-' . $page->language;
-		} elseif (defined('DEFAULT_LANG')) {
-			$language = DEFAULT_LANG . '-' . DEFAULT_LANG;
-		} else {
-			$language = 'de-de';
-		}
-		if (preg_match('~^([a-z]{2})-([a-z]{2})$~i', $language, $match)) {
-			return strtolower($match[1]) . '-' . strtoupper($match[2]);
-		}
-		return $language;
+		return \Systopic\Cms\Tables\Pages\Languages::tag($page->language !== '*' && $page->language !== ''
+			? $page->language : \Systopic\Cms\Tables\Pages\Languages::default());
 	}
 
 	/** @return array{url: string, from: string} */
@@ -409,28 +413,18 @@ class appSite {
 	}
 
 	private function buildRobots(): string {
-		$robots = self::siteMeta('robots', 'META_ROBOTS', 'index, follow');
-		$tempPage = self::selectedPage();
-		if (isset($tempPage) && !empty(trim(strip_tags((string) $tempPage->meta->robots)))) {
-			$robots = $tempPage->meta->robots;
-		}
-		return $robots;
+		$page = self::selectedPage();
+		return $page ? $this->robotsFor($page) : self::siteMeta('robots', 'META_ROBOTS', 'index, follow');
 	}
 
 	private function buildLanguage(): string {
-		$language = 'de-de';
-		$tempPage = self::selectedPage();
-		if (isset($tempPage) && $tempPage->language !== '' && $tempPage->language !== '*') {
-			$language = $tempPage->language . '-' . $tempPage->language;
-		} elseif (defined('DEFAULT_LANG')) {
-			$language = DEFAULT_LANG . '-' . DEFAULT_LANG;
-		}
-		return $language;
+		$page = self::selectedPage();
+		return $page ? $this->languageOf($page) : \Systopic\Cms\Tables\Pages\Languages::tag(\Systopic\Cms\Tables\Pages\Languages::default());
 	}
 
 	private function buildUrl(): string {
 		$tempPage = self::selectedPage();
-		return $tempPage ? (string) $tempPage->href : "";
+		return $tempPage ? (string) \Systopic\Cms\Search\PublicPages::canonical($tempPage)->href : "";
 	}
 
 	/** The CMS draws its own (pages sidebar, Panel::shareImage()). */

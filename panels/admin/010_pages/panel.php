@@ -206,7 +206,9 @@ class Panel extends CmsPanel {
 		$filename = (string) $media->filename;
 		$folders = \Systopic\System\Tables\Medias\Files::idPath((int) $media->id);
 		if ($mime === 'image/svg+xml') {
-			return "{$siteRoot}var/original/$folders$filename";
+			$original = "var/original/$folders$filename";
+			$made = @\fs::filemtime(\fs::$siteRoot . $original);
+			return $siteRoot . $original . ($made ? '?v=' . $made : '');
 		}
 		if ($media->type === 'video') {
 			$stem = preg_replace('/\.(mp4|webm|mov|m4v)$/i', '', $filename);
@@ -216,6 +218,12 @@ class Panel extends CmsPanel {
 					return $siteRoot . $poster . '?v=' . \fs::filemtime($abs);
 				}
 			}
+		}
+		if (str_starts_with($mime, 'video/')) {
+			return (new \Systopic\System\Tables\Medias\Media($media))->setFormat('mmlThumb')->src;
+		}
+		if (\Systopic\System\Media\VariantRenderer::supports($mime)) {
+			return (new \Systopic\System\Tables\Medias\Media($media))->getCrop()->getUrl(\Systopic\System\Media\Variants::smallest());
 		}
 		$ext = in_array($mime, ['image/webp', 'image/png', 'image/jpeg'], TRUE) ? '' : '.webp';
 		$thumb = "var/formats/mmlThumb/$folders$filename$ext";
@@ -252,7 +260,7 @@ class Panel extends CmsPanel {
 		} elseif ($mime === 'image/gif') {
 			$icon = 'gif';
 		} elseif (\Systopic\System\Tables\Medias\External::is($type)) {
-			$icon = 'circle-play';
+			$icon = 'arrow-up-right-from-square';
 		} elseif ($mime === 'image/svg+xml') {
 			$icon = 'vector-polygon';
 		} elseif ($icon === '') {

@@ -46,6 +46,7 @@ class Route implements RenderTree
 
     public function __construct()
     {
+        $this->lang = \Systopic\Cms\Tables\Pages\Languages::default();
         $this->builder = new RouteBuilder();
         $this->views   = new ViewResolver();
     }
@@ -117,7 +118,7 @@ class Route implements RenderTree
     {
         $this->lang   = $lang !== null && $lang !== '' && $lang !== '*'
             ? $lang
-            : (\app::request()->lang ?: (defined('DEFAULT_LANG') ? DEFAULT_LANG : 'de'));
+            : (\app::request()->lang ?: \Systopic\Cms\Tables\Pages\Languages::default());
         $this->params = self::paramsFor($this->lang);
         $this->nodes        = $this->builder->buildRoute(Scope::default(), $this->params, (int) $id);
         $this->built        = true;

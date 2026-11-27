@@ -16,15 +16,17 @@ use Systopic\System\Queries\NodeAcls\NodeAcls;
 use Systopic\System\Tables\Acls\Operator as AclOperator;
 use Systopic\System\Tables\Nodes\Operator as NodeOperator;
 
-$node = $this->parent->page?->node;
+$node = $permissionNode ?? $this->parent->page?->node;
+$scope = $permissionScope ?? $this->parent->scope;
+$permissionView = $permissionView ?? '045_permissions';
 
 if (in_array($this->action, ['aclInherit', 'aclToggle'], true) && $node !== null && PageAccess::refuses($node)) {
-	$this->updateView('045_permissions');
+	$this->updateView($permissionView);
 	return;
 }
 
 if ($node !== null && in_array($this->action, ['aclInherit', 'aclToggle'], true)) {
-    NodeAcls::prepareWrite($this->parent->scope, (int) $node->id);
+    NodeAcls::prepareWrite($scope, (int) $node->id);
 }
 
 switch ($this->action) {
@@ -36,8 +38,8 @@ switch ($this->action) {
 			? NodeOperator::inheritingAcl($node)
 			// the groups it had from its parent become its own, nothing changes yet
 			: NodeOperator::withAcl($node, $node->acl);
-		$this->parent->scope->save(...$rows);
-		$this->updateView('045_permissions');
+		$scope->save(...$rows);
+		$this->updateView($permissionView);
 		break;
 
 	case 'aclToggle':
@@ -53,8 +55,8 @@ switch ($this->action) {
 		$groupIds = in_array($groupId, $groupIds, true)
 			? array_values(array_diff($groupIds, [$groupId]))
 			: [...$groupIds, $groupId];
-		[$acl, $rows] = AclOperator::forGroups($this->parent->scope, $groupIds);
-		$this->parent->scope->save(...$rows, ...NodeOperator::withAcl($node, $acl));
-		$this->updateView('045_permissions');
+		[$acl, $rows] = AclOperator::forGroups($scope, $groupIds);
+		$scope->save(...$rows, ...NodeOperator::withAcl($node, $acl));
+		$this->updateView($permissionView);
 		break;
 }

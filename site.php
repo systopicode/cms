@@ -13,10 +13,10 @@
  * happening, exactly as PanelNavigator does.
  *
  * Branches, in order:
- *   PUT                  → commands only, no re-render
+ *   PUT / renderStyle=none → commands only, no re-render
  *   OUTPUT_FORMAT=json   → CLI/JSON probe of the layer tree
  *   AJAX GET             → diff render + updateDocument
- *   else                 → full render: document skeleton + layers as JSON
+ *   else                 → full HTML + layer data for adoption and later diffs
  *
  * @var \Systopic\Cms\Pages\Route\Route              $route
  * @var \Systopic\Cms\Pages\Navigator\PageNavigator    $pageNav
@@ -26,6 +26,9 @@
  */
 
 http::sessionStartOnce();
+if (\Systopic\Cms\Search\PublicPages::noIndexEnvironment() || app::request()->preview || app::request()->showeditableareas) {
+	header('X-Robots-Tag: noindex, nofollow');
+}
 
 /* * **************************** SET VARIABLES ************************** */
 
@@ -77,12 +80,13 @@ if (!\Systopic\Cms\Pages\Route\PageAccess::$accessGranted) {
 // (page::getLanguageSelected(), the shop) - it is no template variable.
 $lang = $route->getLanguage();
 if ($lang === '*' || $lang === null) {
-	$lang = defined('DEFAULT_LANG') ? DEFAULT_LANG : 'de';
+	$lang = \Systopic\Cms\Tables\Pages\Languages::default();
 }
 $GLOBALS['lang'] = $lang;
 
 if (!http::ajax() && ($redirectTarget = $selectedPage->redirectsTo) !== null) {
-	http::redirect($redirectTarget->link);
+	header('Location: ' . $redirectTarget->link, true, 301);
+	exit;
 }
 
 
@@ -158,8 +162,8 @@ $renderDocument = static function () use ($pageNav): void {
 	}
 };
 
-if (http::$method === 'PUT') {
-	// Commands only — a PUT never re-renders the page.
+if (http::$method === 'PUT' || $renderStyle === 'none') {
+	// Commands only — PUT and explicit action-only responses keep the page.
 	scripttime('render off -- begin flushresponse');
 	header('Content-type: application/json');
 	echo json_encode(client::flushResponse());
@@ -205,23 +209,25 @@ if (http::$method === 'PUT') {
 	$pageNav->endLayers();
 	$domRenderer->storeReference();
 	ob_clean();
+	$initialHtml = $pagesRenderer->initialHtml();
 
-	// The served document is a skeleton. The body still arrives as layer JSON
-	// and pagesRenderer.js mounts it. Title, description, canonical and the
-	// sharing tags are already in this HTML: a reader that does not run the
-	// script can see them. The script removes the copies once the head layer
-	// is mounted.
+	// The same captured layers feed readable HTML and the existing diff client.
+	// Project assets stay outside the head layer; page metadata has one owner.
 	echo '<!DOCTYPE html>' . "\n";
-	echo '<html lang="' . htmlspecialchars((string) $lang, ENT_QUOTES) . '">' . "\n";
+	echo '<html lang="' . htmlspecialchars(app::site()->language, ENT_QUOTES) . '">' . "\n";
 	echo "<head>\n";
-	echo app::site()->crawlerTags();
+	echo '<meta charset="utf-8">' . "\n";
+	echo app::site()->headTags();
 	$headLoader = $route->getViewResolver()->resolveFile('head.loader.tpl.php');
 	if ($headLoader !== null) {
+		ob_start();
 		fs::includeFile($headLoader);
+		echo \Systopic\Cms\Search\HeadMarkup::withoutPageMetadata((string) ob_get_clean());
 	}
+	echo $initialHtml['head'];
 	echo fsLoader::includeScriptFiles(fs::toInternal(__DIR__ . '/public/site/pagesRenderer.js'));
 	echo fsLoader::includeScriptFiles(fs::toInternal(__DIR__ . '/public/site/embedConsent.js'));
-	echo '<template id="systemPagesHeadPlaceholder"></template>' . "\n";
+	echo '<noscript><style>.wow{visibility:visible!important;opacity:1!important;animation:none!important}</style></noscript>' . "\n";
 	if (!defined('JSOFF')) {
 		$clientData = json_encode(clientInterfaces::clientData_export());
 		if (json_last_error() === JSON_ERROR_NONE) {
@@ -231,12 +237,10 @@ if (http::$method === 'PUT') {
 		}
 	}
 	echo "</head>\n";
-	// A distinct id from the panel app's systemDomRendererPlaceholder on
-	// purpose: loader.js hydrates that one from sys.singletons.dom.renderer,
-	// which is empty on a pages request. The pages tree is mounted by
-	// pagesRenderer.js, triggered by the onLibReady hook in
-	// PagesRenderer::clientData_export().
+	// The pages client adopts these anchors; the panel app has its own mount.
 	echo '<body class="' . htmlspecialchars(strtolower(implode(' ', $bodyClasses)), ENT_QUOTES) . '" id="top">';
+	echo $initialHtml['body'];
+	// The shared loader binds only the static edit bar after this anchor.
 	echo '<template id="systemPagesBodyPlaceholder"></template>';
 	echo \Systopic\Cms\Pages\EditBar::html((int) $id, (string) $lang);
 	echo "</body>\n</html>";

@@ -4,7 +4,6 @@
 use Systopic\Cms\Queries\Dashboard\Dashboard;
 use Systopic\System\Queries\MediaNodes\MediaNodes;
 use Systopic\System\Tables\Medias\External;
-use Systopic\System\Tables\Medias\Media;
 
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 $scope = \Systopic\Db\Scope::default();
@@ -20,7 +19,7 @@ $badge = static function (object $media): string {
 		return 'gif';
 	}
 	if (External::is($type)) {
-		return 'circle-play';
+		return 'arrow-up-right-from-square';
 	}
 	if ($mime === 'image/svg+xml') {
 		return 'vector-polygon';
@@ -38,11 +37,8 @@ $badge = static function (object $media): string {
 			if ($media === null) {
 				continue;
 			}
-			$file = new Media($media);
 			$face = $this->tileFace($media);
-			$src = $face['mark'] ? '' : ($media->type === 'video' && $file->poster !== ''
-				? $file->poster
-				: $file->setFormat((string) $media->mimetype === 'image/svg+xml' ? 'original' : 'mmlThumb')->src);
+			$src = $face['mark'] ? '' : $this->thumbOf($media);
 			?>
 			<a class="ajax<?= $face['mark'] ? ' is-mark' : '' ?>" href="<?= $e(rtrim((string) $this->href, '/') . '/' . \Systopic\System\Media\Presentation::editorPath((int) $node, (string) $media->mimetype, (string) $media->filename, (string) $media->type)) ?>" title="<?= $e(trim((string) $media->label) ?: (string) $media->filename) ?>">
 				<?php if (!$face['mark']) { ?>

@@ -5,6 +5,7 @@
   "license": "proprietary",
   "require": {
     "php": "^8.4",
+    "ext-dom": "*",
     "systopic/db": "^1.0",
     "systopic/system": "^1.3"
   },

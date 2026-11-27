@@ -49,6 +49,18 @@ final class Languages
         return is_string($code) && isset(self::activated()[$code]) ? $code : self::default();
     }
 
+    /** BCP 47 spelling of a configured language, without inventing a country. */
+    public static function tag(string $code): string
+    {
+        $value = str_replace('_', '-', (string) (self::all()[$code]['code'] ?? $code));
+        $parts = explode('-', $value);
+        $parts[0] = strtolower($parts[0]);
+        foreach ($parts as $i => $part) {
+            if ($i > 0) $parts[$i] = strlen($part) === 2 ? strtoupper($part) : (strlen($part) === 4 ? ucfirst(strtolower($part)) : $part);
+        }
+        return implode('-', $parts);
+    }
+
     private static function configuredDefault(): string
     {
         return defined('DEFAULT_LANG') && DEFAULT_LANG !== '' ? (string) DEFAULT_LANG : 'de';

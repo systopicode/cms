@@ -34,6 +34,7 @@ final class Frontend implements \Systopic\System\Sys\Frontend
         if ($path === 'llms.txt') {
             return dirname(__DIR__) . '/llms.php';
         }
+        if ($path === 'robots.txt') return dirname(__DIR__) . '/robots.php';
         return null;
     }
 
@@ -71,7 +72,7 @@ final class Frontend implements \Systopic\System\Sys\Frontend
      */
     public function notFound(): ?string
     {
-        return PageAccess::hasNoPages() ? dirname(__DIR__) . '/nopages.php' : null;
+        return dirname(__DIR__) . (PageAccess::hasNoPages() ? '/nopages.php' : '/notfound.php');
     }
 
     public function dispatch(): string

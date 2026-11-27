@@ -394,10 +394,10 @@ aside.cms :is(a, button:where([data-cms-action])).previewAction { background: va
 .cms ul.tree li.active > label :is(a, button:where([data-cms-action])).aliasConnections,
 .cms ul.tree li.active > label :is(a, button:where([data-cms-action])).aliasConnections i { color: #46535a; color: contrast-color(var(--cmsActive)); opacity: .8; }
 aside.cms .pageRelations .relationResults button:where(:not([data-cms-action])) { border: 1px solid var(--cmsLine); padding: .55rem .6rem; margin-top: .35rem; white-space: normal; }
-aside.cms .pageRelations .relationIncoming li { background: var(--cmsButtonBg); border: 0; border-radius: var(--cmsRadius); margin-bottom: .35rem; padding: .2rem .25rem; gap: .2rem; }
-aside.cms .pageRelations .relationIncoming .relationLink { background: transparent; margin: 0; }
-aside.cms .pageRelations .relationIncoming > li > :is(:is(a, button:where([data-cms-action])), button:where(:not([data-cms-action]))):last-child:not(.relationLink) { background: transparent; border: 0; border-radius: var(--cmsRadius); width: 2rem; min-height: 2rem; flex: 0 0 2rem; margin: 0; padding: .3rem; color: var(--cmsTextColor); }
-aside.cms .pageRelations .relationIncoming > li > :is(:is(a, button:where([data-cms-action])), button:where(:not([data-cms-action]))):last-child:not(.relationLink):hover { background: var(--cmsHover); }
+:is(aside.cms, .mediaDetails) .pageRelations .relationIncoming li { background: var(--cmsButtonBg); border: 0; border-radius: var(--cmsRadius); margin-bottom: .35rem; padding: .2rem .25rem; gap: .2rem; }
+:is(aside.cms, .mediaDetails) .pageRelations .relationIncoming .relationLink { background: transparent; margin: 0; }
+:is(aside.cms, .mediaDetails) .pageRelations .relationIncoming > li > :is(:is(a, button:where([data-cms-action])), button:where(:not([data-cms-action]))):last-child:not(.relationLink) { background: transparent; border: 0; border-radius: var(--cmsRadius); width: 2rem; min-height: 2rem; flex: 0 0 2rem; margin: 0; padding: .3rem; color: var(--cmsTextColor); }
+:is(aside.cms, .mediaDetails) .pageRelations .relationIncoming > li > :is(:is(a, button:where([data-cms-action])), button:where(:not([data-cms-action]))):last-child:not(.relationLink):hover { background: var(--cmsHover); }
 
 aside.cms .pageRelations .relationResults .relationResultRow { display: flex; align-items: center; gap: .5rem; margin-top: .4rem; padding: .5rem .6rem; border: 1px solid var(--cmsLine); border-radius: var(--cmsRadius); }
 aside.cms .pageRelations .relationResultLabel { flex: 1; min-width: 0; font-size: .8125rem; overflow-wrap: anywhere; }
@@ -406,13 +406,13 @@ aside.cms .pageRelations .relationResults button:where(:not([data-cms-action])).
 aside.cms .pageRelations .relationResults button:where(:not([data-cms-action])).relationConnect:hover { background: var(--cmsHover); }
 aside.cms .pageRelations .relationResults .relationEmpty { font-size: .75rem; line-height: 1.4; text-align: center; color: var(--cmsTextColor); padding: .2rem 0 0; margin: 0; }
 aside.cms .pageRelations .relationSearch:has(.relationEmpty) + .relationNoRedirects { margin-top: 1.2rem; }
-aside.cms .pageRelations .relationIncoming li:has(.relationLink:is(:hover, :focus-visible)) { background: var(--cmsHover); }
-aside.cms .pageRelations .relationIncoming .relationLink:is(:hover, :focus-visible) { color: var(--cmsTextColor); }
+:is(aside.cms, .mediaDetails) .pageRelations .relationIncoming li:has(.relationLink:is(:hover, :focus-visible)) { background: var(--cmsHover); }
+:is(aside.cms, .mediaDetails) .pageRelations .relationIncoming .relationLink:is(:hover, :focus-visible) { color: var(--cmsTextColor); }
 
 aside.cms .releaseFields, aside.cms .releaseFields > li, aside.cms .releaseFields .inputGroup { min-width: 0; max-width: 100%; }
-aside.cms .pageRelations .relationIncoming .relationLink { border: 0; outline: 0; box-shadow: none; }
-aside.cms .pageRelations .relationIncoming .relationLink:is(:hover, :focus-visible) span { text-decoration: none; }
-aside.cms .pageRelations .relationIncoming .relationLink:focus-visible { outline: 2px solid var(--cmsHighlightColor); outline-offset: -2px; }
+:is(aside.cms, .mediaDetails) .pageRelations .relationIncoming .relationLink { border: 0; outline: 0; box-shadow: none; }
+:is(aside.cms, .mediaDetails) .pageRelations .relationIncoming .relationLink:is(:hover, :focus-visible) span { text-decoration: none; }
+:is(aside.cms, .mediaDetails) .pageRelations .relationIncoming .relationLink:focus-visible { outline: 2px solid var(--cmsHighlightColor); outline-offset: -2px; }
 
 .pageRelations .relationBlock h4 {
     display: flex;
@@ -449,29 +449,34 @@ body.cmsMobile.pages:has(.pageTitle[contenteditable="plaintext-only"], .treeLabe
 .publishingSummary{padding:.75rem 0;font-size:.9em;overflow-wrap:anywhere}
 .publishingSummary p{margin:.35rem 0}
 .publishingSummary small{display:block;opacity:.75}
-aside.cms .sidebarPermissions {
+:is(aside.cms, .mediaDetails) .sidebarPermissions {
 	display: grid;
 	gap: .625rem;
 }
-aside.cms .sidebarPermissions > :is(p, .aclGroups, table) {
+:is(aside.cms, .mediaDetails) .sidebarPermissions > :is(p, .aclGroups, table) {
 	margin: 0;
 }
 
 /* sidebar permissions: inherited or not writable groups show, but do not toggle */
-aside.cms .aclGroups .tag.locked{
+:is(aside.cms, .mediaDetails) .aclGroups .tag.locked{
 	cursor: default;
+}
+:is(aside.cms, .mediaDetails) .aclGroups .tag.locked:not(.active){
 	opacity: .55;
+}
+:is(aside.cms, .mediaDetails) .aclGroups .tag.active{
+	color: #fff !important;
 }
 
 /* sidebar permissions: group => roles => read / write, for superusers.
    The class twice: the CMS table rules (24_table.css) outweigh one class. */
-aside.cms table.aclResolution{
+:is(aside.cms, .mediaDetails) table.aclResolution{
 	width: 100%;
 	margin: 0.75rem 0 0;
 	border-collapse: collapse;
 	font-size: 0.75rem;
 }
-aside.cms table.aclResolution.aclResolution :is(th, td){
+:is(aside.cms, .mediaDetails) table.aclResolution.aclResolution :is(th, td){
 	padding: .3rem .4rem;
 	font-size: inherit;
 	letter-spacing: normal;
@@ -484,33 +489,33 @@ aside.cms table.aclResolution.aclResolution :is(th, td){
 	vertical-align: top;
 }
 /* every header cell like the sidebar's section bars */
-aside.cms table.aclResolution.aclResolution th{
+:is(aside.cms, .mediaDetails) table.aclResolution.aclResolution th{
 	background: var(--cmsPanelAlt);
 	font-weight: 700;
 	color: var(--cmsTextColor);
 }
-aside.cms table.aclResolution.aclResolution thead th{
+:is(aside.cms, .mediaDetails) table.aclResolution.aclResolution thead th{
 	border-bottom-color: var(--cmsLineStrong);
 }
-aside.cms table.aclResolution.aclResolution tr.groupStart > *{
+:is(aside.cms, .mediaDetails) table.aclResolution.aclResolution tr.groupStart > *{
 	border-top: 1px solid var(--cmsLineStrong);
 }
-aside.cms table.aclResolution.aclResolution tbody.summary tr:first-child > th{
+:is(aside.cms, .mediaDetails) table.aclResolution.aclResolution tbody.summary tr:first-child > th{
 	border-top: 2px solid var(--cmsLineStrong);
 }
 /* a read-only overview: no row highlight on hover (24_table.css) */
-aside.cms table.aclResolution.aclResolution tbody tr:hover > :is(td, th):nth-child(n){
+:is(aside.cms, .mediaDetails) table.aclResolution.aclResolution tbody tr:hover > :is(td, th):nth-child(n){
 	background: none;
 	box-shadow: none;
 }
-aside.cms table.aclResolution.aclResolution tbody tr:hover > th:nth-child(n){
+:is(aside.cms, .mediaDetails) table.aclResolution.aclResolution tbody tr:hover > th:nth-child(n){
 	background: var(--cmsPanelAlt);
 }
-aside.cms table.aclResolution.aclResolution .rw{
+:is(aside.cms, .mediaDetails) table.aclResolution.aclResolution .rw{
 	width: 1.5rem;
 	text-align: center;
 }
-aside.cms table.aclResolution.aclResolution .none{
+:is(aside.cms, .mediaDetails) table.aclResolution.aclResolution .none{
 	color: var(--cmsMuted);
 	font-style: italic;
 }
@@ -731,3 +736,12 @@ aside.cms .templateSettingSection > summary > .cmsIcon {
 aside.cms .templateSettingSection[open] > summary > .cmsIcon {
     transform: rotate(180deg);
 }
+
+.mediaDetails .mediaUsage .relationLink.sideAction {
+    align-items:center;
+    min-height:var(--cmsControl);
+    color:var(--cmsTextColor);
+    font-size:.8125rem;
+    font-weight:500;
+}
+.mediaDetails .mediaUsage .relationLink > i { flex:none; width:1rem; color:var(--cmsMuted); text-align:center; }

@@ -19,19 +19,24 @@ use Systopic\System\Auth\Session;
 use Systopic\System\Queries\UserAdmin\UserAdmin;
 use Systopic\System\Tables\Acls\Operator as AclOperator;
 
-$node = $this->pages()->page->node;
+$node = $permissionNode ?? $this->pages()->page->node;
+$scope = $permissionScope ?? $this->scope;
+$permissionAction = $permissionAction ?? 'sidebar/';
+$permissionQuery = $permissionQuery ?? '';
+$permissionEntity = $permissionEntity ?? 'page';
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
-$groups = UserAdmin::of($this->scope)->groups;
+$admin = $permissionAdmin ?? UserAdmin::of($scope);
+$groups = $admin->groups;
 $active = AclOperator::groupIds($node->acl);
 $inherit = $node->aclInherit;
 $isRoot = (int) $node->relationId('parentNode') === 0;
 $superuser = Session::isSuperuser();
 $writable = Session::current()->writeGroupIds;
 ?>
-<div class="sidebarPermissions">
+<div class="sidebarPermissions"<?= $permissionEntity === 'file' ? ' data-feedback="none"' : '' ?>>
 	<label class="checkbox">
-		<span>Inherit from parent page</span>
-		<input type=checkbox class=switch data-on_change='sidebar/aclInherit'
+		<span><?= $permissionEntity === 'file' ? 'Use page permissions' : 'Inherit from parent page' ?></span>
+		<input type=checkbox class=switch data-on_change="<?= $e($permissionAction . 'aclInherit' . $permissionQuery) ?>"
 			   name=acl_inherit value=1 <?php if ($inherit) { ?> checked='checked' <?php } ?> />
 		<div>
 			<div></div>
@@ -50,30 +55,32 @@ $writable = Session::current()->writeGroupIds;
 		$color = $group->color !== null && $group->color !== '' ? " style='--tag-color: {$e($group->color)}'" : '';
 		?>
 		<div class="tag<?= $on ? ' active' : '' ?><?= $may ? '' : ' locked' ?>"<?= $color ?>
-			<?php if ($may) { ?> data-on_click="sidebar/aclToggle" data-group_id="<?= $id ?>"<?php } ?>
+			<?php if ($may) { ?> data-on_click="<?= $e($permissionAction . 'aclToggle' . $permissionQuery) ?>" data-group_id="<?= $id ?>"<?php } ?>
 			title="<?= $may ? ($on ? 'Remove group' : 'Add group') : ($inherit ? 'Inherited' : 'You may not change this group') ?>"><?= $e($group->name ?? "#$id") ?></div>
 	<?php } ?>
 </div>
 <p class="hint"><?php
 	if ($inherit && $isRoot) {
-		echo 'A top-level page inherits nothing: no group.';
+		echo $permissionEntity === 'file' ? 'This file has no page to inherit permissions from.' : 'A top-level page inherits nothing: no group.';
 	} elseif ($inherit) {
-		echo 'The groups of the parent page. Switch off inheriting to choose them here.';
+		echo $permissionEntity === 'file'
+			? 'The groups of the page this file belongs to. Switch off to choose groups for this file.'
+			: 'The groups of the parent page. Switch off inheriting to choose them here.';
 	} else {
-		echo 'Pages below that inherit get these groups too.';
+		echo $permissionEntity === 'file' ? 'The groups selected for this file.' : 'Pages below that inherit get these groups too.';
 	}
 	if ($active === []) {
 		echo ' Without a group only the owner and superusers have access.';
 	}
-	echo ' Visitors of the site see a page through a group the role Everyone may read.';
+	echo ' Visitors of the site see this ' . $e($permissionEntity) . ' through a group the role Everyone may read.';
 ?></p>
 <?php if (!defined('PAGE_ACL') || !PAGE_ACL) { ?>
-	<p class="hint">Not switched on for this project yet (CMS Config → Access → Page permissions): the groups are kept, but every page shows to everyone.</p>
+	<p class="hint">Not switched on for this project yet (CMS Config → Access → Page permissions): the groups are kept, but content shows to everyone.</p>
 <?php } ?>
 <?php if ($active !== []) {
 	// who that means: each group of the page, the roles with a right on it,
 	// and below what each role may do on the page all in all
-	$admin = UserAdmin::of($this->scope);
+	// $admin is shared with the group chips above.
 	$sum = [];
 	?>
 	<table class="aclResolution">

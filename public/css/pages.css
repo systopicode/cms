@@ -240,9 +240,13 @@ header.cms .langSwitch > .splitApplyMenu i{
 }
 
 /****************************** PREVIEW ***************************/
-/* Seiten-Editor: dunkle Arbeitsfläche wie in der Live-Seite */
+/* The desktop and mobile device guides sit outside the page canvas. */
 body.pages .flexRow:has(article.cmsContent){
-    background: var(--cmsEditorBg);
+    background:#fff;
+}
+
+body.pages:is([data-cms-device="mobile"],[data-cms-device="tablet"],[data-cms-device="desktop"]) .flexRow:has(article.cmsContent){
+    background:var(--cmsEditorBg);
 }
 
 body.pages .flexRow:has(article.cmsContent) > aside.cms{
@@ -250,6 +254,8 @@ body.pages .flexRow:has(article.cmsContent) > aside.cms{
 }
 
 article.cmsContent{
+    flex: 1 1 auto;
+    min-height: 0;
     width: 100%;
     max-width: 100%;
     height: 100%;
@@ -293,6 +299,8 @@ body.cmsMobile.pages .cmsPreview > article.cmsContent {
 }
 
 .cmsPreview{
+    /* Browser canvas fallback; the scoped page background paints above it. */
+    background: #fff;
     container-type: inline-size;
     container-name: cms-preview;
     display: flex;
@@ -366,3 +374,155 @@ body[data-cms-device="mobile"] article.cmsContent{
 
 /* Keep the desktop controls in their existing header row. */
 .cms .cmsPageMore { display: contents; }
+
+/* The file tabs share the dialog's card gutter. */
+body.cms .cmslightbox.fileEditor > section > main:is(.mediaFiles,.mediaDetails) {
+    margin-top:0;
+    min-height:0;
+    padding:var(--cmsCardPadding);
+}
+.mediaFiles .widget > main strong, .mediaFiles .variantLink { overflow-wrap:anywhere; }
+.mediaFiles .widget small { color:var(--cmsMuted); }
+.mediaFiles td small { display:block; white-space:nowrap; }
+.cms .mediaFiles .tableScroll.stacked.is-foldable > table > tbody > tr.is-open > td[data-label]:not([data-table-heading], .icons) {
+    display:grid;
+    grid-template-columns:minmax(6rem, .4fr) minmax(0, 1fr);
+    justify-content:normal;
+    align-items:start;
+    text-align:left;
+}
+.mediaFiles .variantLegend {
+    display:flex;
+    flex-wrap:wrap;
+    gap:.45rem 1.25rem;
+    padding:.6rem var(--cmsCardPadding);
+    border-bottom:1px solid var(--cmsLine);
+    color:var(--cmsSubText);
+    font-size:.8125rem;
+}
+.mediaFiles .variantMark {
+    display:inline-block;
+    width:.8rem;
+    height:.8rem;
+    margin-inline-end:.4rem;
+    border:1px solid var(--cmsMuted);
+    border-radius:.2rem;
+    vertical-align:-.06rem;
+    background-color:var(--cmsCanvas);
+}
+.mediaFiles .variantMark.generated { background-color:var(--cmsSuccess); border-color:var(--cmsSuccess); }
+.mediaFiles .variantMark.limited { background-image:repeating-linear-gradient(135deg,transparent 0 2px,var(--cmsMuted) 2px 3px); }
+
+.mediaDetailCards {
+    max-width:80rem;
+    margin-inline:auto;
+}
+.mediaDetails .mediaDetailCards {
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    align-items:stretch;
+    gap:var(--cmsCardPadding);
+}
+.mediaDetailCards > .widget { display:flex; flex-direction:column; margin:0; min-width:0; }
+.mediaDetailCards > .widget > main { flex:1 0 auto; }
+.mediaDetailCards > .widget > footer { margin-top:auto; }
+.mediaDetails .inputGroup:first-child { margin-top:0; }
+.mediaDetails .taggroup > .tags { display:flex; flex-wrap:wrap; gap:.4rem; }
+.mediaDetails .taggroup > .tags > .tag { margin:0; }
+.mediaDetails .cmsFacts { display:grid; gap:.65rem; margin:0; font-size:.875rem; }
+.mediaDetails .cmsFacts > div { display:grid; grid-template-columns:minmax(6rem, 25%) 1fr; gap:1rem; }
+.mediaDetails .cmsFacts dt { color:var(--cmsMuted); }
+.mediaDetails .cmsFacts dd { margin:0; overflow-wrap:anywhere; }
+
+.videoEditor { display:grid; grid-template-columns:max-content minmax(0,1fr); gap:var(--cmsCardPadding); flex:1; min-height:0; }
+.videoEditor .ceRatios { display:flex; flex-direction:column; gap:.35rem; min-width:0; max-width:13rem; margin:0; padding:0; overflow:auto; }
+.videoEditor .ceRatios > li { margin:0; }
+.videoEditor .videoWorkspace { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--cmsCardPadding); min-height:0; }
+.videoEditor .fileFrame { min-width:0; height:100%; }
+.videoEditor .fileHint { text-align:center; }
+.cmslightbox .videoEditor .posterPane .posterButton.loading { position:absolute; }
+@media (pointer:coarse) {
+    .videoEditor { --ceChoiceHeight:44px; }
+}
+@media (max-width:767px) {
+    .videoEditor { grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) auto; }
+    .videoEditor .ceRatios { grid-row:2; flex-direction:row; max-width:none; touch-action:pan-x; scrollbar-width:none; }
+    .videoEditor .ceRatios::-webkit-scrollbar { display:none; }
+    .videoEditor .ceRatios > li { flex:0 0 auto; }
+    .videoEditor .videoWorkspace { grid-row:1; grid-template-columns:minmax(0,1fr); grid-auto-rows:minmax(12rem,1fr); overflow:auto; }
+    .videoEditor .fileFrame { min-height:12rem; }
+}
+
+/* The wide editor shares a row with the title. Narrow dialogs give the same links a scrollable row. */
+body.cms .cmslightbox.fileEditor > section > .imageEditorHeader {
+    display:flex;
+    flex-wrap:nowrap;
+    align-items:center;
+    padding-block:0;
+    border-bottom:1px solid var(--cmsLine);
+    gap:clamp(.5rem, 2vw, 2rem);
+}
+body.cms .cmslightbox.fileEditor > section > .imageEditorHeader > h1 {
+    flex:0 0 auto;
+}
+.imageEditorHeader .ceTabs { align-self:stretch; align-items:stretch; gap:clamp(.65rem, 1.4vw, 1.5rem); }
+.imageEditorHeader .ceTabs > [role="tab"] { min-height:44px; box-sizing:border-box; margin:0; }
+@media (max-width:1024px), (orientation:portrait) and (max-width:1400px), (pointer:coarse) and (max-width:1400px) {
+    body.cms .cmslightbox.fileEditor[data-mobile-dialog="sheet"] > section:not(.is-expanded) {
+        height:calc(92dvh - var(--cmsKeyboard, 0px));
+        max-height:calc(100dvh - max(6px, env(safe-area-inset-top)) - var(--cmsKeyboard, 0px));
+    }
+    body.cms .fileEditor[data-mobile-dialog="sheet"] > section > header.imageEditorHeader > .cmsMobileGrip { display:block; }
+    body.cms .cmslightbox.fileEditor > section > .imageEditorHeader {
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto;
+        grid-template-rows:auto auto;
+        gap:0 .5rem;
+        padding-block:1rem 0;
+        border-bottom:1px solid var(--cmsLine);
+    }
+    .imageEditorHeader > .barmenu { grid-column:2; grid-row:1; }
+    .imageEditorHeader .ceTabs {
+        grid-column:1 / -1;
+        grid-row:2;
+        min-width:0;
+        gap:1.15rem;
+        overflow-x:auto;
+        overflow-y:hidden;
+        overscroll-behavior:none;
+        touch-action:pan-x;
+        scrollbar-width:none;
+    }
+    .imageEditorHeader .ceTabs > a { flex:none; }
+}
+@media (max-width:767px) {
+    .mediaDetails .mediaDetailCards { grid-template-columns:minmax(0,1fr); }
+}
+@media (max-width:1100px) {
+    body.cms .cmslightbox.fileEditor:has(.imageEditorHeader) > section > .layout {
+        display:grid;
+        grid-template: minmax(27rem,1fr) / minmax(0,1fr);
+        justify-items:stretch;
+    }
+    body.cms .cmslightbox.fileEditor:has(.imageEditorHeader) > section > .layout > main > .fileStage {
+        height:100%;
+    }
+}
+
+/* Landscape iPads can keep the desktop navigation around the touch editor. */
+@media (min-width:1025px) and (max-width:1400px) and (orientation:landscape) and (pointer:coarse) {
+    body.cms .fileEditor[data-mobile-dialog="sheet"] { align-items:flex-end; padding:0; }
+    body.cms .fileEditor[data-mobile-dialog="sheet"] > section {
+        position:relative;
+        border-radius:var(--cmsRadiusLg) var(--cmsRadiusLg) 0 0;
+        padding-bottom:env(safe-area-inset-bottom,0px);
+        animation:cmsPhoneSheetIn 480ms cubic-bezier(.25,.65,.3,1);
+    }
+    .imageEditorHeader { padding-top:1rem; }
+    .imageEditorHeader > .cmsMobileGrip { position:absolute; top:0; left:calc(50% - 60px); width:120px; height:16px; touch-action:none; }
+    .imageEditorHeader > .cmsMobileGrip::after { content:""; display:block; margin:6px auto; width:36px; height:4px; border-radius:4px; background:var(--cmsMuted); }
+}
+@media (prefers-reduced-motion:reduce) {
+    body.cms .fileEditor[data-mobile-dialog="sheet"] > section { animation:none; }
+}
+body.cms .cmslightbox.fileEditor[data-dialog-continued] > section { animation:none; }

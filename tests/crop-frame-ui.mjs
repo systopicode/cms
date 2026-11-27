@@ -20,7 +20,7 @@ try{
   assert.equal(await page.locator('[data-crop-handle]').count(),8);
   const buttons=await page.locator('.cropBar > button').evaluateAll(ns=>ns.filter(n=>!n.hidden).map(n=>{const r=n.getBoundingClientRect();return [r.width,r.height];}));
   assert.ok(buttons.every(([w,h])=>Math.abs(w-h)<1),'all crop actions are square');
-  assert.equal(await page.locator('[data-crop-grid]').evaluate(e=>getComputedStyle(e).backgroundColor),await page.locator('[data-crop_cancel]').evaluate(e=>getComputedStyle(e).backgroundColor),'secondary actions share editor control style');
+  assert.equal(await page.locator('[data-crop-grid]').evaluate(e=>getComputedStyle(e).backgroundColor),await page.locator('[data-crop-reset]').evaluate(e=>getComputedStyle(e).backgroundColor),'grid and reset share the secondary control style; Close uses the transparent style');
   const nw=page.locator('[data-crop-handle=nw]');await nw.hover();
   assert.equal(await nw.evaluate(e=>getComputedStyle(e).backgroundColor),'rgba(0, 0, 0, 0)','handle hover stays transparent with shared button CSS');
   assert.equal(await nw.evaluate(e=>getComputedStyle(e,'::before').boxShadow),'none','grip has no rectangular box shadow');

@@ -31,6 +31,7 @@ use Systopic\System\Dom\Tree\DomLayerTree;
  */
 class PagesRenderer
 {
+    private bool $serverRendered = false;
     public const VIEW_DOCUMENT = 'document';
     public const VIEW_HEAD     = 'head';
     public const VIEW_BODY     = 'body';
@@ -74,12 +75,36 @@ class PagesRenderer
         $body = $document !== null ? $this->childByView($document, self::VIEW_BODY) : null;
 
         return (object) [
-            'headLayer'   => $head !== null ? $head->export() : false,
+            'headLayer'   => $head !== null ? \Systopic\Cms\Search\HeadMarkup::layer($head->export()) : false,
             'bodyLayer'   => $body !== null ? $body->export() : false,
             'bodyClasses' => $this->domRenderer->getBodyClasses(),
+            'metadata'    => \app::site()->headTags(),
+            'language'    => \app::site()->language,
+            'serverRendered' => $this->serverRendered,
             // the edit bar opens the page shown, also after an ajax step
             'page'        => ['id' => (int) \app::request()->id, 'lang' => (string) ($GLOBALS['lang'] ?? \app::request()->lang ?? '')],
         ];
+    }
+
+    /** The exact layer payload as readable HTML, with anchors for the existing diff client. */
+    public function initialHtml(): array
+    {
+        $this->serverRendered = true;
+        $document = $this->exportDocument();
+        return ['head' => $document->headLayer ? self::layerHtml($document->headLayer, 'head') : '',
+            'body' => $document->bodyLayer ? self::layerHtml($document->bodyLayer, 'body') : ''];
+    }
+
+    public static function layerHtml(object $layer, string $path): string
+    {
+        $index = 0;
+        $html = preg_replace_callback('~<template class="?domLayerPlaceholder"?></template>~',
+            static function() use ($layer, $path, &$index): string {
+                $child = $layer->childLayers[$index] ?? null;
+                $id = $path . '.' . $index++;
+                return $child ? self::layerHtml($child, $id) : '';
+            }, $layer->html ?? '');
+        return '<!--cms-layer:' . $path . ':start-->' . $html . '<!--cms-layer:' . $path . ':end-->';
     }
 
     /**

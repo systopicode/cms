@@ -179,7 +179,7 @@ $store = static function (string $tmpFileNative, string $fileName, string $label
 	}
 	// The library tile is this format. Make it now, so replace does not
 	// leave the grey "file missing" card until something else asks for it.
-	if (str_starts_with((string) $media->mimetype, 'image/') && $media->mimetype !== 'image/svg+xml' && class_exists('mediaImage')) {
+	if (str_starts_with((string) $media->mimetype, 'image/') && !in_array($media->mimetype, ['image/svg+xml', 'image/gif'], true) && class_exists('mediaImage')) {
 		$original = MediaFiles::originalPath($media);
 		try {
 			$thumb = mediaImage::createImageFormat((int) $media->id, 'mmlThumb', $original, (string) $media->filename, is_file($original), '');

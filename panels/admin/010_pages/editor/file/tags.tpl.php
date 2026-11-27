@@ -14,12 +14,17 @@ $nodeId = $this->targetId;
 if ($nodeId < 2 || $pages->page === null) {
 	return;
 }
+$groups = TagGroups::load($pages->scope);
+if (!$groups) {
+	echo '<p class="tagsHint">No tag groups configured.</p>';
+	return;
+}
 echo TagGroupsPanel::forPage(
-	TagGroups::load($pages->scope),
+	$groups,
 	$nodeId,
 	TagLinks::tagIdsOf($pages->scope, $nodeId),
 	TagGroups::relatedNodes($pages->scope, (string) $pages->page->language),
 	'',
-	'../../?id=',
+	$pages->href . '?id=',
 	'?target_id=' . $nodeId,
 );

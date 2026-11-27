@@ -371,7 +371,7 @@ class RouteNode implements ClientExportable, RenderNode
 
     /** The request language — what every page of the route is read in. */
     public string $lang {
-        get => self::$tree?->getLanguage() ?? (defined('DEFAULT_LANG') ? DEFAULT_LANG : 'de');
+        get => self::$tree?->getLanguage() ?? \Systopic\Cms\Tables\Pages\Languages::default();
     }
 
     /** Another page's data by node id — read like the route, not opened. */

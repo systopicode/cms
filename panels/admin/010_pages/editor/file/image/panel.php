@@ -27,12 +27,13 @@ class Panel extends FilePanel {
 	/** The tabs share this class. */
 	public bool $bequests = true;
 
-	/** The tabs: name => label, icon, what it is for. */
+	/** The tabs: name => label, what it is for. */
 	public const TABS = [
-		'master' => ['Edit master', 'image', 'Turn, look and crop of the whole picture'],
-		'crops' => ['Edit crops', 'crop-simple', 'One crop per aspect ratio'],
-		'formats' => ['Edit formats', 'crop-simple', 'Pictures of exact pixels, each its own crop - the share image'],
-		'files' => ['Show files', 'files', 'Every file of this picture: made, or made on its first request'],
+		'master' => ['Edit master', 'Turn, look and crop of the whole picture'],
+		'crops' => ['Edit crops', 'One crop per aspect ratio'],
+		'formats' => ['Edit formats', 'Pictures of exact pixels, each its own crop - the share image'],
+		'files' => ['Show files', 'Every file of this picture: made, or made on its first request'],
+		'details' => ['File details', 'File name, tags, usage and technical details'],
 	];
 
 	/** The tabs there are: the formats only where the project has fixed formats. */
@@ -74,12 +75,7 @@ class Panel extends FilePanel {
 			if ($format === '' || $format === Variants::MASTER || Variants::format($format) !== NULL) {
 				return NULL;
 			}
-			$ratio = Ratio::of(str_ireplace('by', ':', $format));
-			if ($ratio === NULL && class_exists('mediaFormats', false)) {
-				$named = \mediaFormats::get()[$format] ?? NULL;
-				$ratio = is_array($named) ? Variants::alias($named)['ratio'] : NULL;
-			}
-			return $ratio === NULL ? NULL : (Variants::ratio($ratio->name) ?? Variants::nearestRatio($ratio))->name;
+			return Variants::editorRatio($format)?->name;
 		}
 	}
 
@@ -101,9 +97,9 @@ class Panel extends FilePanel {
 		$e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 		$here = $this->tab;
 		$html = '<nav class="ceTabs" role="tablist" aria-label="What to edit">';
-		foreach ($this->tabList() as $name => [$label, $icon, $title]) {
+		foreach ($this->tabList() as $name => [$label, $title]) {
 			$html .= '<a class="ajax" role="tab" href="' . $e($this->image()->href . $name . '/?target_id=' . $this->targetId) . '" title="' . $e($title) . '"'
-				. ' aria-selected="' . ($name === $here ? 'true' : 'false') . '"><i class="cmsIcon cmsIcon-' . $e($icon) . '" aria-hidden="true"></i><span>' . $e($label) . '</span></a>';
+				. ' aria-selected="' . ($name === $here ? 'true' : 'false') . '"><span>' . $e($label) . '</span></a>';
 		}
 		return $html . '</nav>';
 	}

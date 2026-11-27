@@ -141,6 +141,8 @@ class Panel extends CmsPanel {
 			'Description' => $record['description'] !== '' ? $record['description'] : '—',
 			'Description from' => $record['descriptionFrom'],
 			'Language' => $record['language'],
+			'Default language' => \Systopic\Cms\Tables\Pages\Languages::default(),
+			'Effective robots' => \app::site()->robotsFor($page),
 			'Address' => $record['url'] !== '' ? $record['url'] : '—',
 			'Image' => $record['imageFrom'],
 			'Place' => $place,
@@ -152,13 +154,14 @@ class Panel extends CmsPanel {
 		}
 		$html .= '</dl>';
 		$html .= '<p class="hint">What a search engine and an AI read for this page. It is written from the fields above.</p>';
+		$html .= '<div class="cmsOutputCheck"><button type="button" class="button" data-output-url="' . $e($record['url']) . '" onclick="cmsCheckPageOutput(this)">Check public output</button><div class="cmsOutputCheckResult" role="status" aria-live="polite"></div></div>';
 		$html .= '<p class="hint"><a class="cmsTextLink cmsExternalLink" href="' . $e($root . 'sitemap.xml') . '" target="_blank" rel="noopener">sitemap.xml <i class="cmsIcon cmsIcon-arrow-up-right-from-square" aria-hidden="true"></i></a> lists the pages. <a class="cmsTextLink cmsExternalLink" href="' . $e($root . 'llms.txt') . '" target="_blank" rel="noopener">llms.txt <i class="cmsIcon cmsIcon-arrow-up-right-from-square" aria-hidden="true"></i></a> is that list in plain text, for an AI. Both are written when they are opened.</p>';
 		return $html;
 	}
 
 	/** The share image of the page in the editor, read from its row: a drop shows at once. */
 	public function shareImage(): string {
-		$picker = '<button type="button" class="cmsMobileOnly shareImagePicker" data-page-media-picker="share" aria-label="Select share image from Media Library"><i class="cmsIcon cmsIcon-image" aria-hidden="true"></i></button>'
+		$picker = '<button type="button" class="shareImagePicker" data-page-media-picker="share" aria-label="Select share image from Media Library"><i class="cmsIcon cmsIcon-image" aria-hidden="true"></i><span class="shareImageDropLabel">Drop image from Media Library</span><span class="shareImageTapLabel">Tap to select from Media Library</span></button>'
 			. '<button type="button" class="button cmsMobileOnly" data-page-media-paste="share"><i class="cmsIcon cmsIcon-copy" aria-hidden="true"></i> Paste image</button>';
 		$id = $this->pages()->page?->meta->shareImageId;
 		$media = $id ? \Systopic\System\Tables\Medias\Media::byNodeId(\Systopic\Db\Scope::default(), $id) : null;
@@ -167,7 +170,7 @@ class Panel extends CmsPanel {
 		}
 		$src = htmlspecialchars((string) $media->setFormat('shareImage')->src, ENT_QUOTES);
 		return $picker . "<img src='$src' alt=''><div class='dropActions'>"
-			. "<a class='ajax' href='" . htmlspecialchars(\Systopic\System\Media\Presentation::editorPath((int) $id, (string) $media->mimetype, (string) $media->filename, (string) $media->type, 'shareImage'), ENT_QUOTES) . "' title='Crop and adjust'><i class='cmsIcon cmsIcon-pen'></i></a>"
+			. "<a class='ajax' href='" . htmlspecialchars($this->pages()->href . \Systopic\System\Media\Presentation::editorPath((int) $id, (string) $media->mimetype, (string) $media->filename, (string) $media->type, 'shareImage'), ENT_QUOTES) . "' title='Crop and adjust'><i class='cmsIcon cmsIcon-pen'></i></a>"
 			. "<button type='button' data-on_click='sidebar/resetShareImage' title='Use the site image' aria-label='Use the site image' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-arrow-rotate-left'></i></button>"
 			. "</div>";
 	}

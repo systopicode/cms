@@ -20,7 +20,9 @@ class str {public static function getSafeName($name){return $name;}}
 class message {public static array $errors=[]; public static function error($error){self::$errors[]=$error;}}
 class client {public static array $done=[];public static function done($data){self::$done[]=$data;}}
 $dir=sys_get_temp_dir().'/fluxo-upload-preflight-'.bin2hex(random_bytes(5));mkdir($dir);fs::$siteRoot=$dir.'/';
-$media=(object)['node'=>null,'group'=>'images','filename'=>'current.png','label'=>'Keep me','width'=>100,'height'=>100];
+$node = \Systopic\System\Tables\Nodes\Model::withId(42);
+$node->parentNode = \Systopic\System\Tables\Nodes\Model::withId(10);
+$media=(object)['node'=>$node,'group'=>'images','filename'=>'current.png','label'=>'Keep me','width'=>100,'height'=>100];
 $pages=new class($media) {
  public array $mediaGroups=['images'=>['label'=>'Images','file_extension'=>'png']];
  public object $state;

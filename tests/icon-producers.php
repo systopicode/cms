@@ -13,4 +13,5 @@ foreach ([['image','image/png','fixture.png'],['image','image/gif','fixture.gif'
     $media=new \Systopic\System\Tables\Medias\Model();$media->type=$type;$media->mimetype=$mime;$media->filename=$filename;
     $face=$panel->tileFace($media);
     check('actual tile face '.$mime,isset(Icons::registry()['outline'][$face['icon']]));
+    if($type==='youtube')check('external tile uses an external-link icon',$face['icon']==='arrow-up-right-from-square');
 }

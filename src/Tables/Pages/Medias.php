@@ -68,6 +68,7 @@ final class Medias
         $byGroup = [];
         foreach ($this->page->generationFor()->mediasOf($this->page->node) as $row) {
             $media = new Media($row);
+            if (!$media->readable) continue;
             // a medium may carry no group; the legacy collection filed it under ''
             $byGroup[(string) $media->group][] = $media;
             $this->all[] = $media;

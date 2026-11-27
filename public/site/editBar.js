@@ -16,9 +16,10 @@
 	customElements.define('fluxo-edit-bar', class extends HTMLElement {
 		connectedCallback() {
 			var root = this.attachShadow({mode: 'open'});
+			// Outer selectors can style the host; typography and theme values belong inside the shadow root.
 			root.innerHTML = '<link rel="stylesheet" href="' + esc(config.icons) + '"><style>' +
-				':host{all:initial;position:fixed;left:16px;bottom:16px;z-index:2147483000;font:500 13px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;--main:' + config.main + ';--high:' + config.highlight + ';--bg:' + config.bg + ';--onMain:' + config.onMain + ';--onHigh:' + config.onHighlight + '}' +
-				'.bar{display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:var(--main);color:var(--onMain);box-shadow:0 6px 24px rgba(0,0,0,.25)}' +
+				':host{all:initial!important;position:fixed!important;left:16px!important;bottom:16px!important;z-index:2147483000!important}' +
+				'.bar{all:initial;--main:' + config.main + ';--high:' + config.highlight + ';--bg:' + config.bg + ';--onMain:' + config.onMain + ';--onHigh:' + config.onHighlight + ';font:500 13px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;direction:ltr;display:flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:var(--main);color:var(--onMain);box-shadow:0 6px 24px rgba(0,0,0,.25)}' +
 				'button,a{all:unset;box-sizing:border-box;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px;border-radius:999px;cursor:pointer;color:inherit;white-space:nowrap}' +
 				'button:hover,a:hover,button[aria-expanded=true]{background:color-mix(in srgb,var(--onMain) 14%,transparent)}' +
 				'button:focus-visible,a:focus-visible{outline:2px solid var(--high);outline-offset:1px}' +

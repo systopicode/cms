@@ -1,7 +1,7 @@
 <?php
 /**
  * The file editor's frame — the medium of `?target_id=<media node>`
- * (Panel::$media): header, the stage of its kind, the sidebar. Rendered by
+ * (Panel::$media): shared tabs, the stage of its kind and file details. Rendered by
  * whichever panel the address selects - the file editor, a kind below it
  * or a tab of the image editor (their lightbox.tpl.php include this one).
  *
@@ -13,33 +13,35 @@ if ($media === NULL) {
 	http::redirect($this->pages()->href);
 	return;
 }
+if (!$media->readable) {
+	message::error('This file is not available.');
+	http::redirect($this->pages()->href);
+	return;
+}
 $original = $media->setFormat('original');
 $embed = $this->mediaRow ? \Systopic\System\Tables\Medias\External::embedOf($this->mediaRow) : null;
 if ($embed !== null) echo \fsLoader::includeScriptFiles(\fs::toInternal(dirname(__DIR__, 5) . '/public/site/embedConsent.js'));
 $kind = $this->kind;
 $kindPanel = $this->kindPanel();
-$split = $embed !== null || in_array($kind, ['svg', 'video'], true);
+$isImageEditor = $kind === 'image' && $kindPanel !== null;
+$split = !$isImageEditor && ($embed !== null || $kind === 'svg');
 ?>
-<div class="cmslightbox cms cmsNestedDialog fileEditor" data-size="3">
+<div class="cmslightbox cms fileEditor" data-size="3" data-mobile-dialog="sheet" data-dialog-key="media-<?= (int) $this->targetId ?>">
     <section>
-		<header>
+		<header class="imageEditorHeader">
 			<h1><?= htmlspecialchars($this->lightboxTitle, ENT_QUOTES, 'UTF-8') ?></h1>
-			<?= $kindPanel?->tabs() ?? '' ?>
+			<?= $isImageEditor ? $kindPanel->tabs() : $this->tabs() ?>
 			<ul class="barmenu">
-				<li>
-					<a href="<?= htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') ?>" target="_self" download title="Download original"><i class="cmsIcon cmsIcon-arrow-down-to-line"></i></a>
-				</li>
-				<li>
-					<a href="<?= htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') ?>" target="_blank" title="Open original"><i class="cmsIcon cmsIcon-eye"></i></a>
-				</li>
-				<li>
-					<button type="button" data-cms-action class="put" data-confirm="<?= htmlspecialchars('Delete this file? ' . count(\Systopic\Cms\Queries\MediaUsage\MediaUsage::of($this->pages()->scope, (int) $this->targetId, (int) $this->mediaRow->id)) . ' page references found. Deleting may break these references.', ENT_QUOTES) ?>" data-on_click="userConfirm" data-action="deleteMedia" title="Delete"><i class="cmsIcon cmsIcon-trash"></i></button>
-				</li>
 				<li>
 					<a class="ajax" href="<?= htmlspecialchars($this->pages()->href, ENT_QUOTES, 'UTF-8') ?>" aria-label="Close"><i class="cmsIcon cmsIcon-xmark"></i></a>
 				</li>
 			</ul>
 		</header>
+		<?php if (($isImageEditor && $kindPanel->tab === 'details') || (!$isImageEditor && $this->fileTab === 'details')) { ?>
+		<?php include __DIR__ . '/details.tpl.php'; ?>
+		<?php } elseif ($isImageEditor && $kindPanel->tab === 'files') { ?>
+		<main class="mediaFiles"><?php $kindPanel->stage($media, $original); ?></main>
+		<?php } else { ?>
 		<div class="layout">
 			<main>
 				<div class="fileStage<?= $split ? ' split' : '' ?>">
@@ -58,6 +60,9 @@ $split = $embed !== null || in_array($kind, ['svg', 'video'], true);
 						echo $embed !== null ? '</div>' : '';
 					} elseif ($embed === null || $kind !== 'file') {
 						switch ($kind) {
+							case 'gif':
+								echo '<div class="fileFrame"><img src="' . htmlspecialchars($original->src, ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars((string) $media->label, ENT_QUOTES, 'UTF-8') . '"></div>';
+								break;
 							case 'audio':
 								include __DIR__ . '/audio.tpl.php';
 								break;
@@ -78,7 +83,7 @@ $split = $embed !== null || in_array($kind, ['svg', 'video'], true);
 					?>
 				</div>
 			</main>
-			<?php include __DIR__ . '/meta.tpl.php'; ?>
 		</div>
+		<?php } ?>
     </section>
 </div>

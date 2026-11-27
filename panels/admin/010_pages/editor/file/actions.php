@@ -37,6 +37,20 @@ if (in_array($this->action, ['addTag', 'addTagTo_page', 'removeTagFrom_page'], t
 	return;
 }
 
+if (in_array($this->action, ['aclInherit', 'aclToggle'], true) && $row !== null) {
+    $permissionNode = $row->node;
+    $permissionScope = $pages->scope;
+    $permissionView = 'permissions';
+    include dirname(__DIR__, 2) . '/sidebar/actions.permissions.php';
+    // Only the permission card changes. Keep the open editor and its local
+    // fields in place instead of rebuilding the dialog after the node write.
+    ob_start();
+    include __DIR__ . '/permissions.tpl.php';
+    client::replaceInner('.fileEditor .mediaDetails[data-node_id="' . (int) $this->targetId . '"] .mediaDetailPermissions > main', (string) ob_get_clean());
+    $renderStyle = 'none';
+    return;
+}
+
 // Everything below changes the medium.
 if ($row !== NULL && PageAccess::refuses($row->node)) {
 	return;

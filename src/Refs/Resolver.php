@@ -95,6 +95,14 @@ final class Resolver
                     $attrs = Attributes::set(Attributes::remove($attrs, "data-ref-$name"), $name, html_entity_decode($ref, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
                 }
             }
+            $imageSize = Attributes::get($attrs, 'data-ref-image-size');
+            if ($imageSize !== null) {
+                $original = json_decode(html_entity_decode($imageSize, ENT_QUOTES | ENT_HTML5, 'UTF-8'), true);
+                foreach (['width', 'height'] as $name) {
+                    $value = is_array($original) ? ($original[$name] ?? null) : null;
+                    $attrs = $value === null ? Attributes::remove($attrs, $name) : Attributes::set($attrs, $name, html_entity_decode((string) $value, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                }
+            }
             // what was there for the editor only (data-ref-missing, data-ref-mimetype …)
             return '<' . $m[1] . Attributes::remove($attrs, 'data-ref-[a-z-]+', false) . '>';
         }, $html);
@@ -130,6 +138,14 @@ final class Resolver
         }
         $targets = $this->load($refs);
 
+        if (!$editor) {
+            // A missing or restricted file leaves no download label or empty player behind.
+            $html = (string) preg_replace_callback('~<(a|video|audio|iframe)\b(\s[^<>]*)?>(.*?)</\1\s*>~is', function (array $m) use ($targets): string {
+                $ref = $this->refIn($m[2] ?? '', strtolower($m[1]) === 'a' ? 'href' : 'src');
+                return $ref?->type === 'media' && !isset($targets['media|' . $this->types['media']->key($ref)]) ? '' : $m[0];
+            }, $html);
+        }
+
         $html = (string) preg_replace_callback(self::TAG, function (array $m) use ($targets, $editor): string {
             $tagName = strtolower($m[1]);
             $attrs = $m[2] ?? '';
@@ -161,6 +177,13 @@ final class Resolver
                     return '';
                 } else {
                     $attrs = Attributes::remove($attrs, $name); // an <a> without href is its text
+                }
+            }
+            if ($tagName === 'img') {
+                $imageRef = $this->refIn($m[2] ?? '', 'src');
+                $image = $imageRef === null ? null : ($targets['media|' . $imageRef->id] ?? null);
+                if ($imageRef?->type === 'media' && $image instanceof \Systopic\System\Tables\Medias\Media && $image->readable) {
+                    return MediaRefs::imageViewMarkup($image, $imageRef, $attrs, $editor);
                 }
             }
             // A film in the text keeps its still. Older tags only stored src.

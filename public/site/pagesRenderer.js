@@ -12,9 +12,9 @@
  *
  *   { headLayer, bodyLayer, bodyClasses }
  *
- * and each is mounted against its own placeholder in the served skeleton:
- * <template id=systemPagesHeadPlaceholder> in the head, and
- * <template id=systemPagesBodyPlaceholder> in the body.
+ * On a full response the server has already printed both trees as HTML.
+ * Their comment anchors let the first update adopt the existing nodes;
+ * later responses patch the same objects. Older skeleton responses still mount.
  *
  * The shorthand is `siteRenderer` because that is the name
  * core/server/server.command.js already dispatches to when settings.inApp is
@@ -47,24 +47,30 @@
 				return;
 			}
 
-			// The first HTML carries the same title and description for readers
-			// that do not run this script. Once the head layer is mounted they
-			// would sit twice.
-			document.head.querySelectorAll('[data-crawler]').forEach(function (node) {
-				node.remove();
-			});
-
 			// layers from an earlier call: this is a diff update (ajax navigation)
 			var isUpdate = headLayer !== null || bodyLayer !== null;
+			var adopt = !isUpdate && data.serverRendered;
 
 			renderer.applyBodyClasses(data.bodyClasses || []);
 
 			if (data.headLayer) {
-				headLayer = renderer.mount(headLayer, data.headLayer, 'systemPagesHeadPlaceholder', document.head);
+				headLayer = adopt ? renderer.adopt(data.headLayer, 'head', document.head) : renderer.mount(headLayer, data.headLayer, 'systemPagesHeadPlaceholder', document.head);
 			}
 			if (data.bodyLayer) {
-				bodyLayer = renderer.mount(bodyLayer, data.bodyLayer, 'systemPagesBodyPlaceholder', document.body);
+				bodyLayer = adopt ? renderer.adopt(data.bodyLayer, 'body', document.body) : renderer.mount(bodyLayer, data.bodyLayer, 'systemPagesBodyPlaceholder', document.body);
 			}
+			if (adopt) {
+				var pageNodes = [], stop = document.getElementById('systemPagesBodyPlaceholder');
+				for (var node = document.body.firstChild; node && node !== stop; node = node.nextSibling) pageNodes.push(node);
+				sys.initEvents($(pageNodes));
+			}
+			if (data.metadata !== undefined) {
+				document.head.querySelectorAll('[data-cms-meta],[data-crawler]').forEach(node => node.remove());
+				var meta = document.createElement('template');
+				meta.innerHTML = data.metadata;
+				document.head.append(meta.content);
+			}
+			if (data.language) document.documentElement.lang = data.language;
 
 			// Expose under the same names the panel client uses, so shared
 			// debug tooling and anything reaching for sys.dom.body keeps working.
@@ -79,6 +85,47 @@
 			if (isUpdate) {
 				sys.flushOnDocumentUpdate();
 			}
+		};
+
+		/** Attach layer bookkeeping to the already parsed server HTML. Nodes and media stay in place. */
+		renderer.adopt = (layerData, path, host, parent, boundaries) => {
+			if (!boundaries) {
+				boundaries = new Map();
+				var walker = document.createTreeWalker(host, NodeFilter.SHOW_COMMENT), node;
+				while ((node = walker.nextNode())) {
+					if (node.data.startsWith('cms-layer:')) boundaries.set(node.data.slice(10), node);
+				}
+			}
+			var start = boundaries.get(path + ':start'), end = boundaries.get(path + ':end');
+			// The HTML parser can insert an implicit tbody between a marker and its rows.
+			if (start && end && start.parentNode !== end.parentNode) {
+				if (start.parentNode.contains(end.parentNode)) end.parentNode.insertBefore(start, end.parentNode.firstChild);
+				else if (end.parentNode.contains(start.parentNode)) start.parentNode.appendChild(end);
+			}
+			if (!start || !end || start.parentNode !== end.parentNode) throw new Error('Missing server layer ' + path);
+			var layer = new sys.core.dom.layer.__class();
+			layer.parent = parent || null;
+			layer.data = layerData.data;
+			layer.ownPlaceholder = end;
+			layer.children = (layerData.childLayers || []).map((child, index) => renderer.adopt(child, path + '.' + index, host, layer, boundaries));
+			var childRoots = new Set(layer.children.flatMap(child => child.rootNodes));
+			for (var current = start.nextSibling; current && current !== end; current = current.nextSibling) {
+				if (!childRoots.has(current)) layer.rootNodes.push(current);
+			}
+			layer.docNodes = {};
+			layer.rootNodes.forEach(root => {
+				if (root.nodeType !== 1) return;
+				var nodes = [...root.querySelectorAll('[data-doc]')];
+				if (root.matches('[data-doc]')) nodes.unshift(root);
+				nodes.filter(node => !layer.children.some(child => child.holds(node))).forEach(node => {
+					var key = node.dataset.doc, old = layer.docNodes[key];
+					layer.docNodes[key] = old ? (Array.isArray(old) ? [...old, node] : [old, node]) : node;
+				});
+			});
+			layer.addToLibnode();
+			start.remove();
+			if (parent && layer.rootNodes.length) end.remove();
+			return layer;
 		};
 
 		/**

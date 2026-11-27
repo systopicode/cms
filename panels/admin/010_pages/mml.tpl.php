@@ -8,12 +8,10 @@
  * @var \Systopic\Cms\Panels\Root\Admin\Pages\Panel $this
  */
 
-use Systopic\System\Tables\Medias\Files;
 use Systopic\System\Media\GroupPolicy;
 
 $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 $groupInfo = $this->mediaGroups;
-$siteRoot = (string) http::$siteRoot;
 ?>
 <ul data-all-media-accept="<?= $e(GroupPolicy::accept([], 'text')) ?>" data-node_parent_node_id='<?= (int) ($this->state->id ?? 0) ?>'>
 <?php foreach ($this->library as $groupName => $entries) {
@@ -32,14 +30,13 @@ $siteRoot = (string) http::$siteRoot;
 			<?php foreach ($entries as $entry) {
 				$media = $entry['media'];
 				$node = $entry['node'];
+				if (!\Systopic\System\Auth\ContentAccess::mayRead($media?->node ?? $node)) continue;
 				// an alias stands for its original: the library speaks of that one
 				$id = $entry['alias'] ? (int) $node->relationId('originalNode') : (int) $node->id;
-				$mediaId = (int) ($media?->id ?? 0);
 				$filename = (string) ($media?->filename ?? '');
                 $mediaLabel = trim((string) ($media?->label ?? '')) ?: ($filename !== '' ? $filename : 'Untitled file');
 				$mime = (string) ($media?->mimetype ?? '');
 				$type = (string) ($media?->type ?? '');
-				$folders = Files::idPath($mediaId);
 				?>
 				<?php $faceForClass = $entry['alias'] ? ['mark' => false] : $this->tileFace($entry['media']); ?>
 				<li class="<?= !empty($faceForClass['mark']) ? 'is-mark' : '' ?>" <?= html::arrayToDataAttr([
@@ -54,10 +51,9 @@ $siteRoot = (string) http::$siteRoot;
 					<input type=file title="Replace file: <?= $e($mediaLabel) ?>" aria-label="Replace file: <?= $e($mediaLabel) ?>" accept="<?= $e(GroupPolicy::accept($groupInfo, $groupName)) ?>" data-on_change='upload/open'>
 					<?php } ?>
 					<?php if ($entry['alias']) {
-						$ext = in_array($mime, ['image/png', 'image/jpeg'], true) ? '' : '.png';
 						?>
 						<a class='ajax' href='./?id=<?= (int) $entry['originalParentId'] ?>' title='Show original page: <?= $e($mediaLabel) ?>' aria-label='Show original page: <?= $e($mediaLabel) ?>'>
-							<img alt='<?= $e($mediaLabel) ?>' src='<?= $e("{$siteRoot}var/formats/mmlThumb/$folders$filename$ext") ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
+							<img alt='<?= $e($mediaLabel) ?>' src='<?= $e($this->thumbOf($media)) ?>' data-broken='<?= $e($this->brokenIcon($media)) ?>'>
 							<i class='cmsIcon cmsIcon-file-import'></i>
 						</a>
 					<?php } else {
@@ -71,7 +67,7 @@ $siteRoot = (string) http::$siteRoot;
 						<div class='thumbActions'>
 							<span class='thumbGrip' title='Drag'><span></span><span></span><span></span><span></span><span></span><span></span></span>
 							<div class='thumbButtons'>
-								<a class='ajax' href='<?= $e(\Systopic\System\Media\Presentation::editorPath((int) $id, (string) ($media?->mimetype ?? ''), (string) ($media?->filename ?? ''), (string) ($media?->type ?? ''))) ?>' title='Edit: <?= $e($mediaLabel) ?>' aria-label='Edit: <?= $e($mediaLabel) ?>' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-pen'></i></a>
+								<a class='ajax' href='<?= $e($this->href . \Systopic\System\Media\Presentation::editorPath((int) $id, (string) ($media?->mimetype ?? ''), (string) ($media?->filename ?? ''), (string) ($media?->type ?? ''))) ?>' title='Edit: <?= $e($mediaLabel) ?>' aria-label='Edit: <?= $e($mediaLabel) ?>' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'><i class='cmsIcon cmsIcon-pen'></i></a>
 								<label title='Replace' onmousedown='event.stopPropagation()' onpointerdown='event.stopPropagation()'>
 									<i class='cmsIcon cmsIcon-arrows-rotate'></i>
 									<input type=file title="Replace file: <?= $e($mediaLabel) ?>" aria-label="Replace file: <?= $e($mediaLabel) ?>" accept="<?= $e(GroupPolicy::accept($groupInfo, $groupName)) ?>" data-on_change='upload/open'>

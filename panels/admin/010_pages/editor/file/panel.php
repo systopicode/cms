@@ -127,9 +127,20 @@ class Panel extends CmsPanel {
 		})->call($this);
 	}
 
-	/** Tabs for the frame's header, after the title - none here; the image editor has some. */
+	/** Preview and the shared file details; image editing adds its own tabs. */
+	public string $fileTab {
+		get => $this->file()->childSelected?->name === 'details' ? 'details' : 'preview';
+	}
+
 	public function tabs(): string {
-		return '';
+		$e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+		$html = '<nav class="ceTabs" role="tablist" aria-label="What to edit">';
+		$preview = $this->kind === 'video' ? 'Video & poster' : 'Preview';
+		foreach (['preview' => $preview, 'details' => 'File details'] as $name => $label) {
+			$url = $this->file()->href . ($name === 'details' ? 'details/' : '') . '?target_id=' . $this->targetId;
+			$html .= '<a class="ajax" role="tab" href="' . $e($url) . '" aria-selected="' . ($this->fileTab === $name ? 'true' : 'false') . '"><span>' . $e($label) . '</span></a>';
+		}
+		return $html . '</nav>';
 	}
 
 	/** Header of the lightbox. */
@@ -138,6 +149,7 @@ class Panel extends CmsPanel {
 			? 'Edit ' . \Systopic\System\Tables\Medias\External::label((string) $this->mediaRow?->type)
 			: match ($this->kind) {
 				'image' => 'Edit image',
+				'gif' => 'Edit GIF',
 				'svg' => 'Edit SVG',
 				'pdf' => 'Edit PDF',
 				'video', 'webm' => 'Edit video',

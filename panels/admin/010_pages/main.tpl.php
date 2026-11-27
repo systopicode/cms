@@ -22,21 +22,24 @@ if ($page === null || $page->row === null) {
 	include "controls.languages.tpl.php";
 	return;
 }
+$route   = \Systopic\Cms\Pages\Route\Route::getInstance();
+$pageNav = \Systopic\Cms\Pages\Route\RouteNode::getNavigator();
+if ($route !== null && $pageNav !== null) {
+    $route->build($page->id, $page->language);
+}
+$previewClasses = implode(' ', $route?->getBodyClasses() ?? []);
 ?>
 <div class="cmsPreview"><div class="pageEditorNotice cmsOwn" data-editor-presence data-node="<?= (int) $page->id ?>" data-lang="<?= htmlspecialchars((string) $page->language, ENT_QUOTES) ?>" data-endpoint="<?= htmlspecialchars(http::$siteUrl . 'admin/pages/editorPresence', ENT_QUOTES) ?>" hidden></div>
-<article class="cmsContent">
+<article class="cmsContent <?= htmlspecialchars(strtolower($previewClasses), ENT_QUOTES) ?>">
 	<?php
 	// The opened page becomes a regular DomLayer inside the panel layer tree.
 	// That is deliberate — it gives the preview its own diff slot, so switching
 	// pages in the tree re-renders just this subtree.
-	$route   = \Systopic\Cms\Pages\Route\Route::getInstance();
-	$pageNav = \Systopic\Cms\Pages\Route\RouteNode::getNavigator();
 
 	if ($route === null || $pageNav === null) {
 		message::error('pages module: page renderer not available');
 		echo message::flush();
 	} else {
-		$route->build($page->id, $page->language);
 		$pageNav->setActive($route->getRoot());
 
 		if ($pageNav->openSelected('main')) {

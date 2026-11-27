@@ -73,12 +73,8 @@ $tabs = ['address' => 'Address', 'page' => 'Page', 'file' => 'File'];
 						<select name="imageFormat" onchange="linkFormatChosen(this)">
 							<option value="">Link somewhere else</option>
 							<?php
-							foreach (mediaFormats::get() as $key => $format) {
-								if (($format['cms_display'] ?? '') === 'none') {
-									continue;
-								}
-								$size = \mediaFormats::sizeLabel($format);
-								echo '<option value="media:' . (int) http::post('image_node_id') . '?format=' . $e($key) . '">' . $e(\mediaFormats::label((string) $key, $format) . ' (' . $size . ')') . '</option>';
+							foreach (['master' => 'Master'] + mediaFormats::editorImages() as $key => $label) {
+								echo '<option value="media:' . (int) http::post('image_node_id') . '?format=' . $e($key) . '">' . $e($label) . '</option>';
 							}
 							?>
 						</select>

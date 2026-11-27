@@ -25,7 +25,7 @@ final class PageAccess
     /** Are pages judged by their groups in this request? */
     public static function applies(): bool
     {
-        return defined('PAGE_ACL') && \PAGE_ACL && !Session::isSuperuser() && !Session::isRecovery();
+        return \Systopic\System\Auth\ContentAccess::applies();
     }
 
     /**
