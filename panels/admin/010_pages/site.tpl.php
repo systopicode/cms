@@ -47,7 +47,7 @@ $e = static fn($v): string => htmlspecialchars((string) $v, ENT_QUOTES);
 					</a>
 				<?php } ?>
 			</h1>
-            <p><?= $this->sitePageCount($site) ?> pages directly below this site.</p>
+            <p><?= $this->sitePageCount($site) ?> pages directly below this site. <a class="ajax" href="./?site=new"><i class="cmsIcon cmsIcon-plus"></i> New site</a></p>
 			<?php if ($missingLinks) { ?>
 				<div class="cms message is-stay siteLinkMissing"><div class="warning">
 					<p>Site link not created on this machine: <code><?= $e(implode('</code>, <code>', $missingLinks)) ?></code> → this project<?= $hasFolder ? '' : ', and the folder sites/' . $e($site->name) . '/' ?>.</p>
